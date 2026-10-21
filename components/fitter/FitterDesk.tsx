@@ -233,9 +233,9 @@ function Assistant() {
       <div className={`wrap ${s.tagWrap}`}>
         <div>
           <p className="kicker">For your AI assistant</p>
-          <h2 className="h-sec">Ask Claude what to pull before the client arrives.</h2>
+          <h2 className="h-sec">Ask your AI assistant what to pull before the client arrives.</h2>
           <p className="lede" style={{ marginTop: 12 }}>
-            Hairloom runs an MCP server. Add it to Claude or another assistant that supports remote MCP servers, and it can rank your stock (or our demo boutique&rsquo;s) against a client&rsquo;s passport, give the pull list in their shade, plan dates around treatment and cost a fitting. Pair it with YouCam&rsquo;s own hosted MCP servers for live try-ons.
+            Hairloom runs an MCP server. Add it to any AI assistant that supports remote MCP servers, and it can rank your stock (or our demo boutique&rsquo;s) against a client&rsquo;s passport, give the pull list in their shade, plan dates around treatment and cost a fitting. Pair it with YouCam&rsquo;s own hosted MCP servers for live try-ons.
           </p>
           <div className={s.mcpUrl}>
             <code>{url}</code>
