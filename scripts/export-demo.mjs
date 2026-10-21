@@ -25,8 +25,8 @@ const PERSONAS = [
   { id: "margaret", name: "Margaret", age: 60, city: "Leeds", situation: "chemo", later: "Week 4", fit: "Women", cap: { cm: 54.5, parting: "left" }, blurb: "Begins a taxane regimen next month. Has worn her grey-blonde waves for twenty years." },
   { id: "ravi", name: "Ravi", age: 52, city: "Bengaluru", situation: "chemo", later: "Week 4", fit: "Men", cap: { cm: 58, parting: "left" }, blurb: "Starts chemotherapy for lymphoma soon. Teaches maths and doesn't want his class to notice." },
 ];
-const WIGS = ["asha", "meera", "nora", "ivy", "zuri", "amara", "june", "silver", "rosa", "lena", "tara", "kai", "dev", "arjun", "sam"];
-const HEAD = ["turban", "silk", "beanie", "cap"];
+const WIGS = ["asha", "meera", "nora", "ivy", "zuri", "amara", "june", "silver", "rosa", "lena", "tara", "wren", "kai", "dev", "arjun", "sam"];
+const HEAD = ["turban", "silk", "beanie", "cap", "flatcap", "bandana"];
 
 // Catalogue: the full 1024 image is the try-on reference (served publicly); thumbs for the rail.
 for (const w of WIGS) {

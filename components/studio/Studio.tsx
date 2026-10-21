@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { WIGS } from "@/lib/catalogue";
+import { BOUTIQUE, WIGS } from "@/lib/catalogue";
 import { PERSONAS, type Persona } from "@/lib/demo";
 import { fetchUnits, prepare, runTask, type UnitsInfo } from "@/lib/client";
 import type { KindName } from "@/lib/kinds";
@@ -105,7 +105,7 @@ export function Studio({ initialPersona, initialStep, initialWig }: { initialPer
   if (consenting) {
     return <Consent onBack={() => setConsenting(false)} onAgree={() => { setConsenting(false); setSession({ ...emptySession("live"), consent: Date.now(), base: "kept", later: "Today" }); setStep("keep"); }} />;
   }
-  if (session === null) return <Start onDemo={(p) => { setSession(demoSession(p)); setStep(STEP_IDS.includes(initialStep as Step) ? (initialStep as Step) : "keep"); }} onLive={() => setConsenting(true)} units={units} onCode={refreshUnits} />;
+  if (session === null) return <Start onDemo={(p) => { setSession(demoSession(p)); setStep(STEP_IDS.includes(initialStep as Step) ? (initialStep as Step) : initialWig ? "try" : "keep"); }} onLive={() => setConsenting(true)} units={units} onCode={refreshUnits} wig={WIGS.find((w) => w.id === initialWig)?.name} />;
 
   const ctx: Ctx = { session, persona, update, live, units, wig: WIGS.some((w) => w.id === initialWig) ? initialWig : undefined, go: (st) => { setStep(st); window.scrollTo({ top: 0, behavior: "smooth" }); } };
   const done = {
@@ -191,13 +191,14 @@ function Consent({ onAgree, onBack }: { onAgree: () => void; onBack: () => void 
   );
 }
 
-function Start({ onDemo, onLive, units, onCode }: { onDemo: (p: Persona) => void; onLive: () => void; units: Units; onCode: () => void }) {
+function Start({ onDemo, onLive, units, onCode, wig }: { onDemo: (p: Persona) => void; onLive: () => void; units: Units; onCode: () => void; wig?: string }) {
   return (
     <div className={s.start}>
       <div className={s.startHead}>
         <p className="kicker">The studio</p>
         <h1 className="h-sec">Whose hair are we keeping today?</h1>
         <p className="lede">Start with a demo person to see every step instantly, or use your own photos. Your passport stays in this browser.</p>
+        {wig && <p className={s.fromShop}>You came from {BOUTIQUE.name} to try <b>{wig}</b>. It will be first in step 2, whoever you choose.</p>}
       </div>
       <div className={s.startGrid}>
         {PERSONAS.map((p) => (

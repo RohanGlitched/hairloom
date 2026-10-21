@@ -18,7 +18,7 @@ export function demoBrief(): SharePayload {
       { key: "head:turban", label: "Jersey turban", src: p.headwear.turban, detail: "Pre-tied, dusty rose" },
     ],
     note: "I'd like to look like myself at work. Something light, and my scalp is sensitive.",
-    appointment: "2026-11-04T11:00",
+    appointment: "2026-10-28T11:00",
     cap: p.cap,
   };
 }

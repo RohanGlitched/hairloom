@@ -77,18 +77,22 @@ export function KeepStep({ ctx }: { ctx: Ctx }) {
     const readings: Readings = { type: null, frizz: null, length: null, face: null };
     const setJob = (k: KindName, j: Partial<Job>) => setJobs((js) => js?.map((x) => (x.kind === k ? { ...x, ...j } : x)) ?? null);
 
-    await Promise.all(plan.map(async (job) => {
-      setJob(job.kind, { state: "running" });
-      const imgs = job.kind === "hairType" || job.kind === "hairFrizz" ? trio : [front];
-      const r = await ctx.live(job.kind, imgs, {}, undefined, (secs) => setJob(job.kind, { secs }));
-      if (!r.ok) return setJob(job.kind, { state: "error", note: r.message });
-      const res = r.results as Record<string, unknown>;
+    // One request uploads the photos once; every reading runs on that upload.
+    const lead: KindName = three ? "hairType" : "hairLength";
+    const also = plan.filter((j) => j.kind !== lead).map((j) => j.kind).join(",");
+    setJobs((js) => js?.map((x) => ({ ...x, state: "running" })) ?? null);
+    const run = await ctx.live(lead, three ? trio : [front], also ? { also } : {}, undefined, (secs) => setJobs((js) => js?.map((x) => (x.state === "running" ? { ...x, secs } : x)) ?? null));
+    const parts = run.ok ? ((run.results as { parts?: Record<string, Record<string, unknown>> }).parts ?? { [lead]: run.results }) : {};
+    plan.forEach((job) => {
+      if (!run.ok) return setJob(job.kind, { state: "error", note: run.message });
+      const res = parts[job.kind];
+      if (!res || typeof res.error === "string") return setJob(job.kind, { state: "error", note: (res?.message as string | undefined) ?? "This reading didn't run. Try again." });
       if (job.kind === "hairLength") readings.length = res.hair_length as Readings["length"];
       if (job.kind === "hairType") readings.type = res.hair_type as Readings["type"];
       if (job.kind === "hairFrizz") readings.frizz = res.hair_frizziness as Readings["frizz"];
       if (job.kind === "face") readings.face = res as Readings["face"];
       setJob(job.kind, { state: "done" });
-    }));
+    });
 
     if (!readings.length && !readings.face && !readings.type) {
       setError("No reading came back. Check the messages above, adjust the photos and try again.");

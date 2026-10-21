@@ -21,6 +21,10 @@ type Store = {
   readGen(key: string): Promise<{ text: string; gen: string } | null>;
   /** Writes only if the object is still at `gen` ("0": doesn't exist yet). False if it changed. */
   putIf(key: string, text: string, gen: string): Promise<boolean>;
+  /** Keys under a prefix, at most 1000. */
+  list(prefix: string): Promise<string[]>;
+  /** Deletes a key; no error if it is already gone. */
+  remove(key: string): Promise<void>;
 };
 
 /** Thrown by `write` when the key already exists. */
@@ -98,6 +102,20 @@ function gcs(bucket: string): Store {
       return o;
     },
     putIf: (key, text, gen) => up(key, text, gen),
+    async list(prefix) {
+      const q = new URLSearchParams({ prefix, maxResults: "1000", fields: "items(name)" });
+      const r = await fetch(`https://storage.googleapis.com/storage/v1/b/${b}/o?${q}`, {
+        headers: { authorization: `Bearer ${await accessToken()}` }, cache: "no-store", signal: AbortSignal.timeout(15_000),
+      });
+      if (!r.ok) throw new Error(`GCS list: HTTP ${r.status}`);
+      return (((await r.json()) as { items?: { name: string }[] }).items ?? []).map((o) => o.name);
+    },
+    async remove(key) {
+      const r = await fetch(`https://storage.googleapis.com/storage/v1/b/${b}/o/${encodeURIComponent(key)}`, {
+        method: "DELETE", headers: { authorization: `Bearer ${await accessToken()}` }, signal: AbortSignal.timeout(15_000),
+      });
+      if (!r.ok && r.status !== 404) throw new Error(`GCS delete: HTTP ${r.status}`);
+    },
   };
 }
 
@@ -128,6 +146,14 @@ function files(): Store {
       await fs.mkdir(dir, { recursive: true });
       await fs.writeFile(file(key), text);
       return true;
+    },
+    async list(prefix) {
+      const flat = path.basename(file(prefix + "x")).slice(0, -1);
+      const names = await fs.readdir(dir).catch(() => [] as string[]);
+      return names.filter((n) => n.startsWith(flat)).map((n) => prefix + n.slice(flat.length)).slice(0, 1000);
+    },
+    async remove(key) {
+      await fs.rm(file(key), { force: true });
     },
   };
 }

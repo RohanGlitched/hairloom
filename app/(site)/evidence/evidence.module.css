@@ -29,3 +29,8 @@
 }
 
 .open { margin: 24px 0 0; padding-left: 22px; display: grid; gap: 10px; color: var(--ink-soft); max-width: 75ch; }
+.tableWrap { overflow-x: auto; margin-top: 24px; }
+.shadeTable { border-collapse: collapse; font-size: 15px; min-width: 320px; }
+.shadeTable th { text-align: left; font-weight: 500; font-size: 13px; color: var(--ink-soft); padding: 6px 20px 6px 0; border-bottom: 1px solid var(--ink); }
+.shadeTable td { padding: 7px 20px 7px 0; border-bottom: 1px solid var(--rule); }
+.shadeTable i { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; box-shadow: 0 0 0 1px rgba(0,0,0,.2); }

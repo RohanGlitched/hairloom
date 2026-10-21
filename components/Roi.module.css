@@ -15,5 +15,6 @@
 .net { display: grid; gap: 2px; padding: 16px 18px; border-radius: var(--radius); background: var(--ink); color: var(--ivory); }
 .net span, .net small { color: var(--mist); font-size: 13px; }
 .net b { font: 400 30px var(--serif); color: var(--ivory); }
-@media (max-width: 900px) { .roi { grid-template-columns: 1fr; } .out { position: static; } }
+@media (max-width: 900px) { .roi { grid-template-columns: 1fr; } .out { position: static; order: -1; } }
 @media (max-width: 560px) { .inputs { grid-template-columns: 1fr; } }
+.caveat { font-size: 13px; color: var(--ink-soft); margin-top: -4px; }

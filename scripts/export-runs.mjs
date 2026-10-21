@@ -56,7 +56,8 @@ function classify(rel) {
   // The four demo people: lab/out/demo/<id>/<task>
   m = /^demo\/[^/]+\/(.+)$/.exec(rel);
   if (m) {
-    const n = m[1];
+    // Runs set aside in demo/<id>/unused/ (results we chose not to show) still count; v1 and kept are earlier attempts.
+    const n = m[1].replace(/^unused\//, "").replace(/_(v1|kept)$/, "").replace(/^thin_kept_/, "thin_");
     const o = "demo";
     if (n === "face") return { api: API.face, origin: o, variant: "default strictness" };
     if (n === "hair_type") return { api: API.type, origin: o };

@@ -24,7 +24,7 @@ About 65% of people having chemotherapy lose hair. Hair usually starts to fall o
 
 1. Open the [studio with Anjali](https://hairloom-studio.vercel.app/studio?p=anjali). Anjali is a demo person, and every image is precomputed YouCam output, so nothing costs units. Nia (alopecia), Margaret and Ravi are there too.
 2. **Keep:** read her hair passport, with curl, frizz, length, face shape, brows, head size and her colour as a wig shade code.
-3. **Try:** pick wigs on her photo before hair loss, then switch to week 4. Wigs are ranked by how close each is to the hair she kept. You can drag across the mirror to compare, recolour a wig to a closer shade, or preview a topper for thinning hair.
+3. **Try:** pick wigs on her photo before hair loss, then switch to week 4. Wigs are ranked by how close each is to the hair she kept. You can drag across the mirror to compare, recolour a wig to a closer shade, or (as Margaret) preview fuller volume and clip-in length on a photo of thinning hair.
 4. **Brows & headwear**, then **Share:** create a sealed link and open it as the fitter.
 
 Or choose *Use my own photos*. YouCam's JS Camera Kit guides you through the three angles.
@@ -40,7 +40,7 @@ Or choose *Use my own photos*. YouCam's JS Camera Kit guides you through the thr
 | Face Attribute & Ratio Analyzer | Face shape, plus brow shape, thickness and colour. |
 | Makeup Virtual Try-On (eyebrows) | Brows rebuilt in the kept shape and shade, for when they thin. |
 | Hair Color Virtual Try-On | Recolours a chosen wig to the stock shades nearest the kept hair. |
-| Hair Volume Virtual Try-On | Shows how a topper's worth of volume looks, for thinning rather than lost hair. |
+| Hair Volume Virtual Try-On | Previews fuller lengths and sides for thinning hair, on a photo of the thinning hair. It doesn't cover a thin crown, and the studio says so. |
 | Hair Extension Virtual Try-On | Shows clip-in length on the kept photo. |
 | AI Image Generator (image to image, text to image) | Headwear that keeps the face. It also generated the demo people and the fictional boutique's stock. |
 | AI Skin Analysis v2.1 | Optional skin check-ins in the journal, once per treatment cycle, using raw scores and concern maps. |
@@ -48,7 +48,7 @@ Or choose *Use my own photos*. YouCam's JS Camera Kit guides you through the thr
 
 ## What we measured
 
-[Evidence](https://hairloom-studio.vercel.app/evidence) lists every YouCam task whose output we kept (233: 164 for the demo, 41 on real photographs, 28 early research), including the image generation that made the demo, with success counts, median times, the errors we hit and what they taught us. The studio's 12 task kinds call 11 distinct YouCam APIs (the wig and own-hair kinds share hair-transfer), and each has at least one successful run in the ledger. `node scripts/export-runs.mjs` rebuilds it from the lab outputs. Highlights:
+[Evidence](https://hairloom-studio.vercel.app/evidence) lists every YouCam task whose output we kept (246: 177 for the demo, 41 on real photographs, 28 early research), including the image generation that made the demo, with success counts, median times, the errors we hit and what they taught us. The studio's 12 task kinds call 11 distinct YouCam APIs (the wig and own-hair kinds share hair-transfer), and each has at least one successful run in the ledger. `node scripts/export-runs.mjs` rebuilds it from the lab outputs. Highlights:
 
 - **Hairstyle try-on works on a bald head.** All 64 try-ons on bald demo photos succeeded, including each person's own hair restored from their kept photo, and so did 8 of 8 on real stock photos of shaved heads. The demo photos are generated edits and the real ones are smooth shaved scalps, so patchy hair loss and tests on people with hair loss are next.
 - **Real photos were stricter than generated ones.** Face Attribute rejected 5 of 5 real portraits at the default angle strictness and read 5 of 5 at `flexible`; hair length read 2 of 5.
@@ -81,8 +81,17 @@ The server never sees client photos. For live try-ons, pair it with YouCam's hos
   - Boutiques pay per client brief.
   - Wig brands embed [a widget](https://hairloom-studio.vercel.app/embed?wig=asha).
   - Hospitals and wig banks sponsor passports.
-- **What it costs:** a typical fitting is 41 YouCam units, about $2.
-- **Also on the page:** an ROI model for a boutique, with its assumptions labelled, and an eight-week pilot plan for India.
+- **What it costs:** a chemotherapy wig fitting is 41 YouCam units ($1.97–2.26), a thinning session 12 and a sponsored passport 22. The cost table is built from the studio's own task list and matches the MCP `fitting_cost` tool.
+- **Draft prices:**
+  - ₹399 + GST per fitter brief.
+  - ₹99 per widget shop session (capped at 10 units).
+  - ₹150 per sponsored passport, which covers 500 patients for ₹75,000. Health care is an eligible CSR activity under section 135 of India's Companies Act.
+- **Does it pay a boutique?** At the labelled defaults (30 clients a month, half a visit saved, 5% buying one more wig at a 40% margin), the boutique nets about ₹5,130 a month. One extra wig a month covers it, and Hairloom keeps about half the fee after YouCam's pay-as-you-go price.
+- **The market for YouCam:**
+  - About 40% of women show pattern thinning by 50 (DermNet), and alopecia areata has a 2% lifetime incidence.
+  - The medical wig segment is projected at $1.9B by 2035 (GMI).
+  - These are the same hair try-ons Perfect Corp already sells, bought by people who need them more.
+- **Pilot:** eight weeks with one oncology wig bank or boutique in India, judged on three thresholds: 60% of patients keep a passport before hair loss, 25% fewer fitting visits, and 80% of wigs still worn at four weeks.
 
 ## Privacy
 
@@ -125,7 +134,11 @@ npm run dev                                   # http://localhost:3141
 ```
 
 - **Demo people** work without a key.
-- **Live runs** keep `UNIT_FLOOR` units (default 120) in reserve.
+- **Live runs** have spend controls, all env-tunable:
+  - The public lane stops at `UNIT_FLOOR` (default 120) or at the judges' floor plus what judges may still use today, whichever is higher. The judges' floor is `JUDGE_UNIT_FLOOR` (default 20) and the reserve is capped at `JUDGE_RESERVE_UNITS` (default 250).
+  - Daily caps are `GLOBAL_DAILY_UNITS` (public, default 120) and `JUDGE_DAILY_UNITS` (default 300).
+  - Every YouCam call goes through one limit of `YOUCAM_CALLS_PER_MINUTE` (default 40) per instance, with `YOUCAM_JUDGE_CALLS_PER_MINUTE` (default 10) kept for judges.
+  - Tasks are settled on the server after each start, so a failed task is refunded even if the browser never polls. A daily cron (`/api/cron/settle`, `CRON_SECRET`) sweeps what is left.
 - **Shares** are written to `.data/` locally. Set `GCS_BUCKET` and `GCS_WIF_AUDIENCE` for production.
 
 **Scripts:**
@@ -151,4 +164,4 @@ npm run dev                                   # http://localhost:3141
 
 ## License
 
-The code is MIT (see `LICENSE`). The Unsplash photos in `public/real/` are not MIT: they are used under the [Unsplash License](https://unsplash.com/license), credited per photo, for testing only, and the people in them are stock models, not patients. MediaPipe models are Apache 2.0. See [`NOTICE`](NOTICE) for the credits and full list.
+The code is MIT (see `LICENSE`). The real-photograph tests ran on nine Unsplash portraits under the [Unsplash License](https://unsplash.com/license). Only their results are published, not the photos or edited images, because the people in them agreed to Unsplash, not to a hair-loss product. MediaPipe models are Apache 2.0. See [`NOTICE`](NOTICE) for the credits and full list.

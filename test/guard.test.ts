@@ -86,6 +86,26 @@ test("polls and deletes are throttled per handle and per visitor", () => {
   assert.equal(g.pollAllowed("del:h1", 5000), true);
   assert.equal(g.pollAllowed("del:h1", 5000), false);
   const ip = "198.51.100.7";
-  for (let i = 0; i < 120; i++) assert.equal(g.visitorAllowed(ip), true);
-  assert.equal(g.visitorAllowed(ip), false);
+  for (let i = 0; i < 30; i++) assert.equal(g.visitorAllowed(ip), true);
+  assert.equal(g.visitorAllowed(ip), false, "30 forwarded calls a minute per visitor, under YouCam's 50 for the whole key");
+});
+
+test("production refuses to sign handles without HANDLE_SECRET", () => {
+  const keep = { secret: process.env.HANDLE_SECRET, env: process.env.VERCEL_ENV };
+  try {
+    delete process.env.HANDLE_SECRET;
+    process.env.VERCEL_ENV = "production";
+    assert.throws(() => g.signHandle("wig", "t"), /HANDLE_SECRET is not set/);
+    assert.throws(() => g.readHandle(Buffer.from("wig.public.2026-10-22.t.9.mac").toString("base64url")), /HANDLE_SECRET is not set/);
+  } finally {
+    process.env.HANDLE_SECRET = keep.secret;
+    if (keep.env === undefined) delete process.env.VERCEL_ENV; else process.env.VERCEL_ENV = keep.env;
+  }
+  assert.ok(g.readHandle(g.signHandle("wig", "t")), "signs again once it is set");
+});
+
+test("the public floor keeps what judges may still use today in reserve", async () => {
+  // JUDGE_DAILY_UNITS is 6 here, so the reserve is the judges' 6 left plus their own floor of 20.
+  assert.equal(await g.floorOf("judge"), 20);
+  assert.equal(await g.floorOf("public"), Math.max(120, 20 + 6));
 });

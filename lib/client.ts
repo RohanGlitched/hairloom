@@ -107,7 +107,8 @@ export async function runTask(
     if (p.status === "error") { inflight.delete(h); return { ok: false, code: p.code, message: p.message }; } // the server already deleted it
     // We hold the result now: ask the server to delete the task and its photos at YouCam.
     drop(h);
-    return { ok: true, image: p.image, results: p.results ?? {}, units: s.units, api: s.api, ms: Date.now() - t0 };
+    // A batch reports the units of the readings YouCam charged for; a failed reading costs nothing.
+    return { ok: true, image: p.image, results: p.results ?? {}, units: p.units ?? s.units, api: s.api, ms: Date.now() - t0 };
   }
   drop(h);
   return { ok: false, code: "timeout", message: "YouCam took longer than three minutes. Try again in a moment." };

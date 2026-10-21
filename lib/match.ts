@@ -1,9 +1,14 @@
 import { LENGTH_LABEL, LENGTH_ORDER, TEXTURE_ORDER, type Length, type Texture, type Wig } from "./catalogue";
 
-/** YouCam hair-length terms ("ear length", "short hair", "above chest", "long hair") -> our five lengths. */
+/**
+ * YouCam's eight hair-length terms -> our five lengths: "above the ears", "ear length", "short hair",
+ * "above chest", "long hair", and three "… or longer". Those are lower bounds: they map to the stated
+ * length, and `orLonger` tells `closeness` not to count a longer wig against it.
+ */
+export const orLonger = (term?: string | null) => !!term && /\bor longer\s*$/i.test(term);
 export function lengthFromTerm(term?: string | null): Length | null {
   if (!term) return null;
-  const t = term.toLowerCase();
+  const t = term.toLowerCase().replace(/\s*or longer\s*$/, "");
   if (t.includes("ear")) return "ear";
   if (t.includes("chin") || t.includes("neck") || t.includes("short")) return "chin";
   if (t.includes("above chest") || t.includes("shoulder")) return "shoulder";
@@ -19,10 +24,11 @@ export function textureFromType(mapping?: string | null): Texture | null {
   return n === 1 ? "straight" : n === 2 ? "wavy" : n === 3 ? "curly" : n === 4 ? "coily" : null;
 }
 
-export function lengthStep(from: Length | null, to: Length) {
+export function lengthStep(from: Length | null, to: Length, atLeast = false) {
   if (!from) return null;
   const d = LENGTH_ORDER.indexOf(to) - LENGTH_ORDER.indexOf(from);
   if (d === 0) return { word: "Same length", d };
+  if (atLeast && d > 0) return { word: `Within "${LENGTH_LABEL[from].toLowerCase()} or longer" (${LENGTH_LABEL[to].toLowerCase()})`, d };
   return { word: `${Math.abs(d)} step${Math.abs(d) > 1 ? "s" : ""} ${d < 0 ? "shorter" : "longer"} (${LENGTH_LABEL[to].toLowerCase()})`, d };
 }
 
@@ -33,18 +39,20 @@ export function textureStep(from: Texture | null, to: Texture) {
   return { word: `${d < 0 ? "Straighter" : "More texture"}: ${to}`, d };
 }
 
-/** 0-100 closeness to the kept hair, from length, texture and measured colour difference. */
-export function closeness(wig: Pick<Wig, "length" | "texture">, kept: { length: Length | null; texture: Texture | null }, dE?: number | null) {
-  const l = kept.length ? Math.abs(LENGTH_ORDER.indexOf(wig.length) - LENGTH_ORDER.indexOf(kept.length)) : 1;
+/** 0-100 closeness to the kept hair, from length, texture and measured colour difference. "Or longer": a longer wig costs nothing. */
+export function closeness(wig: Pick<Wig, "length" | "texture">, kept: { length: Length | null; texture: Texture | null; orLonger?: boolean }, dE?: number | null) {
+  const dl = kept.length ? LENGTH_ORDER.indexOf(wig.length) - LENGTH_ORDER.indexOf(kept.length) : 1;
+  const l = kept.orLonger && dl > 0 ? 0 : Math.abs(dl);
   const t = kept.texture ? Math.abs(TEXTURE_ORDER.indexOf(wig.texture) - TEXTURE_ORDER.indexOf(kept.texture)) : 1;
   const c = dE == null ? 6 : dE;
   const score = 100 - l * 14 - t * 16 - Math.min(40, c * 2.2);
   return Math.max(0, Math.round(score));
 }
 
-/** Plain words for the closeness score, instead of a percentage. */
-export function band(score: number) {
+/** Plain words for the closeness score, instead of a percentage. With `best`, the top of a weak list says so. */
+export function band(score: number, best?: number) {
   if (score >= 75) return "Closest to yours";
+  if (best != null && score === best) return "Closest in stock";
   if (score >= 50) return "A small change";
   return "A new look";
 }

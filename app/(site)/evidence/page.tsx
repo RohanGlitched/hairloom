@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { PERSONAS } from "@/lib/demo";
 import { API_COUNT, LEDGER, REJECTED, TOTALS, byApi, missingEvidence } from "@/lib/evidence";
-import { measured } from "@/lib/colours";
+import { measured, shadeCheck } from "@/lib/colours";
+import { WIGS } from "@/lib/catalogue";
 import { labToHex, nearestShades } from "@/lib/color";
 import { RealTests } from "@/components/RealTests";
 import real from "@/data/real.json";
@@ -51,6 +52,7 @@ function family(code: string) {
 }
 
 export default function Evidence() {
+  const stock = WIGS.map((w) => ({ w, c: shadeCheck(w) })).filter((r) => r.c);
   const rows = byApi();
   const studio = rows.filter((r) => r.group === "studio");
   const left = rows.filter((r) => r.group !== "studio");
@@ -115,7 +117,7 @@ export default function Evidence() {
 
           <h2 id="real" className="h-sec" style={{ marginTop: 72 }}>Real photographs</h2>
           <p className="lede" style={{ marginTop: 12 }}>
-            The demo people are generated, so we ran the same YouCam calls on nine real portraits from Unsplash. Four are shaved heads. These are Unsplash-licensed stock photos of models, credited to each photographer on its card, and the people are not patients.
+            The demo people are generated, so we ran the same YouCam calls on nine real portraits from Unsplash. Four are shaved heads. These are Unsplash-licensed stock photos of models, credited to each photographer on its card, and the people are not patients. We publish the results, not the pictures.
           </p>
           <RealTests />
 
@@ -138,6 +140,21 @@ export default function Evidence() {
                 <p>{c.agrees == null ? "Nothing to compare." : c.agrees ? (constant ? "They agree, by chance." : "They agree.") : "They disagree, so the passport uses the measured shade."}</p>
               </div>
             ))}
+          </div>
+
+          <h2 className="h-sec" style={{ marginTop: 72 }}>Wig photos: the listed shade and the measured one</h2>
+          <p className="lede" style={{ marginTop: 12 }}>
+            Each demo wig was generated with a shade code in its description. Measured from the product photo, {stock.filter((r) => r.c!.got.code === r.w.code).length} of {stock.length} come back as that code; the rest read darker and less red, by {Math.abs(stock.reduce((n, r) => n + r.c!.dL, 0) / stock.length).toFixed(1)} points of lightness on average, because shadowed strands pull the median down. So the studio and the fitter desk show the listed code as the stock shade, and use the measurement only to rank wigs against each other. A client&rsquo;s measured shade carries the same bias, which is why the passport and the brief ask the fitter to confirm against real swatches.
+          </p>
+          <div className={s.tableWrap}>
+            <table className={s.shadeTable}>
+              <thead><tr><th>Wig</th><th>Listed</th><th>Measured</th><th>ΔE00</th></tr></thead>
+              <tbody>
+                {stock.map(({ w, c }) => (
+                  <tr key={w.id}><td>{w.name}</td><td><i style={{ background: c!.listed.hex }} aria-hidden="true" />{c!.listed.code}</td><td><i style={{ background: c!.got.hex }} aria-hidden="true" />{c!.got.code}{c!.got.code === w.code ? "" : " (miss)"}</td><td className="num">{c!.dE.toFixed(1)}</td></tr>
+                ))}
+              </tbody>
+            </table>
           </div>
 
           <h2 className="h-sec" style={{ marginTop: 72 }}>Not proven yet</h2>

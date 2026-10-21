@@ -26,9 +26,9 @@ export function Reveal({ before, after, beforeAlt, afterAlt, beforeLabel, afterL
       <div className={s.frame}>
         <div className={s.glass}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={before} alt={beforeAlt} className={s.img} fetchPriority="high" />
+          <img key={before} src={before} alt={beforeAlt} className={s.img} fetchPriority="high" />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={after} alt={afterAlt} className={s.img} style={{ clipPath: `inset(0 ${100 - v}% 0 0)` }} fetchPriority="high" />
+          <img key={after} src={after} alt={afterAlt} className={s.img} style={{ clipPath: `inset(0 ${100 - v}% 0 0)` }} fetchPriority="high" />
           <span className={s.line} style={{ left: `${v}%` }} aria-hidden="true">
             <span className={s.knob} style={{ transform: `translateX(${v > 88 ? -60 : v < 12 ? 60 : 0}%)` }} />
           </span>

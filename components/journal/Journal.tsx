@@ -27,7 +27,7 @@ const PLAN: Milestone[] = [
 ];
 const ALOPECIA: Milestone[] = [
   { day: 0, title: "Keep your hair passport now", body: "While your hair still covers the patches. It is the record a fitter matches to, however things change.", action: { href: "/studio", label: "Open the studio" } },
-  { day: 7, title: "Try toppers before wigs", body: "If the patches are small, a topper or clip-ins may be enough. Preview volume and length on your kept photo.", action: { href: "/studio?step=try", label: "Try toppers" } },
+  { day: 7, title: "Try toppers before wigs", body: "If the patches are small, a topper or clip-ins may be enough. Preview volume and clip-in length on your own photo.", action: { href: "/studio?step=try", label: "Preview volume" } },
   { day: 30, title: "Re-photograph each month", body: "Patches in alopecia areata can spread, settle or regrow, so a monthly photo helps you and your dermatologist see the pattern. It is a photo record, not a measurement." },
   { day: 60, title: "Choose with a fitter when you're ready", body: "Send your passport and shortlist ahead, with your head size and parting.", action: { href: "/studio?step=share", label: "Share a brief" } },
 ];
@@ -199,7 +199,7 @@ export function Journal() {
                 </div>
                 <p className="small">
                   {example
-                    ? "Example: Anjali's check-ins before treatment and at week 4 (demo person, real YouCam output). Yours replace these."
+                    ? mode === "chemo" ? "Example: Anjali's check-ins before treatment and at week 4 (demo person, real YouCam output). Yours replace these." : "Example from Anjali, a demo person on chemotherapy (real YouCam output). Your own check-ins replace these."
                     : `${checks.length} check-in${checks.length > 1 ? "s" : ""}, latest ${new Date(last.at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}.`}{" "}
                   Scores are YouCam&rsquo;s raw 1&ndash;100 scores, and higher is better for every concern.
                 </p>
@@ -221,7 +221,7 @@ export function Journal() {
           <div className={s.pay}>
             <div><h3 className="h-sub">India</h3><p>Some hospitals and charities give free wigs made from donated hair, such as the Tata Memorial Centre with the Cherian Foundation, and Cope with Cancer in Mumbai. Ask your oncology team or social worker.</p></div>
             <div><h3 className="h-sub">UK</h3><p>Wigs are free on the NHS in Scotland and Wales. In England an NHS stock synthetic wig costs &pound;80.15 unless you qualify for free prescriptions.</p><a className="src" href="https://www.nhsbsa.nhs.uk/help-travel-eye-care-wigs-and-fabric-support-costs/wigs-and-fabric-supports" target="_blank" rel="noreferrer">NHSBSA</a></div>
-            <div><h3 className="h-sub">US</h3><p>Original Medicare doesn&rsquo;t cover wigs. Some private plans do with a doctor&rsquo;s prescription for a &ldquo;cranial prosthesis&rdquo;; your passport is useful paperwork.</p><a className="src" href="https://www.breastcancer.org/treatment-side-effects/hair-loss/wigs/insurance" target="_blank" rel="noreferrer">Breastcancer.org</a></div>
+            <div><h3 className="h-sub">US</h3><p>Original Medicare doesn&rsquo;t cover wigs. Some private plans do with a doctor&rsquo;s prescription for a &ldquo;cranial prosthesis&rdquo;; your passport&rsquo;s photos and head size can go with the claim.</p><a className="src" href="https://www.breastcancer.org/treatment-side-effects/hair-loss/wigs/insurance" target="_blank" rel="noreferrer">Breastcancer.org</a></div>
             <div><h3 className="h-sub">Children</h3><p>Hairloom is for adults. Children&rsquo;s hair loss needs a paediatric team and specialist wig charities, who fit wigs for growing heads.</p></div>
           </div>
         </div>

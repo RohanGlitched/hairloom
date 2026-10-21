@@ -5,15 +5,15 @@ import { HEADWEAR, LENGTH_LABEL, WIGS, inr } from "@/lib/catalogue";
 import { deltaE00, matchWord } from "@/lib/color";
 import { measured, renderLab, wigShade } from "@/lib/colours";
 import type { Persona } from "@/lib/demo";
-import { band, closeness, lengthFromTerm, lengthStep, textureFromType, textureStep } from "@/lib/match";
+import { band, closeness, lengthFromTerm, lengthStep, orLonger, textureFromType, textureStep } from "@/lib/match";
 import s from "./FittingRoom.module.css";
 
 type Look = { kind: "own" } | { kind: "wig"; id: string } | { kind: "head"; id: string } | { kind: "later" };
 
 function rank(p: Persona) {
-  const len = lengthFromTerm(p.readings.length?.term), tex = textureFromType(p.readings.type?.mapping), k = measured(`${p.id}/kept`);
+  const len = lengthFromTerm(p.readings.length?.term), tex = textureFromType(p.readings.type?.mapping), k = measured(`${p.id}/kept`), more = orLonger(p.readings.length?.term);
   return WIGS.filter((w) => p.wigs[w.id] && w.fit === p.fit)
-    .map((w) => { const lab = renderLab(p.id, `wig:${w.id}`); return { w, score: closeness(w, { length: len, texture: tex }, k && lab ? deltaE00(k, lab) : null) }; })
+    .map((w) => { const lab = renderLab(p.id, `wig:${w.id}`); return { w, score: closeness(w, { length: len, texture: tex, orLonger: more }, k && lab ? deltaE00(k, lab) : null) }; })
     .sort((a, b) => b.score - a.score);
 }
 
@@ -88,7 +88,7 @@ export function FittingRoom({ personas }: { personas: Persona[] }) {
               <div className={s.vs}>
                 <h4>Against the hair {he ? "he" : "she"} kept</h4>
                 <ul>
-                  <li><span>Length</span>{lengthStep(keptLen, wig.length)?.word ?? "Not measured"}</li>
+                  <li><span>Length</span>{lengthStep(keptLen, wig.length, orLonger(p.readings.length?.term))?.word ?? "Not measured"}</li>
                   <li><span>Texture</span>{textureStep(keptTex, wig.texture)?.word ?? "Not measured"}</li>
                   <li><span>Colour</span>{dE != null ? matchWord(dE) : "Not measured"}</li>
                 </ul>

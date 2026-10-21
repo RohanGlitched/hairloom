@@ -1015,5 +1015,113 @@
    5.88
   ],
   "pixels": 11939
+ },
+ "catalogue/wren": {
+  "hex": "#877a6b",
+  "lab": [
+   52.08,
+   2.1,
+   10.38
+  ],
+  "pixels": 64055
+ },
+ "anjali/wig_wren": {
+  "hex": "#857b6d",
+  "lab": [
+   52.06,
+   1.52,
+   9.01
+  ],
+  "pixels": 58134
+ },
+ "nia/wig_wren": {
+  "hex": "#796d5c",
+  "lab": [
+   46.71,
+   1.47,
+   11.13
+  ],
+  "pixels": 73214
+ },
+ "margaret/wig_wren": {
+  "hex": "#83796b",
+  "lab": [
+   51.18,
+   1.46,
+   9.08
+  ],
+  "pixels": 84388
+ },
+ "margaret/thin_female_subtle": {
+  "hex": "#a1917c",
+  "lab": [
+   60.91,
+   2.54,
+   13.2
+  ],
+  "pixels": 42701
+ },
+ "margaret/thin_female_natural": {
+  "hex": "#9f8e78",
+  "lab": [
+   60.06,
+   2.78,
+   14.16
+  ],
+  "pixels": 41001
+ },
+ "margaret/thin_female_medium": {
+  "hex": "#a0907b",
+  "lab": [
+   60.7,
+   2.49,
+   13.42
+  ],
+  "pixels": 44187
+ },
+ "margaret/thin_female_high": {
+  "hex": "#9e8e78",
+  "lab": [
+   59.93,
+   2.48,
+   13.95
+  ],
+  "pixels": 46373
+ },
+ "margaret/thin_all_length_1": {
+  "hex": "#8d7b64",
+  "lab": [
+   52.77,
+   2.87,
+   15.37
+  ],
+  "pixels": 62527
+ },
+ "margaret/thin_all_length_2_": {
+  "hex": "#988871",
+  "lab": [
+   57.5,
+   2.16,
+   14.23
+  ],
+  "pixels": 67099
+ },
+ "margaret/thin_all_length_3": {
+  "hex": "#8e7d65",
+  "lab": [
+   53.26,
+   2.69,
+   15.37
+  ],
+  "pixels": 67104
+ },
+ "ravi/wig_wren": {
+  "hex": "#857a6a",
+  "lab": [
+   51.87,
+   1.03,
+   10.37
+  ],
+  "pixels": 65426
  }
 }

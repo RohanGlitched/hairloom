@@ -8,7 +8,7 @@ import { measured, renderLab, wigShade } from "./colours";
 import { PERSONAS } from "./demo";
 import { KINDS } from "./kinds";
 import { FITTINGS, unitsOf, usd } from "./pricing";
-import { band, capSize, closeness, lengthFromTerm, lengthStep, textureFromType, textureStep } from "./match";
+import { band, capSize, closeness, lengthFromTerm, lengthStep, orLonger, textureFromType, textureStep } from "./match";
 
 /**
  * Hairloom for a wig fitter's AI assistant: an MCP server (Streamable HTTP at /api/mcp). It answers the
@@ -25,6 +25,16 @@ For live try-ons on a client's own photo, use YouCam's hosted MCP servers (https
 Hairloom is about appearance, not medical care: never diagnose, and point clinical questions to the client's care team. Shade codes vary by brand; always confirm against real swatches.`;
 
 const text = (t: string) => ({ content: [{ type: "text" as const, text: t }] });
+/** Text for the model to read, plus the same answer as structured data for clients that use it. */
+const both = <T extends Record<string, unknown>>(t: string, data: T) => ({ content: [{ type: "text" as const, text: t }], structuredContent: data });
+const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine((s) => { const d = new Date(s + "T00:00Z"); return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s; }, "Not a real date (YYYY-MM-DD)");
+const MATCH_OUT = z.object({
+  client: z.object({ length: z.string().nullable(), texture: z.string().nullable(), shade: z.string().nullable(), cap: z.string().nullable() }),
+  source: z.enum(["demo", "yours"]),
+  wigs: z.array(z.object({ name: z.string(), band: z.string(), score: z.number(), length: z.string(), texture: z.string(), cap: z.string(), price_inr: z.number().nullable(), stocked_shade: z.string().nullable() })),
+  pull: z.array(z.object({ name: z.string(), shade: z.string() })),
+});
+const COST_OUT = z.object({ units: z.number(), usd_subscription: z.string(), usd_pay_as_you_go: z.string(), scenario: z.string().nullable() });
 const hex = z.string().regex(/^#?[0-9a-fA-F]{6}$/).transform((s) => (s.startsWith("#") ? s : `#${s}`));
 const TEXTURES = ["straight", "wavy", "curly", "coily"] as const;
 const LENGTHS = ["ear", "chin", "shoulder", "chest", "midback"] as const;
@@ -78,11 +88,13 @@ function register(server: McpServer) {
           fit: z.enum(["Women", "Men"]).optional(),
         })).min(1).max(100).optional().describe("The boutique's own wigs. Omit to use the demo boutique."),
       }),
+      outputSchema: MATCH_OUT,
       annotations: { readOnlyHint: true },
     },
     async ({ hair_length, hair_type, hair_hex, head_cm, fit, top = 5, stock }) => {
       const len = lengthFromTerm(hair_length) as Length | null;
       const tex = textureFromType(hair_type) as Texture | null;
+      const more = orLonger(hair_length);
       const lab = hair_hex ? hexToLab(hair_hex) : null;
       const client = lab ? nearestShades(lab, 1)[0] : null;
       // One shape for both sources; demo wigs carry the colour measured from their product photo.
@@ -92,21 +104,31 @@ function register(server: McpServer) {
       const ranked = rows.filter((w) => !fit || !w.fit || w.fit === fit)
         .map((w) => {
           const dE = lab && w.lab ? deltaE00(lab, w.lab) : null;
-          return { w, score: closeness(w, { length: len, texture: tex }, dE) };
+          return { w, score: closeness(w, { length: len, texture: tex, orLonger: more }, dE) };
         })
         .sort((a, b) => b.score - a.score)
         .slice(0, top);
       const kept = len ? `${hair_length!.trim()} (matched to ${LENGTH_LABEL[len].toLowerCase()}-length wigs)` : "length not given";
+      const best = ranked[0]?.score;
+      // Pull what is close; a "new look" only when nothing in stock is closer.
+      const close = ranked.filter(({ score }) => band(score, best) !== "A new look");
+      const pull = (close.length ? close : ranked).slice(0, 3).map(({ w }) => ({ name: w.name, shade: client ? `${client.code} and one shade either side${w.shade && w.shade !== client.code ? ` (stocked as ${w.shade})` : ""}` : w.shade ? `${w.shade} (stock shade)` : "as stocked" }));
       const lines = [
         `Client: ${kept}, ${tex ?? "texture not given"}${client ? `, nearest shade ${client.code} (${client.name.toLowerCase()})` : ""}${head_cm ? `, ${capSize(head_cm)} cap (${head_cm} cm)` : ""}.`,
         `Ranking ${stock ? `your ${stock.length} wigs` : "the Hairloom demo boutique (pass `stock` for your own)"}${lab ? ", colour compared with each wig's stocked colour" : ""}:`,
-        ...ranked.map(({ w, score }, i) => `${i + 1}. ${w.name} — ${band(score)}. ${lengthStep(len, w.length)?.word ?? LENGTH_LABEL[w.length]}; ${textureStep(tex, w.texture)?.word ?? w.texture}; ${w.cap}${w.price != null ? `; ${inr(w.price)}` : ""}.`),
+        ...ranked.map(({ w, score }, i) => `${i + 1}. ${w.name} — ${band(score, best)}. ${lengthStep(len, w.length, more)?.word ?? LENGTH_LABEL[w.length]}; ${textureStep(tex, w.texture)?.word ?? w.texture}; ${w.cap}${w.price != null ? `; ${inr(w.price)}` : ""}.`),
         "",
         "Pull list:",
-        ...ranked.slice(0, 3).map(({ w }) => `- ${w.name} in shade ${client?.code ?? w.shade ?? "as stocked"}${client ? " and one shade either side" : w.shade ? " (stock shade)" : ""}.`),
+        ...pull.map((x) => `- ${x.name} in shade ${x.shade}.`),
         `- An adjustable cap${head_cm ? ` around ${capSize(head_cm)!.toLowerCase()}` : ""}: heads can be up to a size smaller after hair loss (American Cancer Society). Re-measure at the fitting.`,
+        ...(close.length ? [] : ["Nothing in stock is close to the hair the client kept; these are the nearest."]),
       ];
-      return text(lines.join("\n"));
+      return both(lines.join("\n"), {
+        client: { length: len, texture: tex, shade: client?.code ?? null, cap: head_cm ? capSize(head_cm) : null },
+        source: stock ? "yours" : "demo",
+        wigs: ranked.map(({ w, score }) => ({ name: w.name, band: band(score, best), score, length: w.length, texture: w.texture, cap: w.cap, price_inr: w.price ?? null, stocked_shade: w.shade ?? null })),
+        pull,
+      });
     },
   );
 
@@ -147,13 +169,21 @@ function register(server: McpServer) {
     "fitting_plan",
     {
       title: "Dates to plan around treatment",
-      description: "General timings from cancer charities (ACS, CRUK, Macmillan) for when to keep a passport, choose a wig, re-measure and expect regrowth. Not medical advice.",
-      inputSchema: z.object({ first_treatment: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), last_treatment: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional() }),
+      description: "General timings from cancer charities (ACS, CRUK, Macmillan) for when to keep a passport, choose a wig, re-measure and expect regrowth; or, for alopecia, a monthly photo plan from a start date. Not medical advice.",
+      inputSchema: z.object({ first_treatment: isoDate.describe("Chemotherapy: the first treatment. Alopecia: the day to start."), last_treatment: isoDate.optional(), situation: z.enum(["chemo", "alopecia"]).optional() }),
       annotations: { readOnlyHint: true },
     },
-    async ({ first_treatment, last_treatment }) => {
+    async ({ first_treatment, last_treatment, situation = "chemo" }) => {
       const s = new Date(first_treatment + "T09:00Z");
       const d = (base: Date, n: number) => new Date(base.getTime() + n * 86400000).toISOString().slice(0, 10);
+      if (situation === "alopecia") {
+        return text([
+          `${d(s, 0)}: keep the hair passport now, while the hair still covers the patches.`,
+          `${d(s, 7)}: if the patches are small, show volume and clip-in previews or a topper before a full wig.`,
+          ...[30, 60, 90].map((n) => `${d(s, n)}: a monthly photo in the same light, so the client and their dermatologist can see whether patches spread, settle or regrow.`),
+          "Alopecia areata is unpredictable; a fitter can plan for both a topper and a full wig. General guidance only.",
+        ].join("\n"));
+      }
       const lines = [
         `${d(s, -14)}: keep the hair passport (three photos, head size, parting).`,
         `${d(s, -10)}: choose and fit a wig while colour and style can still be matched.`,
@@ -171,9 +201,9 @@ function register(server: McpServer) {
     "fitting_cost",
     {
       title: "YouCam API cost of a client fitting",
-      description: "Units and dollars for a Hairloom fitting at YouCam's published prices ($0.048 a unit on subscription, $0.055 pay as you go). Give a scenario (chemo, thinning, sponsored) or itemise the steps.",
+      description: "Units and dollars for a Hairloom fitting at YouCam's published prices ($0.048 a unit on subscription, $0.055 pay as you go). Give a scenario (chemo, thinning, sponsored) or itemise the steps, not both.",
       inputSchema: z.object({
-        scenario: z.enum(["chemo", "thinning", "sponsored"]).optional().describe("chemo: a full wig fitting (also alopecia); thinning: toppers and volume; sponsored: what a hospital or wig bank pays per patient"),
+        scenario: z.enum(["chemo", "thinning", "sponsored"]).optional().describe("chemo: a full wig fitting (also alopecia); thinning: volume and clip-in previews; sponsored: what a hospital or wig bank pays per patient"),
         passport: z.enum(["full", "lite", "none"]).optional(),
         wig_tryons: z.number().int().min(0).max(50).optional(),
         recolours: z.number().int().min(0).max(50).optional(),
@@ -182,18 +212,24 @@ function register(server: McpServer) {
         own_hair: z.number().int().min(0).max(5).optional(),
         skin_checkins: z.number().int().min(0).max(20).optional(),
         volume_previews: z.number().int().min(0).max(20).optional(),
-        topper_previews: z.number().int().min(0).max(20).optional(),
+        clip_in_previews: z.number().int().min(0).max(20).optional(),
       }),
+      outputSchema: COST_OUT,
       annotations: { readOnlyHint: true },
     },
-    async ({ scenario, passport = "full", wig_tryons = 8, recolours = 3, headwear = 3, brows = 1, own_hair = 1, skin_checkins = 0, volume_previews = 0, topper_previews = 0 }) => {
+    async (args) => {
+      const { scenario, passport = "full", wig_tryons = 8, recolours = 3, headwear = 3, brows = 1, own_hair = 1, skin_checkins = 0, volume_previews = 0, clip_in_previews = 0 } = args;
       const price = (units: number) => `${units} units: $${usd(units, "sub")} on a subscription, $${usd(units, "payg")} pay as you go.`;
+      const out = (units: number) => ({ units, usd_subscription: usd(units, "sub"), usd_pay_as_you_go: usd(units, "payg"), scenario: scenario ?? null });
       const f = FITTINGS.find((x) => x.id === scenario);
-      if (f) return text(`${f.title}. ${price(unitsOf(f))} ${f.who}\n${f.steps.map(([k, n, label]) => `- ${label}: ${n} × ${KINDS[k].api}, ${n * KINDS[k].units} units`).join("\n")}`);
+      if (f) {
+        const ignored = Object.keys(args).filter((k) => k !== "scenario");
+        return both(`${f.title}. ${price(unitsOf(f))} ${f.who}\n${f.steps.map(([k, n, label]) => `- ${label}: ${n} × ${KINDS[k].api}, ${n * KINDS[k].units} units`).join("\n")}${ignored.length ? `\n(Ignored ${ignored.join(", ")}: a scenario sets every step. Leave out the scenario to itemise.)` : ""}`, out(unitsOf(f)));
+      }
       const lite = KINDS.hairType.units + KINDS.hairFrizz.units + KINDS.hairLength.units;
       const pass = passport === "full" ? lite + KINDS.face.units : passport === "lite" ? lite : 0;
-      const units = pass + wig_tryons * KINDS.wig.units + recolours * KINDS.hairColor.units + headwear * KINDS.headwear.units + brows * KINDS.brows.units + own_hair * KINDS.ownHair.units + skin_checkins * KINDS.skin.units + volume_previews * KINDS.hairVol.units + topper_previews * KINDS.hairExt.units;
-      return text(`${price(units)} (Passport ${pass}, try-ons ${wig_tryons * KINDS.wig.units}, recolours ${recolours}, headwear ${headwear}, brows ${brows}, own hair ${own_hair * KINDS.ownHair.units}, skin ${skin_checkins * KINDS.skin.units}, volume ${volume_previews * KINDS.hairVol.units}, toppers ${topper_previews * KINDS.hairExt.units}.)`);
+      const units = pass + wig_tryons * KINDS.wig.units + recolours * KINDS.hairColor.units + headwear * KINDS.headwear.units + brows * KINDS.brows.units + own_hair * KINDS.ownHair.units + skin_checkins * KINDS.skin.units + volume_previews * KINDS.hairVol.units + clip_in_previews * KINDS.hairExt.units;
+      return both(`${price(units)} (Passport ${pass}, try-ons ${wig_tryons * KINDS.wig.units}, recolours ${recolours}, headwear ${headwear}, brows ${brows}, own hair ${own_hair * KINDS.ownHair.units}, skin ${skin_checkins * KINDS.skin.units}, volume ${volume_previews * KINDS.hairVol.units}, clip-ins ${clip_in_previews * KINDS.hairExt.units}.)`, out(units));
     },
   );
 }

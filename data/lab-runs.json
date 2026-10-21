@@ -1,12 +1,12 @@
 {
  "generated": "2026-10-21",
  "source": "lab/out and lab/real/out: one saved output file per finished YouCam task. Tasks whose output was not kept (early exploration, one-unit end-to-end checks) are not counted.",
- "runs": 233,
- "ok": 222,
+ "runs": 246,
+ "ok": 235,
  "origins": {
   "demo": {
-   "runs": 164,
-   "ok": 164
+   "runs": 177,
+   "ok": 177
   },
   "real-photo": {
    "runs": 41,
@@ -17,7 +17,7 @@
    "ok": 25
   }
  },
- "unitsEstimate": 473,
+ "unitsEstimate": 492,
  "tasks": [
   {
    "name": "ang_p1_down",
@@ -170,6 +170,14 @@
    "ok": true,
    "error": null,
    "ms": 21679
+  },
+  {
+   "name": "cat/wren",
+   "api": "AI Image Generator (text to image)",
+   "origin": "demo",
+   "ok": true,
+   "error": null,
+   "ms": 9818
   },
   {
    "name": "cat/zuri",
@@ -516,6 +524,14 @@
    "ok": true,
    "error": null,
    "ms": 11972
+  },
+  {
+   "name": "demo/anjali/wig_wren",
+   "api": "AI Hairstyle Virtual Try-On",
+   "origin": "demo",
+   "ok": true,
+   "error": null,
+   "ms": 37570
   },
   {
    "name": "demo/anjali/wig_zuri",
@@ -887,6 +903,14 @@
    "ms": 16168
   },
   {
+   "name": "demo/margaret/wig_wren",
+   "api": "AI Hairstyle Virtual Try-On",
+   "origin": "demo",
+   "ok": true,
+   "error": null,
+   "ms": 11989
+  },
+  {
    "name": "demo/margaret/wig_zuri",
    "api": "AI Hairstyle Virtual Try-On",
    "origin": "demo",
@@ -1008,22 +1032,6 @@
    "ms": 25166
   },
   {
-   "name": "demo/nia/thin_all_length_2_",
-   "api": "AI Hair Extension Virtual Try-On",
-   "origin": "demo",
-   "ok": true,
-   "error": null,
-   "ms": 32492
-  },
-  {
-   "name": "demo/nia/thin_female_medium",
-   "api": "AI Hair Volume Virtual Try-On",
-   "origin": "demo",
-   "ok": true,
-   "error": null,
-   "ms": 24058
-  },
-  {
    "name": "demo/nia/turn_a",
    "api": "AI Image Generator (image to image)",
    "origin": "demo",
@@ -1038,6 +1046,70 @@
    "ok": true,
    "error": null,
    "ms": 28244
+  },
+  {
+   "name": "demo/nia/unused/thin_all_length_2_",
+   "api": "AI Hair Extension Virtual Try-On",
+   "origin": "demo",
+   "ok": true,
+   "error": null,
+   "ms": 159999
+  },
+  {
+   "name": "demo/nia/unused/thin_all_length_2__v1",
+   "api": "AI Hair Extension Virtual Try-On",
+   "origin": "demo",
+   "ok": true,
+   "error": null,
+   "ms": 149825
+  },
+  {
+   "name": "demo/nia/unused/thin_female_medium",
+   "api": "AI Hair Volume Virtual Try-On",
+   "origin": "demo",
+   "ok": true,
+   "error": null,
+   "ms": 142922
+  },
+  {
+   "name": "demo/nia/unused/thin_female_medium_v1",
+   "api": "AI Hair Volume Virtual Try-On",
+   "origin": "demo",
+   "ok": true,
+   "error": null,
+   "ms": 147070
+  },
+  {
+   "name": "demo/nia/unused/thin_kept_all_length_2_",
+   "api": "AI Hair Extension Virtual Try-On",
+   "origin": "demo",
+   "ok": true,
+   "error": null,
+   "ms": 32492
+  },
+  {
+   "name": "demo/nia/unused/thin_kept_female_medium",
+   "api": "AI Hair Volume Virtual Try-On",
+   "origin": "demo",
+   "ok": true,
+   "error": null,
+   "ms": 24058
+  },
+  {
+   "name": "demo/nia/unused/thinning",
+   "api": "AI Image Generator (image to image)",
+   "origin": "demo",
+   "ok": true,
+   "error": null,
+   "ms": 11607
+  },
+  {
+   "name": "demo/nia/unused/thinning_v1",
+   "api": "AI Image Generator (image to image)",
+   "origin": "demo",
+   "ok": true,
+   "error": null,
+   "ms": 28061
   },
   {
    "name": "demo/nia/wig_amara",
@@ -1152,6 +1224,14 @@
    "ms": 21163
   },
   {
+   "name": "demo/nia/wig_wren",
+   "api": "AI Hairstyle Virtual Try-On",
+   "origin": "demo",
+   "ok": true,
+   "error": null,
+   "ms": 17443
+  },
+  {
    "name": "demo/nia/wig_zuri",
    "api": "AI Hairstyle Virtual Try-On",
    "origin": "demo",
@@ -1209,6 +1289,14 @@
    "ms": 25390
   },
   {
+   "name": "demo/ravi/head_bandana",
+   "api": "AI Image Generator (image to image)",
+   "origin": "demo",
+   "ok": true,
+   "error": null,
+   "ms": 20822
+  },
+  {
    "name": "demo/ravi/head_beanie",
    "api": "AI Image Generator (image to image)",
    "origin": "demo",
@@ -1223,6 +1311,14 @@
    "ok": true,
    "error": null,
    "ms": 14864
+  },
+  {
+   "name": "demo/ravi/head_flatcap",
+   "api": "AI Image Generator (image to image)",
+   "origin": "demo",
+   "ok": true,
+   "error": null,
+   "ms": 20354
   },
   {
    "name": "demo/ravi/head_silk",
@@ -1399,6 +1495,14 @@
    "ok": true,
    "error": null,
    "ms": 12838
+  },
+  {
+   "name": "demo/ravi/wig_wren",
+   "api": "AI Hairstyle Virtual Try-On",
+   "origin": "demo",
+   "ok": true,
+   "error": null,
+   "ms": 16582
   },
   {
    "name": "demo/ravi/wig_zuri",

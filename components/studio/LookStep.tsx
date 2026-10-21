@@ -54,7 +54,7 @@ export function LookStep({ ctx }: { ctx: Ctx }) {
       <StepHead n={3} title="Brows and headwear" lede="Brows and lashes can thin weeks after the hair on your head. Rebuild them in the shape and shade you kept, and try headwear for the days without a wig." />
 
       <div className={s.tryGrid}>
-        <div className={s.mirrorCol}>
+        <div className={s.mirrorCol} id="look-mirror">
           {render ? (
             <Reveal before={base} after={render.src} beforeAlt={baseLabel} afterAlt="Result" beforeLabel={baseLabel} afterLabel={sel?.startsWith("brows") ? "Brows" : HEADWEAR.find((h) => `head:${h.id}` === sel)?.name ?? "Look"} label="Compare with the photo underneath" initial={sel?.startsWith("brows") ? 50 : 100} size="fill" />
           ) : (
@@ -90,11 +90,11 @@ export function LookStep({ ctx }: { ctx: Ctx }) {
 
           <h2 className="h-sub" style={{ marginTop: 28 }}>Headwear</h2>
           <div className={s.headGrid}>
-            {HEADWEAR.filter((h) => session.fit !== "Men" || h.men).map((h) => {
+            {HEADWEAR.filter((h) => h.fit === "All" || h.fit === (session.fit === "Men" ? "Men" : "Women")).map((h) => {
               const key = `head:${h.id}`;
               const has = !!session.renders[key];
               return (
-                <button key={h.id} className={s.headBtn} aria-pressed={sel === key} disabled={!!busy || (!has && !ctx.units.live)} onClick={() => run(key, "headwear", { headwear: h.id })}>
+                <button key={h.id} className={s.headBtn} aria-pressed={sel === key} disabled={!!busy || (!has && !ctx.units.live)} onClick={() => { if (window.innerWidth < 900) document.getElementById("look-mirror")?.scrollIntoView({ behavior: "smooth", block: "start" }); void run(key, "headwear", { headwear: h.id }); }}>
                   <b>{h.name}</b>
                   <span>{h.note}</span>
                   {!has && <small>{busy === key ? "Working…" : session.mode === "demo" ? "Runs live" : "Try on · 1 unit"}</small>}

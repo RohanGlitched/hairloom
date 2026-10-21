@@ -14,7 +14,7 @@ export function lookLabel(key: string) {
   if (key === "own") return { label: "Own hair", detail: "Their kept hair, placed on today's photo" };
   const [kind, a, b] = key.split(":");
   if (kind === "wig" || kind === "hair") { const w = WIGS.find((x) => x.id === a); return { label: w?.name ?? a, detail: w ? `${w.style} · ${w.cap} · ${w.fibre}` : "" }; }
-  if (kind === "thin") return { label: a === "volume" ? "Topper-style volume" : "Clip-in length", detail: "For thinning hair, on the kept photo" };
+  if (kind === "thin") return { label: a.startsWith("female_") ? "Fuller volume" : "Clip-in length", detail: "A preview for thinning hair; ask the fitter about a topper for the crown" };
   if (kind === "shade") { const w = WIGS.find((x) => x.id === a); return { label: `${w?.name ?? a} in shade ${b}`, detail: w ? `${w.style} · recoloured to shade ${b}` : "" }; }
   if (kind === "head") { const h = HEADWEAR.find((x) => x.id === a); return { label: h?.name ?? a, detail: h?.note ?? "" }; }
   if (kind === "brows") return { label: "Rebuilt brows", detail: "In the kept shape and shade" };
@@ -70,7 +70,7 @@ export function ShareStep({ ctx }: { ctx: Ctx }) {
 
   return (
     <div className={s.step}>
-      <StepHead n={4} title="Share with your wig fitter" lede="One link carries your passport and shortlist. It's encrypted in this browser; the key is the part after # and never reaches our server." />
+      <StepHead n={4} title="Share with your wig fitter" lede="One link carries your passport and shortlist. It's locked in this browser, and the key travels only inside the link, so our server can never read it." />
 
       <div className={s.shareGrid}>
         <div>
@@ -100,6 +100,7 @@ export function ShareStep({ ctx }: { ctx: Ctx }) {
             <input type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} />
           </label>
           <button className="btn btn-ivory" disabled={busy} onClick={create}>{busy ? "Sealing the link…" : "Create fitter link"}</button>
+          {session.mode === "demo" && !link && <p className="small"><a href="/fitter#demo">Or see what a fitter sees, with Anjali&rsquo;s demo brief</a></p>}
           {err && <p className={s.err} role="alert">{err}</p>}
           {link && (
             <div className={s.linkBox}>

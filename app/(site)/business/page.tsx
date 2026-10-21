@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { KINDS } from "@/lib/kinds";
-import { BRIEF_INR, fitting, unitsOf, usd } from "@/lib/pricing";
+import { BRIEF_INR, MILLS, fitting, unitsOf, type Plan } from "@/lib/pricing";
 import { CostTable } from "@/components/CostTable";
 import { EmbedFrame } from "@/components/EmbedFrame";
 import { Roi } from "@/components/Roi";
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 };
 
 const FX = 88; // rupees per dollar, the same assumption as the ROI model
-const rs = (dollars: string) => "₹" + Math.round(Number(dollars) * FX);
+const rs = (units: number, plan: Plan) => "₹" + Math.round((units * MILLS[plan] * FX) / 1000);
 const CHEMO = unitsOf(fitting("chemo"));
 const SPONSORED = unitsOf(fitting("sponsored"));
 const SPONSOR_INR = 150;
@@ -22,9 +22,15 @@ const PILOT_ISSUE = `${REPO}/issues/new?labels=pilot&title=${encodeURIComponent(
 
 const BUYERS = [
   { who: "People facing hair loss", pays: "Free", body: "They bring the need and the photos. Charging them at the hardest moment is wrong, and they are the reason shops and hospitals pay." },
-  { who: "Wig boutiques and fitters", pays: "Per client brief", body: `A passport, the shortlist on the client's face and the cap size arrive before the first visit. Draft pilot price: ₹${BRIEF_INR} a client plus GST, against ${rs(usd(CHEMO, "sub"))}–${rs(usd(CHEMO, "payg"))} of API cost.` },
-  { who: "Wig brands and online shops", pays: "Per studio session, via the widget", body: "A “see it after hair loss” panel beside each product, free to show, and a door into the studio with that wig first. Draft price: ₹49 for each studio session that tries wigs on the shopper's own photo." },
-  { who: "Hospitals, wig banks and CSR", pays: "Sponsored passports", body: `Every patient gets a passport at diagnosis: ${SPONSORED} units, about ${rs(usd(SPONSORED, "sub"))} of API cost. At a sponsor price of ₹${SPONSOR_INR}, 500 patients cost ₹${(500 * SPONSOR_INR).toLocaleString("en-IN")}. Health care is an eligible CSR activity under section 135 of India's Companies Act.` },
+  { who: "Wig boutiques and fitters", pays: "Per client brief", body: `A passport, the shortlist on the client's face and the cap size arrive before the first visit. Draft pilot price: ₹${BRIEF_INR} a client plus GST, against ${rs(CHEMO, "sub")}–${rs(CHEMO, "payg")} of API cost.` },
+  { who: "Wig brands and online shops", pays: "Per studio session, via the widget", body: "A “see it after hair loss” panel beside each product, free to show, and a door into the studio with that wig first. Draft price: ₹99 for a shop session on the shopper's own photo: a light passport and two try-ons, capped at 10 units (about ₹42–48 of API cost)." },
+  { who: "Hospitals, wig banks and CSR", pays: "Sponsored passports", body: `Every patient gets a passport at diagnosis: ${SPONSORED} units, about ${rs(SPONSORED, "sub")} of API cost. At a sponsor price of ₹${SPONSOR_INR}, 500 patients cost ₹${(500 * SPONSOR_INR).toLocaleString("en-IN")}. Health care is an eligible CSR activity under section 135 of India's Companies Act.` },
+];
+
+const MARKET = [
+  { n: "~40%", t: "of women show pattern thinning by 50", src: ["DermNet", "https://dermnetnz.org/topics/female-pattern-hair-loss"], body: "The volume market. Toppers, volumisers and clip-ins sell to them long before any wig. Hair Volume and Hair Extension try-ons show fuller hair and clip-in length on their own photo." },
+  { n: "~2%", t: "lifetime incidence of alopecia areata", src: ["PMC", "https://pmc.ncbi.nlm.nih.gov/articles/4521674"], body: "Patches that come and go. A monthly photo record and a topper-or-wig plan, which the journal's alopecia mode already gives." },
+  { n: "$1.9B", t: "medical wig segment projected by 2035", src: ["GMI 2026", "https://www.gminsights.com/industry-analysis/hair-wig-and-extension-market"], body: "Chemotherapy and medical buyers: wig brands, boutiques, wig banks and hospitals. They buy on trust and fit, which is what the passport and fitter brief carry." },
 ];
 
 const THRESHOLDS = [
@@ -48,7 +54,7 @@ export default function Business() {
           <p className="kicker">For retailers and wig banks</p>
           <h1 className="h-hero" style={{ maxWidth: "20ch" }}>A fitting that starts before the shop opens.</h1>
           <p className="lede" style={{ marginTop: 14 }}>
-            Wigs are the one beauty product people can rarely return once worn, bought at the worst moment, matched from memory. Hairloom moves the choosing earlier and puts it on the shopper&rsquo;s own face. Here is who pays, what it costs and how we would prove it.
+            Wigs are one of the few beauty products people can rarely return once worn, bought at the worst moment, matched from memory. Hairloom moves the choosing earlier and puts it on the shopper&rsquo;s own face. Here is who pays, what it costs and how we would prove it.
           </p>
           <div className={s.stats}>
             <div><b>~65%</b><span>of people on chemotherapy lose hair</span><a className="src" href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6186204" target="_blank" rel="noreferrer">JAAD</a></div>
@@ -93,6 +99,25 @@ export default function Business() {
           <h2 className="h-sec">For a boutique: does it pay?</h2>
           <p className="lede" style={{ margin: "12px 0 32px" }}>Move the assumptions. Every figure that isn&rsquo;t from a price list or a source is labelled as one.</p>
           <Roi />
+        </div>
+      </section>
+
+      <section className="paper sec">
+        <div className="wrap">
+          <h2 className="h-sec">Why this is a market for YouCam</h2>
+          <p className="lede" style={{ marginTop: 12, maxWidth: "62ch" }}>
+            Hairloom sells the same hair try-ons Perfect Corp already sells to beauty brands, to buyers who need them more: people losing hair, and the shops and hospitals who fit them. Chemotherapy is where the need is sharpest; thinning is where the volume is.
+          </p>
+          <div className={s.market}>
+            {MARKET.map((m) => (
+              <article key={m.t}>
+                <b className="num">{m.n}</b>
+                <span>{m.t} <a className="src" href={m.src[1]} target="_blank" rel="noreferrer">{m.src[0]}</a></span>
+                <p>{m.body}</p>
+              </article>
+            ))}
+          </div>
+          <p className="small" style={{ marginTop: 20 }}>What we&rsquo;d ask Perfect Corp for, from building this, is on the <Link href="/evidence#notes">evidence page</Link>: men&rsquo;s volume templates, a crown topper template, and a measured hair colour.</p>
         </div>
       </section>
 

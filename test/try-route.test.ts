@@ -10,13 +10,17 @@ process.env.YOUCAM_API_KEY = "fake-key-for-tests";
 process.env.HANDLE_SECRET = "test-handle-secret";
 process.env.JUDGE_CODE = "test-judge-code";
 process.env.UNIT_FLOOR = "10";
+process.env.JUDGE_RESERVE_UNITS = "0";
+process.env.YOUCAM_CALLS_PER_MINUTE = "1000";
 
 type Route = typeof import("../app/api/try/route.ts");
 let route: Route;
+let tasks: typeof import("../app/api/try/tasks.ts");
+let guard: typeof import("../lib/guard.ts");
 let NextRequest: typeof import("next/server").NextRequest;
 const realFetch = globalThis.fetch;
 const calls: string[] = [];
-let outcome: "running" | "error" | "success" = "error";
+let outcome: "running" | "error" | "success" | "invalid" = "error";
 let taskNo = 0;
 
 before(async () => {
@@ -33,6 +37,7 @@ before(async () => {
     if (/\/task\/[\w-]+$/.test(url) && method === "POST") return json({ data: { task_id: `task-${++taskNo}` } });
     if (/\/task\/[\w-]+\/task-\d+$/.test(url)) {
       if (outcome === "running") return json({ data: { task_status: "running" } });
+      if (outcome === "invalid") return json({ status: 400, error: "task not found", error_code: "InvalidTaskId" }, 400);
       if (outcome === "error") return json({ data: { task_status: "error", error: "error_no_face" } });
       return json({ data: { task_status: "success", results: { hair_length: { term: "long hair" } } } });
     }
@@ -40,6 +45,8 @@ before(async () => {
   }) as typeof fetch;
   ({ NextRequest } = await import("next/server"));
   route = await import("../app/api/try/route.ts");
+  tasks = await import("../app/api/try/tasks.ts");
+  guard = await import("../lib/guard.ts");
 });
 after(() => { globalThis.fetch = realFetch; });
 
@@ -121,4 +128,82 @@ test("the judge lane draws on its own daily counter", async () => {
   assert.equal(s.ok, true);
   assert.equal(used(`budget_${today()}-judge.json`), 2);
   assert.equal(used(`budget_${today()}.json`), before, "public allowance untouched");
+});
+
+const pending = () => fs.readdirSync(".data").filter((n) => n.startsWith("pending_")).length;
+
+test("a task nobody polls is refunded and deleted on the server", async () => {
+  outcome = "error";
+  const before = used(`budget_${today()}.json`);
+  const s = await (await post({ kind: "hairLength", images: [photo] })).json();
+  assert.equal(used(`budget_${today()}.json`), before + 2, "reserved on start");
+  assert.ok(pending() > 0, "a pending record is kept for the sweep");
+  calls.length = 0;
+  // What POST schedules with after() (waitUntil on Vercel), called directly: no browser ever polls.
+  assert.equal(await tasks.settle(guard.readHandle(s.handle)!, Date.now() + 500, 10), "error");
+  assert.equal(used(`budget_${today()}.json`), before, "refunded without a poll");
+  assert.equal(calls.filter((c) => c.endsWith("/task/delete")).length, 1, "and deleted at YouCam");
+  assert.equal((await poll(s.handle)).status, 410, "the handle is dead");
+  assert.equal(await tasks.settle(guard.readHandle(s.handle)!, Date.now() + 500, 10), "ended", "a second settle does nothing");
+  assert.equal(used(`budget_${today()}.json`), before, "refunded once");
+});
+
+test("the sweep settles tasks left in storage: refunds failures, deletes expired ones", async () => {
+  outcome = "running";
+  const before = used(`budget_${today()}.json`);
+  const kept = await (await post({ kind: "hairLength", images: [photo] })).json();
+  const failed = await (await post({ kind: "hairLength", images: [photo] })).json();
+  assert.equal(used(`budget_${today()}.json`), before + 4);
+  assert.equal((await tasks.sweep()).settled, 0, "young tasks are left to the browser");
+  outcome = "error";
+  calls.length = 0;
+  const r = await tasks.sweep(Date.now() + 3 * 60_000);
+  assert.ok(r.settled >= 2);
+  assert.equal(used(`budget_${today()}.json`), before, "both failures refunded with no poll");
+  assert.equal(pending(), 0, "nothing left pending");
+  for (const x of [kept, failed]) assert.equal((await poll(x.handle)).status, 410);
+});
+
+test("an InvalidTaskId poll refunds the task", async () => {
+  outcome = "invalid";
+  const before = used(`budget_${today()}.json`);
+  const s = await (await post({ kind: "hairLength", images: [photo] })).json();
+  const p = await (await poll(s.handle)).json();
+  assert.equal(p.status, "error");
+  assert.equal(p.code, "InvalidTaskId");
+  assert.equal(used(`budget_${today()}.json`), before, "refunded");
+});
+
+test("the passport uploads its three photos once for four readings", async () => {
+  outcome = "success";
+  calls.length = 0;
+  const r = await post({ kind: "hairType", images: [photo, photo, photo], opt: { also: "hairFrizz,hairLength,face" } }, { "x-judge-code": "test-judge-code" });
+  const s = await r.json();
+  assert.equal(s.ok, true, s.message);
+  assert.equal(s.units, 16);
+  assert.equal(calls.filter((c) => c === "POST /s2s/v2.0/file").length, 3, "three uploads, not six or eight");
+  assert.equal(calls.filter((c) => /^POST \/s2s\/v2\.0\/task\/[\w-]+$/.test(c)).length, 4, "four tasks");
+  const p = await (await poll(s.handle)).json();
+  assert.equal(p.status, "success");
+  assert.deepEqual(Object.keys(p.results.parts).sort(), ["face", "hairFrizz", "hairLength", "hairType"]);
+  calls.length = 0;
+  assert.deepEqual(await (await del(s.handle)).json(), { ok: true });
+  assert.equal(calls.filter((c) => c.endsWith("/task/delete")).length, 4, "every part deleted together, after all finished");
+  for (const bad of ["hairFrizz,hairFrizz", "skin", "wig", 3]) {
+    assert.equal((await (await post({ kind: "hairType", images: [photo, photo, photo], opt: { also: bad } })).json()).code, "bad_option", String(bad));
+  }
+  assert.equal((await (await post({ kind: "wig", images: [photo], opt: { wig: "asha", also: "face" } })).json()).code, "bad_option");
+});
+
+test("the sweep route needs the cron secret", async () => {
+  const cron = await import("../app/api/cron/settle/route.ts");
+  const get = (auth?: string) => cron.GET(new NextRequest("http://localhost/api/cron/settle", { headers: auth ? { authorization: auth } : {} }));
+  delete process.env.CRON_SECRET;
+  assert.equal((await get("Bearer ")).status, 401, "no secret set: closed");
+  process.env.CRON_SECRET = "test-cron-secret";
+  assert.equal((await get()).status, 401);
+  assert.equal((await get("Bearer wrong")).status, 401);
+  const r = await get("Bearer test-cron-secret");
+  assert.equal(r.status, 200);
+  assert.equal((await r.json()).ok, true);
 });

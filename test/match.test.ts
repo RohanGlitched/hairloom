@@ -1,15 +1,38 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { lengthFromTerm, textureFromType } from "../lib/match.ts";
+import { closeness, lengthFromTerm, lengthStep, orLonger, textureFromType } from "../lib/match.ts";
 import { PayloadSchema } from "../lib/seal.ts";
 
-test("YouCam length terms map onto our five lengths", () => {
-  assert.equal(lengthFromTerm("above chest"), "shoulder");
-  assert.equal(lengthFromTerm("short hair"), "chin");
-  assert.equal(lengthFromTerm("above the ear"), "ear");
-  assert.equal(lengthFromTerm("long hair"), "chest");
-  assert.equal(lengthFromTerm("mid-back"), "midback");
+test("YouCam's eight documented length terms map onto our five lengths", () => {
+  // research/docs/reference_ai_hair_length_detection.md, the `term` result strings.
+  const table: [string, string, boolean][] = [
+    ["above the ears", "ear", false],
+    ["ear length", "ear", false],
+    ["ear length or longer", "ear", true],
+    ["short hair", "chin", false],
+    ["short hair or longer", "chin", true],
+    ["above chest", "shoulder", false],
+    ["above chest or longer", "shoulder", true],
+    ["long hair", "chest", false],
+  ];
+  for (const [term, length, atLeast] of table) {
+    assert.equal(lengthFromTerm(term), length, term);
+    assert.equal(orLonger(term), atLeast, term);
+  }
   assert.equal(lengthFromTerm(undefined), null);
+  assert.equal(lengthFromTerm("Ear Length Or Longer"), "ear", "case");
+});
+
+test('"or longer" is a lower bound: longer wigs are not penalised, shorter ones are', () => {
+  const kept = { length: lengthFromTerm("ear length or longer"), texture: "straight" as const, orLonger: true };
+  const exact = { ...kept, orLonger: false };
+  const at = closeness({ length: "ear", texture: "straight" }, kept, 0);
+  assert.equal(closeness({ length: "chest", texture: "straight" }, kept, 0), at, "a chest wig is within ear length or longer");
+  assert.ok(closeness({ length: "chest", texture: "straight" }, exact, 0) < at, "an exact length still counts the gap");
+  const mid = { length: lengthFromTerm("above chest or longer"), texture: "wavy" as const, orLonger: true };
+  assert.ok(closeness({ length: "chin", texture: "wavy" }, mid, 0) < closeness({ length: "midback", texture: "wavy" }, mid, 0), "shorter is a change");
+  assert.match(lengthStep("ear", "chest", true)!.word, /or longer/);
+  assert.match(lengthStep("ear", "chest")!.word, /3 steps longer/);
 });
 
 test("YouCam hair type mappings map onto textures", () => {

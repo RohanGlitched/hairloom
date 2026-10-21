@@ -24,9 +24,10 @@ const inr = (n: number) => (Math.round(n) < 0 ? "−" : "") + "₹" + Math.abs(M
 const show = (f: Field, n: number) => (f.fmt === "inr" ? inr(n) : f.fmt === "pct" ? `${n}%` : String(n));
 const UNITS = unitsOf(fitting("chemo"));
 
-function headline(wigs: number) {
+function headline(wigs: number, clients: number) {
   if (wigs === 0) return "It pays for itself on fitter time alone.";
   if (wigs === Infinity) return "Set a wig margin to see the break-even.";
+  if (wigs > clients * 0.3) return "At these settings it doesn't pay: it would need too many extra wigs.";
   if (wigs <= 1) { const m = Math.floor(1 / wigs); return `It pays for itself if one client ${m === 1 ? "a month" : `every ${m} months`} buys one more wig.`; }
   return `It pays for itself at ${wigs.toFixed(1)} extra wigs a month.`;
 }
@@ -58,8 +59,9 @@ export function Roi() {
       </div>
       <div className={s.out} aria-live="polite">
         <p className={s.headline}>
-          {headline(breakEven)}
+          {headline(breakEven, v.clients)}
         </p>
+        {time < fees && <p className={s.caveat}>Fitter time alone saves {inr(time)} against {inr(fees)} of briefs, so the case rests on extra wigs sold. That is the first thing the pilot measures.</p>}
         <h3 className={s.who}>The boutique, a month</h3>
         <div className={s.rows}>
           <p><span>Fitter time saved</span><b className="num">{inr(time)}</b><small>{hours.toFixed(1)} h</small></p>
@@ -70,7 +72,7 @@ export function Roi() {
         <h3 className={s.who}>Hairloom, a month</h3>
         <div className={s.rows}>
           <p><span>YouCam API cost</span><b className="num">{inr(-api)}</b><small>{v.clients * UNITS} units at ${(MILLS.payg / 1000).toFixed(3)}</small></p>
-          <p><span>Kept before hosting and GST</span><b className="num">{inr(kept)}</b><small>{fees > 0 ? `${Math.round((kept / fees) * 100)}% of fees` : "no fees"}</small></p>
+          <p><span>Kept before hosting and payment fees</span><b className="num">{inr(kept)}</b><small>{fees > 0 ? `${Math.round((kept / fees) * 100)}% of fees` : "no fees"}</small></p>
         </div>
         <h3 className={s.who}>Clients, a month</h3>
         <div className={s.rows}>

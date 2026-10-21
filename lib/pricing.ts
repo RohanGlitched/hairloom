@@ -36,13 +36,13 @@ export const FITTINGS: Fitting[] = [
   {
     id: "thinning",
     title: "Thinning",
-    who: "Pattern thinning, about 40% of women by 50 (DermNet): toppers and volume before a full wig.",
+    who: "Pattern thinning, about 40% of women by 50 (DermNet): volume and clip-in previews, before a fitter shows toppers or a wig.",
     steps: [
       ["hairType", 1, "Curl pattern"],
       ["hairFrizz", 1, "Frizz"],
       ["hairLength", 1, "Length"],
       ["hairVol", 2, "Volume previews"],
-      ["hairExt", 2, "Topper and length previews"],
+      ["hairExt", 2, "Clip-in length previews"],
     ],
   },
   {

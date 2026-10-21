@@ -30,3 +30,9 @@
 .thresholds b { font: 400 38px/1 var(--serif); }
 .thresholds span { color: var(--ink-soft); font-size: 15px; }
 @media (max-width: 760px) { .thresholds { grid-template-columns: 1fr; } }
+.market { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 32px; }
+.market article { display: grid; gap: 6px; align-content: start; border-top: 1px solid var(--ink); padding-top: 14px; }
+.market b { font: 400 38px/1 var(--serif); }
+.market span { color: var(--ink); font-size: 15px; }
+.market p { color: var(--ink-soft); font-size: 15px; }
+@media (max-width: 760px) { .market { grid-template-columns: 1fr; } }

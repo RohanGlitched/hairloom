@@ -6,7 +6,7 @@ import { deltaE00, matchWord, nearestShades, type Lab } from "@/lib/color";
 import { measured, renderLab, wigShade } from "@/lib/colours";
 import { prepare } from "@/lib/client";
 import { VOLUME, EXTENSION } from "@/lib/kinds";
-import { band, closeness, lengthFromTerm, lengthStep, textureFromType, textureStep } from "@/lib/match";
+import { band, closeness, lengthFromTerm, lengthStep, orLonger, textureFromType, textureStep } from "@/lib/match";
 import { Reveal } from "@/components/Reveal";
 import type { Ctx } from "./Studio";
 import { StepHead } from "./KeepStep";
@@ -30,6 +30,7 @@ export function TryStep({ ctx }: { ctx: Ctx }) {
 
 
   const keptLen = lengthFromTerm(session.readings?.length?.term);
+  const keptMore = orLonger(session.readings?.length?.term);
   const keptTex = textureFromType(session.readings?.type?.mapping);
   const render = sel ? session.renders[sel] : undefined;
   const wigId = sel && /^(wig|hair|shade):/.test(sel) ? sel.split(":")[1] : null;
@@ -57,17 +58,18 @@ export function TryStep({ ctx }: { ctx: Ctx }) {
       .map((w) => {
         const lab = pid ? renderLab(pid, `${prefix}:${w.id}`) ?? renderLab(pid, `wig:${w.id}`) : null;
         const dE = keptLab && lab ? deltaE00(keptLab, lab) : null;
-        return { w, score: closeness(w, { length: keptLen, texture: keptTex }, dE) };
+        return { w, score: closeness(w, { length: keptLen, texture: keptTex, orLonger: keptMore }, dE) };
       })
       // The wig a shop sent the shopper here with comes first; then, for demo people, the wig with
       // prepared shades and other prepared looks, so nothing on the first screen needs a live run.
       .sort((a, b) => Number(b.w.id === ctx.wig) - Number(a.w.id === ctx.wig) || Number(shaded(b.w.id)) - Number(shaded(a.w.id)) || (pid ? Number(!!session.renders[`${prefix}:${b.w.id}`]) - Number(!!session.renders[`${prefix}:${a.w.id}`]) : 0) || b.score - a.score),
-    [fit, pid, prefix, keptLab, keptLen, keptTex, session.renders, ctx.wig],
+    [fit, pid, prefix, keptLab, keptLen, keptTex, keptMore, session.renders, ctx.wig],
   );
 
   // Open on her own hair back (demo, after hair loss), else the closest prepared look. Follow the
   // ranking while it settles (colour is measured after the first render) until someone picks.
   const best = ranked.find(({ w }) => session.renders[`${prefix}:${w.id}`]);
+  const bestScore = Math.max(...ranked.map((r) => r.score));
   const opening = pid && base === "today" && session.renders.own && !ctx.wig ? "own" : best ? `${prefix}:${best.w.id}` : null;
   const picked = useRef(false);
   useEffect(() => { picked.current = false; }, [base]);
@@ -77,6 +79,7 @@ export function TryStep({ ctx }: { ctx: Ctx }) {
 
   async function tryOn(key: string, kind: "wig" | "ownHair" | "hairColor" | "hairVol" | "hairExt", opt: Record<string, string | number>, images: string[]) {
     picked.current = true;
+    if (window.innerWidth < 900) document.getElementById("try-mirror")?.scrollIntoView({ behavior: "smooth", block: "start" });
     if (session.renders[key]) return setSel(key);
     if (session.mode === "demo" && !window.confirm("This one isn't prepared for the demo person, so it runs live on YouCam (about 15 seconds). Go ahead?")) return;
     setBusy(key); setMsg(null); setSecs(0);
@@ -170,7 +173,7 @@ export function TryStep({ ctx }: { ctx: Ctx }) {
                   onClick={() => tryOn(key, "wig", { wig: w.id }, [basePhoto])}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={has ? session.renders[key].src : `/catalogue/thumb/${w.id}.jpg`} alt="" loading="lazy" />
-                  <span><b>{w.name}</b><small>{busy === key ? "Fitting…" : w.id === ctx.wig && !has ? "From the shop" : has ? band(score) : session.mode === "demo" ? "Try live" : "Try on · 2 units"}</small></span>
+                  <span><b>{w.name}</b><small>{busy === key ? "Fitting…" : w.id === ctx.wig && !has ? "From the shop" : has ? band(score, bestScore) : session.mode === "demo" ? "Try live" : "Try on · 2 units"}</small></span>
                 </button>
               );
             })}
@@ -183,7 +186,7 @@ export function TryStep({ ctx }: { ctx: Ctx }) {
               <h2 className="h-sub">{wig.name}{sel?.startsWith("shade:") ? `, recoloured to ${sel.split(":")[2]}` : ""}</h2>
               <p className="small">{wig.style} · {wig.cap} · {wig.fibre} · <span className="num">{inr(wig.price)}</span></p>
               <ul className={s.vsList}>
-                <li><span>Length</span>{lengthStep(keptLen, wig.length)?.word ?? LENGTH_LABEL[wig.length]}</li>
+                <li><span>Length</span>{lengthStep(keptLen, wig.length, keptMore)?.word ?? LENGTH_LABEL[wig.length]}</li>
                 <li><span>Texture</span>{textureStep(keptTex, wig.texture)?.word ?? wig.texture}</li>
                 <li><span>Colour</span>{dE != null ? matchWord(dE) : render ? "Measuring…" : "Try it on to compare"}</li>
                 <li><span>Stock shade</span><i style={{ background: wigShade(wig).hex }} aria-hidden="true" />{wigShade(wig).code}, {wigShade(wig).name.toLowerCase()}</li>
@@ -214,7 +217,7 @@ export function TryStep({ ctx }: { ctx: Ctx }) {
             </>
           ) : sel === "own" ? (
             <>
-              <h2 className="h-sub">Your own hair</h2>
+              <h2 className="h-sub">{session.mode === "demo" ? `${session.name}'s own hair` : "Your own hair"}</h2>
               <p className="small">YouCam&rsquo;s hairstyle try-on with your kept photo as the reference, placed on your {(session.later ?? "later").toLowerCase()} photo. Handy for showing a fitter exactly what you&rsquo;d like back.</p>
             </>
           ) : sel?.startsWith("thin:") ? (
@@ -247,12 +250,12 @@ export function TryStep({ ctx }: { ctx: Ctx }) {
           <h2 className="h-sub">Thinning, not lost?</h2>
           {thinOpts.length > 0 ? (
             <>
-              <p className="small">{ctx.persona?.thinPhoto ? `Volume and clip-ins on ${session.name}'s photo of thinning hair.` : session.situation === "alopecia" ? "While patches are small, a topper or clip-ins may be enough. Previewed on the kept photo." : "Volume and clip-ins can be enough while hair is thinning. Previewed on the kept photo."}</p>
+              <p className="small">{session.situation === "alopecia" ? `Volume and clip-ins on ${ctx.persona?.thinPhoto ? `${session.name}'s photo with patches` : "the kept photo"}. While patches are small, a fitter may suggest a topper rather than a wig.` : ctx.persona?.thinPhoto ? `Volume and clip-ins on ${session.name}'s photo of thinning hair.` : "Volume and clip-ins can be enough while hair is thinning. Previewed on the kept photo."}</p>
               <div className={s.chips}>
                 {thinOpts.map((o) => {
                   const key = `thin:${o.t}`;
                   return (
-                    <button key={key} aria-pressed={sel === key} disabled={!!busy || (!ready(key) && !ctx.units.live)} onClick={() => { document.getElementById("try-mirror")?.scrollIntoView({ behavior: "smooth", block: "center" }); tryOn(key, o.kind, { template: o.t }, [thinPhoto!]); }}>
+                    <button key={key} aria-pressed={sel === key} disabled={!!busy || (!ready(key) && !ctx.units.live)} onClick={() => { document.getElementById("try-mirror")?.scrollIntoView({ behavior: "smooth", block: "center" }); void tryOn(key, o.kind, { template: o.t }, [thinPhoto!]); }}>
                       {o.label}{ready(key) ? "" : ` · ${o.units} unit${o.units > 1 ? "s" : ""}`}
                     </button>
                   );

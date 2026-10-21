@@ -9,10 +9,9 @@
   "eye": "brown",
   "colourNote": "Brown to the eye, so the measured off black is a miss in strong backlight.",
   "url": "https://unsplash.com/photos/QXevDflbl8A",
-  "src": "/real/QXevDflbl8A/src.jpg",
   "images": {
-   "wig_nora": "/real/QXevDflbl8A/wig_nora.jpg",
-   "wig_zuri": "/real/QXevDflbl8A/wig_zuri.jpg"
+   "wig_nora": "wig_nora",
+   "wig_zuri": "wig_zuri"
   },
   "runs": [
    {
@@ -71,10 +70,9 @@
   "eye": "dark brown",
   "labelOk": false,
   "url": "https://unsplash.com/photos/qXzOsNZP7mA",
-  "src": "/real/qXzOsNZP7mA/src.jpg",
   "images": {
-   "wig_nora": "/real/qXzOsNZP7mA/wig_nora.jpg",
-   "wig_zuri": "/real/qXzOsNZP7mA/wig_zuri.jpg"
+   "wig_nora": "wig_nora",
+   "wig_zuri": "wig_zuri"
   },
   "runs": [
    {
@@ -134,10 +132,9 @@
   "note": "Long grey hair, smiling",
   "eye": "grey",
   "url": "https://unsplash.com/photos/7jZiSQ_Jyqg",
-  "src": "/real/7jZiSQ_Jyqg/src.jpg",
   "images": {
-   "wig_nora": "/real/7jZiSQ_Jyqg/wig_nora.jpg",
-   "wig_zuri": "/real/7jZiSQ_Jyqg/wig_zuri.jpg"
+   "wig_nora": "wig_nora",
+   "wig_zuri": "wig_zuri"
   },
   "runs": [
    {
@@ -196,10 +193,9 @@
   "eye": "black",
   "labelOk": true,
   "url": "https://unsplash.com/photos/7YVZYZeITc8",
-  "src": "/real/7YVZYZeITc8/src.jpg",
   "images": {
-   "wig_arjun": "/real/7YVZYZeITc8/wig_arjun.jpg",
-   "wig_kai": "/real/7YVZYZeITc8/wig_kai.jpg"
+   "wig_arjun": "wig_arjun",
+   "wig_kai": "wig_kai"
   },
   "runs": [
    {
@@ -260,10 +256,9 @@
   "eye": "very dark brown",
   "labelOk": true,
   "url": "https://unsplash.com/photos/CGKYNN3uuVo",
-  "src": "/real/CGKYNN3uuVo/src.jpg",
   "images": {
-   "wig_nora": "/real/CGKYNN3uuVo/wig_nora.jpg",
-   "wig_zuri": "/real/CGKYNN3uuVo/wig_zuri.jpg"
+   "wig_nora": "wig_nora",
+   "wig_zuri": "wig_zuri"
   },
   "runs": [
    {
@@ -322,12 +317,11 @@
   "fit": "Men",
   "note": "Shaved head, beard",
   "url": "https://unsplash.com/photos/f5xiGmFwXIU",
-  "src": "/real/f5xiGmFwXIU/src.jpg",
   "images": {
-   "brows": "/real/f5xiGmFwXIU/brows.jpg",
-   "head_turban": "/real/f5xiGmFwXIU/head_turban.jpg",
-   "wig_arjun": "/real/f5xiGmFwXIU/wig_arjun.jpg",
-   "wig_kai": "/real/f5xiGmFwXIU/wig_kai.jpg"
+   "brows": "brows",
+   "head_turban": "head_turban",
+   "wig_arjun": "wig_arjun",
+   "wig_kai": "wig_kai"
   },
   "runs": [
    {
@@ -366,12 +360,11 @@
   "fit": "Women",
   "note": "Shaved head, smiling",
   "url": "https://unsplash.com/photos/XvnVGXhNV94",
-  "src": "/real/XvnVGXhNV94/src.jpg",
   "images": {
-   "brows": "/real/XvnVGXhNV94/brows.jpg",
-   "head_turban": "/real/XvnVGXhNV94/head_turban.jpg",
-   "wig_nora": "/real/XvnVGXhNV94/wig_nora.jpg",
-   "wig_zuri": "/real/XvnVGXhNV94/wig_zuri.jpg"
+   "brows": "brows",
+   "head_turban": "head_turban",
+   "wig_nora": "wig_nora",
+   "wig_zuri": "wig_zuri"
   },
   "runs": [
    {
@@ -410,12 +403,11 @@
   "fit": "Women",
   "note": "Shaved head, black and white",
   "url": "https://unsplash.com/photos/raCWeevBPWs",
-  "src": "/real/raCWeevBPWs/src.jpg",
   "images": {
-   "brows": "/real/raCWeevBPWs/brows.jpg",
-   "head_turban": "/real/raCWeevBPWs/head_turban.jpg",
-   "wig_nora": "/real/raCWeevBPWs/wig_nora.jpg",
-   "wig_zuri": "/real/raCWeevBPWs/wig_zuri.jpg"
+   "brows": "brows",
+   "head_turban": "head_turban",
+   "wig_nora": "wig_nora",
+   "wig_zuri": "wig_zuri"
   },
   "runs": [
    {
@@ -454,12 +446,11 @@
   "fit": "Men",
   "note": "Shaved head, full beard, outdoors",
   "url": "https://unsplash.com/photos/tFA_OQ-9NDU",
-  "src": "/real/tFA_OQ-9NDU/src.jpg",
   "images": {
-   "brows": "/real/tFA_OQ-9NDU/brows.jpg",
-   "head_turban": "/real/tFA_OQ-9NDU/head_turban.jpg",
-   "wig_arjun": "/real/tFA_OQ-9NDU/wig_arjun.jpg",
-   "wig_kai": "/real/tFA_OQ-9NDU/wig_kai.jpg"
+   "brows": "brows",
+   "head_turban": "head_turban",
+   "wig_arjun": "wig_arjun",
+   "wig_kai": "wig_kai"
   },
   "runs": [
    {

@@ -164,3 +164,4 @@
   .headGrid { grid-template-columns: 1fr; }
   .rail { grid-template-columns: repeat(3, 1fr); }
 }
+.fromShop { font-size: 15px; color: var(--ivory); border-left: 2px solid var(--brass); padding: 4px 0 4px 12px; }

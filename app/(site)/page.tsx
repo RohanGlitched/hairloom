@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { EmbedFrame } from "@/components/EmbedFrame";
 import { FittingRoom } from "@/components/FittingRoom";
 import { Mirror } from "@/components/Mirror";
 import { Passport } from "@/components/Passport";
@@ -54,7 +55,7 @@ const APIS = [
   ["Face Attribute & Ratio Analyzer", "Face shape and brow shape, thickness and colour"],
   ["Makeup Virtual Try-On", "Brows rebuilt in your own shape and shade"],
   ["Hair Color Virtual Try-On", "Stock shades on the wig you like"],
-  ["Hair Volume Virtual Try-On", "A topper's worth of volume, for thinning rather than lost hair"],
+  ["Hair Volume Virtual Try-On", "Fuller lengths for thinning hair; a fitter shows toppers for the crown"],
   ["Hair Extension Virtual Try-On", "Clip-in length on your kept photo"],
   ["AI Image Generator", "Headwear that keeps your face; demo people and boutique stock"],
   ["AI Skin Analysis", "Optional skin check-ins in the journal, once per treatment cycle"],
@@ -221,7 +222,7 @@ export default function Home() {
               <Link href="/business#embed" className="btn btn-ghost">The retailer widget</Link>
             </div>
           </div>
-          <iframe src="/embed?wig=tara" title="Hairloom retailer widget for the Tara wig" className={s.embed} loading="lazy" />
+          <EmbedFrame wig="tara" className={s.embed} />
         </div>
       </section>
 

@@ -12,11 +12,16 @@ import { Exists, store } from "./storage";
  *   Judges get their own lane with their own cap.
  */
 
-const SECRET = (() => {
+/** The key task handles are signed with. Production fails closed without HANDLE_SECRET; it never falls back to the API key. */
+let warned = false;
+export function handleSecret(): string {
   if (process.env.HANDLE_SECRET) return process.env.HANDLE_SECRET;
-  if (process.env.NODE_ENV !== "production") console.warn("HANDLE_SECRET is not set; task handles are signed with a fallback key.");
-  return process.env.YOUCAM_API_KEY ?? "dev-only-secret";
-})();
+  if (process.env.VERCEL_ENV === "production" || process.env.NODE_ENV === "production") {
+    throw new Error("HANDLE_SECRET is not set. Live tasks are off until it is: set it in the project's environment variables.");
+  }
+  if (!warned) { warned = true; console.warn("HANDLE_SECRET is not set; task handles are signed with a development key."); }
+  return "dev-only-secret";
+}
 
 export type Lane = "public" | "judge";
 export const today = () => new Date().toISOString().slice(0, 10);
@@ -34,7 +39,7 @@ export type Handle = { kind: string; taskId: string; lane: Lane; day: string };
 export function signHandle(kind: string, taskId: string, lane: Lane = "public", day = today(), ttlS = 600): string {
   const exp = Math.floor(Date.now() / 1000) + ttlS;
   const body = `${kind}.${lane}.${day}.${taskId}.${exp}`;
-  const mac = createHmac("sha256", SECRET).update(body).digest("base64url").slice(0, 32);
+  const mac = createHmac("sha256", handleSecret()).update(body).digest("base64url").slice(0, 32);
   return Buffer.from(`${body}.${mac}`).toString("base64url");
 }
 
@@ -44,7 +49,7 @@ export function readHandle(handle: string): Handle | null {
   const i = raw.lastIndexOf(".");
   if (i < 0) return null;
   const body = raw.slice(0, i), mac = raw.slice(i + 1);
-  const want = createHmac("sha256", SECRET).update(body).digest("base64url").slice(0, 32);
+  const want = createHmac("sha256", handleSecret()).update(body).digest("base64url").slice(0, 32);
   if (mac.length !== want.length || !timingSafeEqual(Buffer.from(mac), Buffer.from(want))) return null;
   const parts = body.split(".");
   const exp = Number(parts.pop());
@@ -87,7 +92,7 @@ export function hold(units: number) { pending += units; return () => { pending =
 export const held = () => pending;
 
 /* Daily caps across instances: a counter object per lane and UTC day, changed by compare-and-swap. */
-const CAP: Record<Lane, number> = { public: Number(process.env.GLOBAL_DAILY_UNITS ?? 200), judge: Number(process.env.JUDGE_DAILY_UNITS ?? 300) };
+const CAP: Record<Lane, number> = { public: Number(process.env.GLOBAL_DAILY_UNITS ?? 120), judge: Number(process.env.JUDGE_DAILY_UNITS ?? 300) };
 export const dayCap = (lane: Lane) => CAP[lane];
 const dayKey = (lane: Lane, day: string) => `budget/${day}${lane === "judge" ? "-judge" : ""}.json`;
 
@@ -114,14 +119,28 @@ export async function dailyAllows(units: number, lane: Lane = "public", day = to
   try {
     const r = await bump(dayKey(lane, day), units, CAP[lane]);
     return { ...r, cap: CAP[lane], charged: r.ok };
-  } catch {
-    return { ok: true, used: -1, cap: CAP[lane], charged: false }; // storage down: fall back to the per-visitor and floor checks
+  } catch (e) {
+    console.warn("daily counter unavailable; falling back to the per-visitor and floor checks", (e as Error).message);
+    return { ok: true, used: -1, cap: CAP[lane], charged: false };
   }
 }
 
 /** Gives units back to a day's counter: YouCam charges only for tasks that succeed. */
 export async function refundDay(units: number, lane: Lane, day: string) {
   await bump(dayKey(lane, day), -units, Infinity).catch(() => undefined);
+}
+
+/*
+ * Unit floors: the live balance a lane may not draw below. The public floor also keeps back what
+ * judges may still use today (up to JUDGE_RESERVE_UNITS), so the public lane can't starve the judges.
+ */
+const FLOOR = Number(process.env.UNIT_FLOOR ?? 120);
+const JUDGE_FLOOR = Number(process.env.JUDGE_UNIT_FLOOR ?? 20);
+const JUDGE_RESERVE = Number(process.env.JUDGE_RESERVE_UNITS ?? 250);
+export async function floorOf(lane: Lane): Promise<number> {
+  if (lane === "judge") return JUDGE_FLOOR;
+  const judges = await dayLeft("judge");
+  return Math.max(FLOOR, JUDGE_FLOOR + Math.min(JUDGE_RESERVE, judges ?? JUDGE_RESERVE));
 }
 
 export async function dayLeft(lane: Lane): Promise<number | null> {
@@ -173,7 +192,7 @@ export async function markEnd(taskId: string, s: End): Promise<boolean> {
   }
 }
 
-/* Throttles: one poll per handle every 1.5 s, one delete per handle every 5 s, 120 calls a minute per visitor. */
+/* Throttles: one poll per handle every 1.5 s, one delete per handle every 5 s, 30 calls a minute per visitor. */
 const last = new Map<string, number>();
 export function pollAllowed(handle: string, gapMs = 1500): boolean {
   const now = Date.now();
@@ -184,7 +203,7 @@ export function pollAllowed(handle: string, gapMs = 1500): boolean {
 }
 
 const calls = new Map<string, number[]>();
-export function visitorAllowed(ip: string, perMinute = 120): boolean {
+export function visitorAllowed(ip: string, perMinute = 30): boolean {
   const now = Date.now();
   const rows = (calls.get(ip) ?? []).filter((t) => now - t < 60_000);
   if (rows.length >= perMinute) return false;

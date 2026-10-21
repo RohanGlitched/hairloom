@@ -116,6 +116,26 @@ export const KINDS: Record<KindName, Kind> = {
 
 export const isKind = (k: unknown): k is KindName => typeof k === "string" && Object.hasOwn(KINDS, k);
 
+/**
+ * Readings that may run on the same upload as a kind, named in `opt.also` ("hairFrizz,hairLength,face").
+ * The passport's three photos are uploaded once: curl and frizz read all three, length and face the front.
+ */
+export const ALSO: Partial<Record<KindName, KindName[]>> = { hairType: ["hairFrizz", "hairLength", "face"], hairLength: ["face"] };
+
+/** The kinds one request runs, the named kind first. An error message for an `also` outside the whitelist. */
+export function batchOf(name: KindName, opt: Opt): KindName[] | string {
+  if (opt.also === undefined) return [name];
+  if (typeof opt.also !== "string") return "bad also";
+  const also = opt.also.split(",");
+  const ok = ALSO[name] ?? [];
+  if (also.some((k, i) => !ok.includes(k as KindName) || also.indexOf(k) !== i)) return `${name} can't run with ${opt.also}`;
+  return [name, ...(also as KindName[])];
+}
+
+/** A batched kind's request body: the same uploaded files (as many as it takes), and no options of its own. */
+export const bodyIn = (name: KindName, k: KindName, files: string[], opt: Opt) =>
+  KINDS[k].body(k === name ? { files, opt } : { files: files.slice(0, KINDS[k].images), opt: {} });
+
 /** The request's `opt`: a plain object of short strings and finite numbers, or null. Nothing is coerced. */
 export function readOptions(raw: unknown): Record<string, string | number> | null {
   if (raw === undefined) return {};
@@ -134,9 +154,12 @@ export function readOptions(raw: unknown): Record<string, string | number> | nul
 /** Checks a kind's options without uploading anything. Returns an error message, or null when valid. */
 export function validate(name: KindName, opt: Opt): string | null {
   const kind = KINDS[name];
+  const batch = batchOf(name, opt);
+  if (typeof batch === "string") return batch;
   try {
     kind.ref?.(opt);
-    kind.body({ files: Array.from({ length: kind.images + (kind.ref ? 1 : 0) }, (_, i) => `check-${i}`), opt });
+    const files = Array.from({ length: kind.images + (kind.ref ? 1 : 0) }, (_, i) => `check-${i}`);
+    for (const k of batch) bodyIn(name, k, files, opt);
     return null;
   } catch (e) {
     return (e as Error).message;

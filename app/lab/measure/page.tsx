@@ -5,7 +5,6 @@
 import { useEffect, useState } from "react";
 import { PERSONAS } from "@/lib/demo";
 import { WIGS } from "@/lib/catalogue";
-import real from "@/data/real.json";
 
 export default function Measure() {
   const [out, setOut] = useState<string>("");
@@ -22,7 +21,7 @@ export default function Measure() {
         for (const [k, src] of Object.entries(p.shades ?? {})) jobs.push([`${p.id}/shade_${k.replace(":", "_")}`, src]);
         for (const [k, src] of Object.entries(p.thinning ?? {})) jobs.push([`${p.id}/thin_${k}`, src]);
       }
-      for (const r of real as { id: string; src: string }[]) jobs.push([`real/${r.id}`, r.src]);
+      // Real photographs are not published; their measurements are kept from earlier runs (see measure.cjs).
       for (const [k, src] of jobs) {
         const r = await measureHair(src).catch(() => null);
         res[k] = r ? { hex: r.hex, lab: r.lab.map((v) => Math.round(v * 100) / 100), pixels: r.pixels } : null;

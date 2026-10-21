@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { unitsLeft } from "@/lib/youcam";
-import { dayCap, dayLeft, laneOf } from "@/lib/guard";
+import { dayCap, dayLeft, floorOf, laneOf } from "@/lib/guard";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -9,8 +9,7 @@ export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   const lane = laneOf(req.headers.get("x-judge-code"));
   try {
-    const [units, left] = await Promise.all([unitsLeft(), lane ? dayLeft(lane) : Promise.resolve(0)]);
-    const floor = lane === "judge" ? Number(process.env.JUDGE_UNIT_FLOOR ?? 20) : Number(process.env.UNIT_FLOOR ?? 120);
+    const [units, left, floor] = await Promise.all([unitsLeft(), lane ? dayLeft(lane) : Promise.resolve(0), floorOf(lane ?? "public")]);
     return NextResponse.json({
       ok: true, units, floor, lane: lane ?? "bad_code", dayLeft: left, dayCap: lane ? dayCap(lane) : 0, resets: "05:30 IST",
       live: !!lane && units > floor && left !== 0,

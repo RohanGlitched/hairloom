@@ -9,8 +9,11 @@ const path = require("path");
   const p = await b.newPage();
   await p.goto(base + "/lab/measure", { waitUntil: "load", timeout: 120000 });
   await p.waitForSelector('#out[data-done="1"]', { timeout: 300000 });
-  const json = await p.textContent("#out");
-  fs.writeFileSync(path.join(__dirname, "..", "data", "colours.json"), json);
+  const file = path.join(__dirname, "..", "data", "colours.json");
+  // Merge: entries this run can't re-measure (the unpublished real photographs) are kept.
+  const old = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) : {};
+  const json = JSON.stringify({ ...old, ...JSON.parse(await p.textContent("#out")) }, null, 1);
+  fs.writeFileSync(file, json);
   console.log("measured", Object.keys(JSON.parse(json)).length);
   await b.close();
 })();

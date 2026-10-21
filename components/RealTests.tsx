@@ -5,7 +5,7 @@ import s from "./RealTests.module.css";
 
 type Run = { name: string; ok: boolean; error: string | null; ms: number | null };
 type Photo = {
-  id: string; by: string; kind: "hair" | "bald"; fit: string; note: string; url: string; src: string;
+  id: string; by: string; kind: "hair" | "bald"; fit: string; note: string; url: string;
   images: Record<string, string>; runs: Run[]; length: string | null;
   eye?: string; labelOk?: boolean; colourNote?: string;
   face: { faceshape?: string; color?: { hair_color_name?: string }; quality?: { frontal?: string; faceangle?: string } } | null;
@@ -17,7 +17,7 @@ const LABEL: Record<string, string> = {
   head_turban: "Turban", brows: "Brows", length: "Length", face: "Face, default strictness", face_flexible: "Face, flexible",
 };
 
-/** Results of running the studio's YouCam calls on real photographs (Unsplash License). */
+/** Results of running the studio's YouCam calls on real photographs (Unsplash License). The images are not published: see the note in the summary. */
 export function RealTests() {
   const tryons = PHOTOS.flatMap((p) => p.runs.filter((r) => r.name.startsWith("wig_")));
   const baldTry = PHOTOS.filter((p) => p.kind === "bald").flatMap((p) => p.runs.filter((r) => r.name.startsWith("wig_")));
@@ -42,6 +42,7 @@ export function RealTests() {
           <b>Hair colour label.</b> YouCam returned a label for {labelled.length} of {readings.length} hair photos, and it fit the hair by eye on {labelFit} of {labelled.length}: {labelled.map((p) => `${p.face?.color?.hair_color_name} for ${p.eye}`).join(", ")}. No label came back for the other {readings.length - labelled.length}. We have no reference swatch yet, so this is a judgement by eye.
         </li>
         <li><b>Brows.</b> All four shaved-head photos still have brows, so the rebuilt brows barely change them. The brow rebuild is untested on a face that has lost its brows.</li>
+        <li><b>Why there are no pictures here.</b> The people in these photos agreed to Unsplash&rsquo;s licence, not to appearing with wigs and turbans in a hair-loss product, so we show the results and keep the edited images out of the site and the repository.</li>
         <li><b>Easy photos.</b> These are lit, sharp, uncovered heads. None is a hard case such as glasses, dim phone light or patchy loss.</li>
       </ul>
 
@@ -51,20 +52,6 @@ export function RealTests() {
           const shade = lab ? nearestShades(lab, 1)[0] : null;
           return (
             <article key={p.id} className={s.card}>
-              <div className={s.strip}>
-                <figure>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={p.src} alt={`Original photo: ${p.note}`} loading="lazy" />
-                  <figcaption>Original</figcaption>
-                </figure>
-                {Object.entries(p.images).map(([k, src]) => (
-                  <figure key={k}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={src} alt={`${LABEL[k] ?? k} on the same photo`} loading="lazy" />
-                    <figcaption>{LABEL[k] ?? k}</figcaption>
-                  </figure>
-                ))}
-              </div>
               <p className={s.note}>{p.note}</p>
               <ul className={s.runs}>
                 {p.runs.filter((r) => !r.name.startsWith("wig_") && !r.name.startsWith("head_") && r.name !== "brows").map((r) => (
@@ -78,7 +65,7 @@ export function RealTests() {
                   </li>
                 )}
               </ul>
-              <p className={s.credit}>Photo by <a href={p.url} target="_blank" rel="noreferrer">{p.by}</a> on Unsplash</p>
+              <p className={s.credit}>Tested on a photo by <a href={p.url} target="_blank" rel="noreferrer">{p.by}</a> on Unsplash; {Object.keys(p.images).length} try-on images kept privately.</p>
             </article>
           );
         })}

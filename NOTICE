@@ -3,14 +3,13 @@ Third-party notices
 Hairloom's own code is released under the MIT licence (see LICENSE). The items below are not
 covered by that licence.
 
-1. Photographs in public/real/ (the real-photograph tests on the /evidence page)
+1. Real-photograph tests (the results on the /evidence page)
 
-   These are nine portraits from Unsplash, used under the Unsplash License
-   (https://unsplash.com/license). They are not MIT licensed. The Unsplash License lets people
-   use the photos freely, but it does not include model releases. The people shown are stock
-   models, not patients, and nobody in them has been asked to take part in this project. The
-   folders in public/real/ are named by Unsplash photo id, and each photo's page credits its
-   photographer:
+   The /evidence page reports YouCam results on nine portraits from Unsplash, used under the
+   Unsplash License (https://unsplash.com/license). The photos and the edited try-on images are
+   not published on the site or in this repository: the people in them agreed to Unsplash's
+   licence, not to appearing in a hair-loss product. Only the results are shown, with each
+   photographer credited:
 
    QXevDflbl8A   Štefan Štefančík    https://unsplash.com/photos/QXevDflbl8A
    qXzOsNZP7mA   Jude Infantini      https://unsplash.com/photos/qXzOsNZP7mA
@@ -21,11 +20,6 @@ covered by that licence.
    XvnVGXhNV94   Ben Masora          https://unsplash.com/photos/XvnVGXhNV94
    raCWeevBPWs   Lisa Marie Theck    https://unsplash.com/photos/raCWeevBPWs
    tFA_OQ-9NDU   Tekeyah Whit        https://unsplash.com/photos/tFA_OQ-9NDU
-
-   public/real/<id>/src.jpg is the original photo, resized. The other files in each folder are
-   outputs of the YouCam API run on that photo. They were made only to test the product, and
-   are shown on the /evidence page with the photographer credited. If you appear in one of
-   these photos and want it removed, open an issue and it will be taken down.
 
 2. MediaPipe models and library (on-device hair segmentation and face detection)
 

@@ -1,6 +1,6 @@
 import data from "@/data/colours.json";
 import { type Wig, shade } from "./catalogue";
-import { type Lab, deltaE00, nearestShades } from "./color";
+import { type Lab, deltaE00, hexToLab, nearestShades } from "./color";
 
 type Measured = { hex: string; lab: number[]; pixels: number } | null;
 const C = data as Record<string, Measured>;
@@ -9,11 +9,20 @@ const C = data as Record<string, Measured>;
 export const measured = (key: string): Lab | null => (C[key]?.lab as Lab | undefined) ?? null;
 
 /** A wig's shade code: nearest standard shade to its measured colour, else the catalogue value. */
+/**
+ * A wig's stock shade is the code the shop lists. Measuring it from a product photo reads darker and
+ * less red than the listed code (see /evidence), so the measurement only ranks closeness.
+ */
 export function wigShade(w: Wig) {
+  return shade(w.code);
+}
+
+/** Listed code against the shade measured from the product photo, for the evidence page. */
+export function shadeCheck(w: Wig) {
   const lab = measured(`catalogue/${w.id}`);
-  if (!lab) return { ...shade(w.code), measured: false };
-  const n = nearestShades(lab, 1)[0];
-  return { code: n.code, name: n.name, hex: n.hex, measured: true };
+  if (!lab) return null;
+  const listed = shade(w.code), got = nearestShades(lab, 1)[0];
+  return { listed, got, dL: lab[0] - hexToLab(listed.hex)[0], dE: deltaE00(lab, hexToLab(listed.hex)) };
 }
 
 /** ΔE00 between a persona's kept hair and a render, from build-time measurements. */

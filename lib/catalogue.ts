@@ -35,6 +35,7 @@ export const WIGS: Wig[] = [
   { id: "rosa", name: "Rosa", style: "Long auburn waves", length: "midback", texture: "wavy", code: "33", cap: "Hand-tied", fibre: "Human hair", price: 52000, care: "High", fit: "Women" },
   { id: "lena", name: "Lena", style: "Salt-and-pepper lob", length: "shoulder", texture: "straight", code: "44", cap: "Lace front", fibre: "Heat-friendly synthetic", price: 15600, care: "Low", fit: "Women" },
   { id: "tara", name: "Tara", style: "Long, deep side parting, darker root", length: "chest", texture: "straight", code: "4", cap: "Hand-tied", fibre: "Human hair", price: 44900, care: "High", fit: "Women" },
+  { id: "wren", name: "Wren", style: "Long soft waves, silver and ash", length: "chest", texture: "wavy", code: "38", cap: "Monofilament top", fibre: "Heat-friendly synthetic", price: 18900, care: "Medium", fit: "Women" },
   { id: "kai", name: "Kai", style: "Classic short crop", length: "ear", texture: "straight", code: "4", cap: "Monofilament top", fibre: "Synthetic", price: 9800, care: "Low", fit: "Men" },
   { id: "dev", name: "Dev", style: "Textured short, salt and pepper", length: "ear", texture: "wavy", code: "44", cap: "Classic cap", fibre: "Synthetic", price: 9200, care: "Low", fit: "Men" },
   { id: "arjun", name: "Arjun", style: "Classic side parting, grey at the temples", length: "ear", texture: "straight", code: "1B", cap: "Lace front", fibre: "Human hair", price: 24500, care: "Medium", fit: "Men" },
@@ -71,12 +72,14 @@ export const SHADES: { code: string; name: string; hex: string }[] = [
 
 export const shade = (code: string) => SHADES.find((s) => s.code === code) ?? SHADES[0];
 
-export type Headwear = { id: string; name: string; note: string; prompt: string; men?: boolean };
+export type Headwear = { id: string; name: string; note: string; prompt: string; fit: "Women" | "Men" | "All" };
 export const HEADWEAR: Headwear[] = [
-  { id: "turban", name: "Jersey turban", note: "Pre-tied, dusty rose. Soft on a sensitive scalp.", prompt: "a soft dusty rose jersey cotton turban head wrap that fully covers the head" },
-  { id: "silk", name: "Silk headscarf", note: "Green and gold botanical print, tied at the nape.", prompt: "a printed silk headscarf with a green and gold botanical pattern, tied at the nape and fully covering the head" },
-  { id: "beanie", men: true, name: "Wool beanie", note: "Oatmeal knit for cold days and errands.", prompt: "a soft oatmeal knitted wool beanie that fully covers the head, with no hair showing underneath" },
-  { id: "cap", men: true, name: "Sleep cap", note: "Charcoal cotton, for nights and under a wig.", prompt: "a fitted charcoal cotton sleep cap that fully covers the head" },
+  { id: "turban", fit: "Women", name: "Jersey turban", note: "Pre-tied, dusty rose. Soft on a sensitive scalp.", prompt: "a soft dusty rose jersey cotton turban head wrap that fully covers the head" },
+  { id: "silk", fit: "Women", name: "Silk headscarf", note: "Green and gold botanical print, tied at the nape.", prompt: "a printed silk headscarf with a green and gold botanical pattern, tied at the nape and fully covering the head" },
+  { id: "beanie", fit: "All", name: "Wool beanie", note: "Oatmeal knit for cold days and errands.", prompt: "a soft oatmeal knitted wool beanie that fully covers the head, with no hair showing underneath" },
+  { id: "cap", fit: "All", name: "Sleep cap", note: "Charcoal cotton, for nights and under a wig.", prompt: "a fitted charcoal cotton sleep cap that fully covers the head" },
+  { id: "flatcap", fit: "Men", name: "Flat cap", note: "Grey herringbone wool, for days out.", prompt: "a grey herringbone wool flat cap that covers the top of the head" },
+  { id: "bandana", fit: "Men", name: "Cotton bandana", note: "Navy, tied over the head. Light under a helmet or a cap.", prompt: "a navy cotton bandana tied neatly over the head, fully covering it" },
 ];
 
 export const inr = (n: number) => "₹" + n.toLocaleString("en-IN");

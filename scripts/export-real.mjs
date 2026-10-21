@@ -36,18 +36,14 @@ for (const ph of PHOTOS) {
     const name = f.slice(0, -5);
     const j = readJson(path.join(d, f));
     runs.push({ name, ok: j?.data?.task_status === "success", error: j?.data?.error ?? null, ms: j?.ms ?? null });
-    if (fs.existsSync(path.join(d, `${name}.jpg`))) {
-      resize(path.join(d, `${name}.jpg`), path.join(PUB, ph.id, `${name}.jpg`));
-      images[name] = `/real/${ph.id}/${name}.jpg`;
-    }
+    // The edited images stay in the lab: the people in them agreed to Unsplash, not to a hair-loss product.
+    if (fs.existsSync(path.join(d, `${name}.jpg`))) images[name] = name;
   }
-  resize(path.join(d, "src_1024.jpg"), path.join(PUB, ph.id, "src.jpg"));
   const face = readJson(path.join(d, "face_flexible.json"))?.data?.results ?? null;
   out.push({
     ...ph,
     ...BY_EYE[ph.id],
     url: `https://unsplash.com/photos/${ph.id}`,
-    src: `/real/${ph.id}/src.jpg`,
     images,
     runs,
     length: readJson(path.join(d, "length.json"))?.data?.results?.hair_length?.term ?? null,

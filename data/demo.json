@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-21T15:25:27.006Z",
+  "generated": "2026-10-21T16:06:57.062Z",
   "personas": [
     {
       "id": "anjali",
@@ -76,6 +76,7 @@
         "rosa": "/demo/anjali/wig_rosa.jpg",
         "lena": "/demo/anjali/wig_lena.jpg",
         "tara": "/demo/anjali/wig_tara.jpg",
+        "wren": "/demo/anjali/wig_wren.jpg",
         "kai": "/demo/anjali/wig_kai.jpg",
         "dev": "/demo/anjali/wig_dev.jpg",
         "arjun": "/demo/anjali/wig_arjun.jpg",
@@ -212,6 +213,7 @@
         "rosa": "/demo/nia/wig_rosa.jpg",
         "lena": "/demo/nia/wig_lena.jpg",
         "tara": "/demo/nia/wig_tara.jpg",
+        "wren": "/demo/nia/wig_wren.jpg",
         "kai": "/demo/nia/wig_kai.jpg",
         "dev": "/demo/nia/wig_dev.jpg",
         "arjun": "/demo/nia/wig_arjun.jpg",
@@ -231,10 +233,7 @@
         "zuri:2": "/demo/nia/shade_zuri_2.jpg"
       },
       "thinPhoto": null,
-      "thinning": {
-        "female_medium": "/demo/nia/thin_female_medium.jpg",
-        "all_length_2_": "/demo/nia/thin_all_length_2_.jpg"
-      },
+      "thinning": {},
       "skin": []
     },
     {
@@ -312,6 +311,7 @@
         "rosa": "/demo/margaret/wig_rosa.jpg",
         "lena": "/demo/margaret/wig_lena.jpg",
         "tara": "/demo/margaret/wig_tara.jpg",
+        "wren": "/demo/margaret/wig_wren.jpg",
         "kai": "/demo/margaret/wig_kai.jpg",
         "dev": "/demo/margaret/wig_dev.jpg",
         "arjun": "/demo/margaret/wig_arjun.jpg",
@@ -417,6 +417,7 @@
         "rosa": "/demo/ravi/wig_rosa.jpg",
         "lena": "/demo/ravi/wig_lena.jpg",
         "tara": "/demo/ravi/wig_tara.jpg",
+        "wren": "/demo/ravi/wig_wren.jpg",
         "kai": "/demo/ravi/wig_kai.jpg",
         "dev": "/demo/ravi/wig_dev.jpg",
         "arjun": "/demo/ravi/wig_arjun.jpg",
@@ -426,7 +427,9 @@
         "turban": "/demo/ravi/head_turban.jpg",
         "silk": "/demo/ravi/head_silk.jpg",
         "beanie": "/demo/ravi/head_beanie.jpg",
-        "cap": "/demo/ravi/head_cap.jpg"
+        "cap": "/demo/ravi/head_cap.jpg",
+        "flatcap": "/demo/ravi/head_flatcap.jpg",
+        "bandana": "/demo/ravi/head_bandana.jpg"
       },
       "brows": "/demo/ravi/brows.jpg",
       "withHair": {},
