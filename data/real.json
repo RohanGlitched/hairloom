@@ -1,0 +1,484 @@
+[
+ {
+  "id": "QXevDflbl8A",
+  "img": "1544005313-94ddf0286df2",
+  "by": "Štefan Štefančík",
+  "kind": "hair",
+  "fit": "Women",
+  "note": "Long straight brown hair, outdoor light",
+  "url": "https://unsplash.com/photos/QXevDflbl8A",
+  "src": "/real/QXevDflbl8A/src.jpg",
+  "images": {
+   "wig_nora": "/real/QXevDflbl8A/wig_nora.jpg",
+   "wig_zuri": "/real/QXevDflbl8A/wig_zuri.jpg"
+  },
+  "runs": [
+   {
+    "name": "face",
+    "ok": false,
+    "error": "error_face_not_forward_facing",
+    "ms": 11625
+   },
+   {
+    "name": "face_flexible",
+    "ok": true,
+    "error": null,
+    "ms": 16212
+   },
+   {
+    "name": "length",
+    "ok": false,
+    "error": "error_face_angle_invalid",
+    "ms": 7040
+   },
+   {
+    "name": "wig_nora",
+    "ok": true,
+    "error": null,
+    "ms": 12827
+   },
+   {
+    "name": "wig_zuri",
+    "ok": true,
+    "error": null,
+    "ms": 12127
+   }
+  ],
+  "length": null,
+  "face": {
+   "faceshape": "Square",
+   "color": {
+    "eyebrow_color": "#3e3834"
+   },
+   "quality": {
+    "has_face": true,
+    "area": "good",
+    "frontal": "notgood",
+    "lighting": "good",
+    "faceangle": "rightward"
+   }
+  }
+ },
+ {
+  "id": "qXzOsNZP7mA",
+  "img": "1569430548104-6ca1cda3ec41",
+  "by": "Jude Infantini",
+  "kind": "hair",
+  "fit": "Women",
+  "note": "Long curly hair",
+  "url": "https://unsplash.com/photos/qXzOsNZP7mA",
+  "src": "/real/qXzOsNZP7mA/src.jpg",
+  "images": {
+   "wig_nora": "/real/qXzOsNZP7mA/wig_nora.jpg",
+   "wig_zuri": "/real/qXzOsNZP7mA/wig_zuri.jpg"
+  },
+  "runs": [
+   {
+    "name": "face",
+    "ok": false,
+    "error": "error_face_not_forward_facing",
+    "ms": 11562
+   },
+   {
+    "name": "face_flexible",
+    "ok": true,
+    "error": null,
+    "ms": 11560
+   },
+   {
+    "name": "length",
+    "ok": false,
+    "error": "error_face_angle_invalid",
+    "ms": 20980
+   },
+   {
+    "name": "wig_nora",
+    "ok": true,
+    "error": null,
+    "ms": 42906
+   },
+   {
+    "name": "wig_zuri",
+    "ok": true,
+    "error": null,
+    "ms": 13124
+   }
+  ],
+  "length": null,
+  "face": {
+   "faceshape": "Oval",
+   "color": {
+    "eyebrow_color": "#5b575a",
+    "hair_color": "#808080",
+    "hair_color_name": "Grey/White"
+   },
+   "quality": {
+    "has_face": true,
+    "area": "good",
+    "frontal": "notgood",
+    "lighting": "good",
+    "faceangle": "rightward"
+   }
+  }
+ },
+ {
+  "id": "7jZiSQ_Jyqg",
+  "img": "1642243947382-524cecf14085",
+  "by": "Soroush Sedghi",
+  "kind": "hair",
+  "fit": "Women",
+  "note": "Long grey hair, smiling",
+  "url": "https://unsplash.com/photos/7jZiSQ_Jyqg",
+  "src": "/real/7jZiSQ_Jyqg/src.jpg",
+  "images": {
+   "wig_nora": "/real/7jZiSQ_Jyqg/wig_nora.jpg",
+   "wig_zuri": "/real/7jZiSQ_Jyqg/wig_zuri.jpg"
+  },
+  "runs": [
+   {
+    "name": "face",
+    "ok": false,
+    "error": "error_face_angle_left_tilt",
+    "ms": 11268
+   },
+   {
+    "name": "face_flexible",
+    "ok": true,
+    "error": null,
+    "ms": 37327
+   },
+   {
+    "name": "length",
+    "ok": true,
+    "error": null,
+    "ms": 33901
+   },
+   {
+    "name": "wig_nora",
+    "ok": true,
+    "error": null,
+    "ms": 13245
+   },
+   {
+    "name": "wig_zuri",
+    "ok": true,
+    "error": null,
+    "ms": 12433
+   }
+  ],
+  "length": "above chest or longer",
+  "face": {
+   "faceshape": "Heart",
+   "color": {
+    "eyebrow_color": "#5b3f32"
+   },
+   "quality": {
+    "has_face": true,
+    "area": "good",
+    "frontal": "good",
+    "lighting": "good",
+    "faceangle": "good"
+   }
+  }
+ },
+ {
+  "id": "7YVZYZeITc8",
+  "img": "1500648767791-00dcc994a43e",
+  "by": "Jurica Koletić",
+  "kind": "hair",
+  "fit": "Men",
+  "note": "Short dark hair",
+  "url": "https://unsplash.com/photos/7YVZYZeITc8",
+  "src": "/real/7YVZYZeITc8/src.jpg",
+  "images": {
+   "wig_arjun": "/real/7YVZYZeITc8/wig_arjun.jpg",
+   "wig_kai": "/real/7YVZYZeITc8/wig_kai.jpg"
+  },
+  "runs": [
+   {
+    "name": "face",
+    "ok": false,
+    "error": "error_face_angle_downward",
+    "ms": 11235
+   },
+   {
+    "name": "face_flexible",
+    "ok": true,
+    "error": null,
+    "ms": 24413
+   },
+   {
+    "name": "length",
+    "ok": true,
+    "error": null,
+    "ms": 10831
+   },
+   {
+    "name": "wig_arjun",
+    "ok": true,
+    "error": null,
+    "ms": 12862
+   },
+   {
+    "name": "wig_kai",
+    "ok": true,
+    "error": null,
+    "ms": 11977
+   }
+  ],
+  "length": "ear length",
+  "face": {
+   "faceshape": "Square",
+   "color": {
+    "eyebrow_color": "#3e3834",
+    "hair_color": "#000000",
+    "hair_color_name": "Black"
+   },
+   "quality": {
+    "has_face": true,
+    "area": "good",
+    "frontal": "good",
+    "lighting": "good",
+    "faceangle": "good"
+   }
+  }
+ },
+ {
+  "id": "CGKYNN3uuVo",
+  "img": "1614204424926-196a80bf0be8",
+  "by": "Filipp Romanovski",
+  "kind": "hair",
+  "fit": "Women",
+  "note": "Curly bob, warm light",
+  "url": "https://unsplash.com/photos/CGKYNN3uuVo",
+  "src": "/real/CGKYNN3uuVo/src.jpg",
+  "images": {
+   "wig_nora": "/real/CGKYNN3uuVo/wig_nora.jpg",
+   "wig_zuri": "/real/CGKYNN3uuVo/wig_zuri.jpg"
+  },
+  "runs": [
+   {
+    "name": "face",
+    "ok": false,
+    "error": "error_face_not_forward_facing",
+    "ms": 11268
+   },
+   {
+    "name": "face_flexible",
+    "ok": true,
+    "error": null,
+    "ms": 11686
+   },
+   {
+    "name": "length",
+    "ok": false,
+    "error": "error_face_angle_invalid",
+    "ms": 17104
+   },
+   {
+    "name": "wig_nora",
+    "ok": true,
+    "error": null,
+    "ms": 11687
+   },
+   {
+    "name": "wig_zuri",
+    "ok": true,
+    "error": null,
+    "ms": 35338
+   }
+  ],
+  "length": null,
+  "face": {
+   "faceshape": "Diamond",
+   "color": {
+    "eyebrow_color": "#543931",
+    "hair_color": "#000000",
+    "hair_color_name": "Black"
+   },
+   "quality": {
+    "has_face": true,
+    "area": "good",
+    "frontal": "notgood",
+    "lighting": "good",
+    "faceangle": "leftward"
+   }
+  }
+ },
+ {
+  "id": "f5xiGmFwXIU",
+  "img": "1589279715734-6631a314dfa2",
+  "by": "Zoran Borojevic",
+  "kind": "bald",
+  "fit": "Men",
+  "note": "Shaved head, beard",
+  "url": "https://unsplash.com/photos/f5xiGmFwXIU",
+  "src": "/real/f5xiGmFwXIU/src.jpg",
+  "images": {
+   "brows": "/real/f5xiGmFwXIU/brows.jpg",
+   "head_turban": "/real/f5xiGmFwXIU/head_turban.jpg",
+   "wig_arjun": "/real/f5xiGmFwXIU/wig_arjun.jpg",
+   "wig_kai": "/real/f5xiGmFwXIU/wig_kai.jpg"
+  },
+  "runs": [
+   {
+    "name": "brows",
+    "ok": true,
+    "error": null,
+    "ms": 29426
+   },
+   {
+    "name": "head_turban",
+    "ok": true,
+    "error": null,
+    "ms": 11305
+   },
+   {
+    "name": "wig_arjun",
+    "ok": true,
+    "error": null,
+    "ms": 12217
+   },
+   {
+    "name": "wig_kai",
+    "ok": true,
+    "error": null,
+    "ms": 11959
+   }
+  ],
+  "length": null,
+  "face": null
+ },
+ {
+  "id": "XvnVGXhNV94",
+  "img": "1646457411135-37fa10a51c3d",
+  "by": "Ben Masora",
+  "kind": "bald",
+  "fit": "Women",
+  "note": "Shaved head, smiling",
+  "url": "https://unsplash.com/photos/XvnVGXhNV94",
+  "src": "/real/XvnVGXhNV94/src.jpg",
+  "images": {
+   "brows": "/real/XvnVGXhNV94/brows.jpg",
+   "head_turban": "/real/XvnVGXhNV94/head_turban.jpg",
+   "wig_nora": "/real/XvnVGXhNV94/wig_nora.jpg",
+   "wig_zuri": "/real/XvnVGXhNV94/wig_zuri.jpg"
+  },
+  "runs": [
+   {
+    "name": "brows",
+    "ok": true,
+    "error": null,
+    "ms": 40058
+   },
+   {
+    "name": "head_turban",
+    "ok": true,
+    "error": null,
+    "ms": 15510
+   },
+   {
+    "name": "wig_nora",
+    "ok": true,
+    "error": null,
+    "ms": 10995
+   },
+   {
+    "name": "wig_zuri",
+    "ok": true,
+    "error": null,
+    "ms": 12506
+   }
+  ],
+  "length": null,
+  "face": null
+ },
+ {
+  "id": "raCWeevBPWs",
+  "img": "1759771716199-1194c6efe0c7",
+  "by": "Lisa Marie Theck",
+  "kind": "bald",
+  "fit": "Women",
+  "note": "Shaved head, black and white",
+  "url": "https://unsplash.com/photos/raCWeevBPWs",
+  "src": "/real/raCWeevBPWs/src.jpg",
+  "images": {
+   "brows": "/real/raCWeevBPWs/brows.jpg",
+   "head_turban": "/real/raCWeevBPWs/head_turban.jpg",
+   "wig_nora": "/real/raCWeevBPWs/wig_nora.jpg",
+   "wig_zuri": "/real/raCWeevBPWs/wig_zuri.jpg"
+  },
+  "runs": [
+   {
+    "name": "brows",
+    "ok": true,
+    "error": null,
+    "ms": 10344
+   },
+   {
+    "name": "head_turban",
+    "ok": true,
+    "error": null,
+    "ms": 11261
+   },
+   {
+    "name": "wig_nora",
+    "ok": true,
+    "error": null,
+    "ms": 12177
+   },
+   {
+    "name": "wig_zuri",
+    "ok": true,
+    "error": null,
+    "ms": 12947
+   }
+  ],
+  "length": null,
+  "face": null
+ },
+ {
+  "id": "tFA_OQ-9NDU",
+  "img": "1698365039593-5180c517bb96",
+  "by": "Tekeyah Whit",
+  "kind": "bald",
+  "fit": "Men",
+  "note": "Shaved head, full beard, outdoors",
+  "url": "https://unsplash.com/photos/tFA_OQ-9NDU",
+  "src": "/real/tFA_OQ-9NDU/src.jpg",
+  "images": {
+   "brows": "/real/tFA_OQ-9NDU/brows.jpg",
+   "head_turban": "/real/tFA_OQ-9NDU/head_turban.jpg",
+   "wig_arjun": "/real/tFA_OQ-9NDU/wig_arjun.jpg",
+   "wig_kai": "/real/tFA_OQ-9NDU/wig_kai.jpg"
+  },
+  "runs": [
+   {
+    "name": "brows",
+    "ok": true,
+    "error": null,
+    "ms": 27018
+   },
+   {
+    "name": "head_turban",
+    "ok": true,
+    "error": null,
+    "ms": 11513
+   },
+   {
+    "name": "wig_arjun",
+    "ok": true,
+    "error": null,
+    "ms": 13067
+   },
+   {
+    "name": "wig_kai",
+    "ok": true,
+    "error": null,
+    "ms": 37402
+   }
+  ],
+  "length": null,
+  "face": null
+ }
+]

@@ -3,6 +3,7 @@ import { PERSONAS } from "@/lib/demo";
 import { TOTALS, byApi } from "@/lib/evidence";
 import { measured } from "@/lib/colours";
 import { labToHex, nearestShades } from "@/lib/color";
+import { RealTests } from "@/components/RealTests";
 import s from "./evidence.module.css";
 
 export const metadata: Metadata = { title: "Evidence", description: "Every YouCam task we ran while building Hairloom, what failed, and what we measured." };
@@ -10,7 +11,9 @@ export const metadata: Metadata = { title: "Evidence", description: "Every YouCa
 const NOTES = [
   { t: "Hair type and frizz need three same-size photos, in one order", b: "Front, then the face turned towards the right of the picture, then towards the left. Any other order, or different sizes, returns error_face_angle_invalid or error_mismatch_image_size. The studio crops all three to the front photo's size and orders the side photos itself from face landmarks, so a swapped upload still reads." },
   { t: "Hair colour comes back as a named category", b: "Face Attribute Analyzer and Facial Color Tones Analyzer return one of a few named swatches. That suits a beauty quiz, but a wig fitter needs a shade code, so Hairloom measures colour from the hair pixels and keeps YouCam's label beside it. Where they disagree is listed below." },
-  { t: "Hairstyle try-on works on a bald head", b: "The docs list error_hair_too_short, so we expected failures after hair loss. All 64 of our try-ons on bald demo photos succeeded. These bald photos are generated edits of the kept photo, so tests on real people are still to come." },
+  { t: "Hairstyle try-on works on a bald head", b: "The docs list error_hair_too_short, so we expected failures after hair loss. All 64 try-ons on bald demo photos succeeded, and so did all 8 on real photos of people who are really bald." },
+  { t: "Face reading is strict about angle by default", b: "At the default strictness, Face Attribute Analyzer rejected all five of our real, everyday portraits (error_face_not_forward_facing, error_face_angle_left_tilt, error_face_angle_downward). At face_angle_strictness_level \u201cflexible\u201d all five read, and face_quality still flags a turned face, which the passport passes on. Hair length has no such setting and failed on three slightly turned portraits, which is why the studio leads with YouCam's guided camera." },
+  { t: "Hairstyle try-on can change more than hair", b: "On one real photo of a man with a full beard, both wig try-ons removed the beard, and on a black-and-white portrait the try-ons came back in colour. Hairloom's mirror lets you drag back to the original to spot this, and a fitter should always see the real person." },
   { t: "Hat try-on restyles the whole person", b: "Hat and scarf try-on generate a new outfit and background, and on a bald head the beanie came back with long hair under it. For headwear Hairloom uses image-to-image with an instruction to keep the face, clothes and background, at 1 unit." },
   { t: "Readings can differ between runs", b: "The same front photo read the left brow tail as \u201cAverage\u201d on one run and \u201cSparse\u201d on another. The passport keeps the reading with the photo it came from rather than presenting one run as fact." },
   { t: "Density detection is strict about angle", b: "Front-facing and generated head-down photos were rejected with error_face_angle_invalid. It needs YouCam's camera guide in hairdensity mode, so it is left out of the upload flow." },
@@ -81,6 +84,12 @@ export default function Evidence() {
             ))}
           </div>
 
+          <h2 id="real" className="h-sec" style={{ marginTop: 72 }}>Real photographs</h2>
+          <p className="lede" style={{ marginTop: 12 }}>
+            The demo people are generated, so we ran the same YouCam calls on nine real portraits from Unsplash, used under the Unsplash License. Four of them are of people who are really bald. These are models in stock photos, not patients.
+          </p>
+          <RealTests />
+
           <h2 className="h-sec" style={{ marginTop: 72 }}>Hair colour: YouCam&rsquo;s label and the measured shade</h2>
           <p className="lede" style={{ marginTop: 12 }}>
             For each demo person, the colour label YouCam&rsquo;s Face Attribute Analyzer returned for the kept photo, and the shade Hairloom measured from the hair pixels of the same photo.
@@ -100,7 +109,7 @@ export default function Evidence() {
 
           <h2 className="h-sec" style={{ marginTop: 72 }}>Not proven yet</h2>
           <ul className={s.open}>
-            <li>Every person shown is generated with YouCam. Tests with real, consenting people, including someone who is really bald, are next.</li>
+            <li>The real-photo tests use stock portraits, not people living with hair loss. A pilot with consenting clients and a wig fitter is the next step.</li>
             <li>YouCam&rsquo;s guided camera has been built in but not yet run on a phone by a real user.</li>
             <li>The closeness ranking weighs length, texture and colour by hand. It hasn&rsquo;t been checked against what fitters and clients actually choose.</li>
             <li>Shade codes vary by brand, and our hex values approximate typical swatches without white balance, so a fitter still checks against real swatches.</li>

@@ -29,7 +29,9 @@ export const KINDS: Record<KindName, Kind> = {
   hairLength: { path: "/s2s/v2.0/task/hair-length-detection", images: 1, units: 2, api: "AI Hair Length Detection", body: ({ files }) => ({ src_file_id: files[0] }) },
   face: {
     path: "/s2s/v2.0/task/face-attr-analysis", images: 1, units: 10, api: "AI Face Attribute & Ratio Analyzer",
-    body: ({ files }) => ({ src_file_id: files[0], features: ["faceShape", "eyebrowShape", "eyebrowThickness", "eyebrowColor", "hairColor"] }),
+    // "flexible": everyday photos are rarely perfectly frontal; at the default ("high") five of five
+    // real portraits we tested were rejected. The result's face_quality still flags a turned face.
+    body: ({ files }) => ({ src_file_id: files[0], features: ["faceShape", "eyebrowShape", "eyebrowThickness", "eyebrowColor", "hairColor"], face_angle_strictness_level: "flexible" }),
   },
   wig: {
     path: "/s2s/v2.1/task/hair-transfer", images: 1, units: 2, api: "AI Hairstyle Virtual Try-On",

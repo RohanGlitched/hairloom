@@ -934,5 +934,86 @@
    5.81
   ],
   "pixels": 11825
+ },
+ "real/QXevDflbl8A": {
+  "hex": "#1b1911",
+  "lab": [
+   8.85,
+   -1.01,
+   5.4
+  ],
+  "pixels": 31423
+ },
+ "real/qXzOsNZP7mA": {
+  "hex": "#2a2b1f",
+  "lab": [
+   16.95,
+   -2.59,
+   7.54
+  ],
+  "pixels": 70594
+ },
+ "real/7jZiSQ_Jyqg": {
+  "hex": "#8a8682",
+  "lab": [
+   56,
+   0.92,
+   2.3
+  ],
+  "pixels": 72786
+ },
+ "real/7YVZYZeITc8": {
+  "hex": "#0c0e0d",
+  "lab": [
+   3.76,
+   -0.66,
+   0.39
+  ],
+  "pixels": 12330
+ },
+ "real/CGKYNN3uuVo": {
+  "hex": "#201206",
+  "lab": [
+   6.83,
+   5.43,
+   7.78
+  ],
+  "pixels": 25927
+ },
+ "real/f5xiGmFwXIU": {
+  "hex": "#6e574d",
+  "lab": [
+   39.04,
+   7.59,
+   9.39
+  ],
+  "pixels": 1541
+ },
+ "real/XvnVGXhNV94": {
+  "hex": "#5e564e",
+  "lab": [
+   36.96,
+   1.91,
+   5.93
+  ],
+  "pixels": 11862
+ },
+ "real/raCWeevBPWs": {
+  "hex": "#090909",
+  "lab": [
+   2.47,
+   0,
+   0
+  ],
+  "pixels": 11469
+ },
+ "real/tFA_OQ-9NDU": {
+  "hex": "#31231e",
+  "lab": [
+   15.41,
+   5.69,
+   5.88
+  ],
+  "pixels": 11939
  }
 }

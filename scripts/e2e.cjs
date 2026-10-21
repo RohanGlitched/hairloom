@@ -12,6 +12,7 @@ const path = require("path");
   const errs = [];
   page.on("console", (m) => m.type() === "error" && errs.push(m.text()));
   page.on("pageerror", (e) => errs.push(String(e)));
+  page.on("dialog", (d) => d.accept()); // demo people confirm before a live run
   const step = (m) => console.log(new Date().toISOString().slice(11, 19), m);
 
   await page.goto(`${base}/studio?p=margaret`, { waitUntil: "load" });
@@ -20,11 +21,10 @@ const path = require("path");
   await page.locator("button", { hasText: "Lena" }).first().click();
   await page.getByRole("button", { name: /Add to shortlist/ }).click();
   // Live: recolour the wig to the nearest shade (1 unit).
-  const shade = page.locator("button", { hasText: /1 unit/ }).first();
+  const shade = page.locator("button", { hasText: /live$/ }).first();
   await shade.waitFor({ timeout: 30000 });
   const t0 = Date.now();
   await shade.click();
-  await page.locator("text=Hair Color").first().waitFor({ timeout: 180000 }).catch(() => undefined);
   await page.waitForFunction(() => !document.body.innerText.includes("YouCam is fitting it"), null, { timeout: 180000 });
   step(`live shade done in ${((Date.now() - t0) / 1000).toFixed(0)} s`);
   await page.screenshot({ path: path.join(out, "e2e-shade.png") });
