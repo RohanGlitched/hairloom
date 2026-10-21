@@ -1,0 +1,17 @@
+.bar { position: sticky; top: 0; z-index: 50; color: var(--ivory); }
+.bar::before { content: ""; position: absolute; inset: 0; background: rgba(36, 25, 42, .86); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(201, 164, 106, .16); z-index: -1; }
+.inner { display: flex; align-items: center; gap: 28px; height: 68px; }
+.logo { display: inline-flex; align-items: center; gap: 10px; font: 400 24px/1 var(--serif); text-decoration: none; }
+.links { display: flex; gap: 26px; margin-left: auto; font-size: 15px; }
+.links a { color: var(--mist); text-decoration: none; padding: 6px 0; }
+.links a:hover, .links a[aria-current="page"] { color: var(--ivory); }
+.links a[aria-current="page"] { box-shadow: inset 0 -1px 0 var(--brass); }
+.cta { margin-left: 6px; }
+.menuBtn { display: none; margin-left: auto; background: none; border: 1px solid #6c5767; border-radius: 999px; padding: 0 16px; min-height: 40px; cursor: pointer; font-size: 14px; }
+.sheet { position: fixed; top: 68px; left: 0; right: 0; bottom: 0; background: var(--night-deep); display: flex; flex-direction: column; gap: 6px; padding: 24px 20px; overflow-y: auto; }
+.sheet a:not(:global(.btn)) { padding: 14px 0; border-bottom: 1px solid var(--line); text-decoration: none; font: 400 24px/1.2 var(--serif); }
+.sheet :global(.btn) { margin-top: 18px; }
+@media (max-width: 940px) {
+  .links, .inner .cta { display: none; }
+  .menuBtn { display: inline-flex; align-items: center; }
+}

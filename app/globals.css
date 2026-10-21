@@ -1,0 +1,104 @@
+/* Hairloom — the fitting room. Aubergine night, ivory light, brass mirror frames. */
+:root {
+  --night: #24192a;
+  --night-deep: #1a121f;
+  --velvet: #2f2237;
+  --velvet-2: #3a2b43;
+  --line: #4a3a52;
+  --ivory: #f4ede8;
+  --mist: #bdaab8;
+  --brass: #c9a46a;
+  --brass-hi: #e3c48d;
+  --brass-lo: #8e6e3d;
+
+  --paper: #f2edef;
+  --paper-2: #e8e0e4;
+  --ink: #2a1d29;
+  --ink-soft: #5f4e5c;
+  --rule: #d6cbd1;
+
+  --good: #8fbf9f;
+  --warn: #e0a96d;
+  --bad: #e58b85;
+
+  --serif: var(--font-bodoni), "Bodoni Moda", Georgia, serif;
+  --sans: var(--font-albert), "Albert Sans", system-ui, sans-serif;
+
+  --wrap: 1200px;
+  --gutter: 64px;
+  --radius: 14px;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+body {
+  margin: 0;
+  background: var(--night);
+  color: var(--ivory);
+  font: 17px/1.6 var(--sans);
+  font-feature-settings: "tnum" 0;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+img { max-width: 100%; display: block; }
+a { color: inherit; }
+button { font: inherit; color: inherit; }
+h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; margin: 0; letter-spacing: -0.005em; text-wrap: balance; }
+p { margin: 0; text-wrap: pretty; }
+.num { font-variant-numeric: tabular-nums; }
+
+:focus-visible { outline: 2px solid var(--brass-hi); outline-offset: 3px; border-radius: 6px; }
+
+.wrap { max-width: calc(var(--wrap) + 2 * var(--gutter)); margin: 0 auto; padding: 0 var(--gutter); }
+@media (max-width: 760px) { :root { --gutter: 20px; } body { font-size: 16px; } }
+
+/* Section surfaces */
+.night { background: var(--night); color: var(--ivory); }
+.deep { background: var(--night-deep); color: var(--ivory); }
+.paper { background: var(--paper); color: var(--ink); }
+.paper ::selection { background: #d9c3a0; }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 46px; padding: 0 22px; border-radius: 999px; border: 1px solid transparent;
+  font-weight: 600; font-size: 15px; text-decoration: none; cursor: pointer; white-space: nowrap;
+  transition: background-color .15s, border-color .15s, color .15s;
+}
+.btn-ivory { background: var(--ivory); color: var(--night); }
+.btn-ivory:hover { background: #fff; }
+.btn-ghost { border-color: #7d6676; color: var(--ivory); background: transparent; }
+.btn-ghost:hover { border-color: var(--brass); }
+.paper .btn-ghost { border-color: #a99aa5; color: var(--ink); }
+.paper .btn-ghost:hover { border-color: var(--ink); }
+.btn-ink { background: var(--ink); color: var(--paper); }
+.btn-ink:hover { background: #000; }
+.btn[disabled] { opacity: .5; cursor: not-allowed; }
+.btn-sm { min-height: 38px; padding: 0 16px; font-size: 14px; }
+
+/* Shared type scale (calm) */
+.h-hero { font-size: clamp(36px, 4.6vw, 56px); line-height: 1.08; }
+.h-sec { font-size: clamp(30px, 3.2vw, 42px); line-height: 1.12; }
+.h-sub { font-size: 24px; line-height: 1.2; }
+.lede { font-size: 19px; color: var(--mist); max-width: 62ch; }
+.paper .lede { color: var(--ink-soft); }
+.small { font-size: 14px; color: var(--mist); }
+.paper .small { color: var(--ink-soft); }
+.kicker { font-family: var(--serif); font-style: italic; font-size: 18px; color: var(--brass); }
+.paper .kicker { color: #8a6533; }
+
+.sec { padding: 104px 0; }
+@media (max-width: 760px) { .sec { padding: 72px 0; } }
+
+.visually-hidden { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.src { font-size: 13px; color: var(--mist); }
+.src a { color: inherit; text-underline-offset: 2px; }
+.paper .src { color: var(--ink-soft); }
+
+@media print {
+  body { background: #fff; }
+  body > header, body > footer, [data-noprint] { display: none !important; }
+}

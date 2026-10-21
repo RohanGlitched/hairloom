@@ -1,0 +1,524 @@
+{
+ "catalogue/asha": {
+  "hex": "#251e14",
+  "lab": [
+   11.83,
+   1.57,
+   8
+  ],
+  "pixels": 47511
+ },
+ "catalogue/meera": {
+  "hex": "#121712",
+  "lab": [
+   6.96,
+   -2.87,
+   1.92
+  ],
+  "pixels": 59563
+ },
+ "catalogue/nora": {
+  "hex": "#342515",
+  "lab": [
+   16.11,
+   4.95,
+   13.25
+  ],
+  "pixels": 42361
+ },
+ "catalogue/ivy": {
+  "hex": "#462b18",
+  "lab": [
+   20.4,
+   10.38,
+   17.17
+  ],
+  "pixels": 27656
+ },
+ "catalogue/zuri": {
+  "hex": "#0d1514",
+  "lab": [
+   6.13,
+   -3.34,
+   -0.54
+  ],
+  "pixels": 56580
+ },
+ "catalogue/amara": {
+  "hex": "#0a1212",
+  "lab": [
+   4.98,
+   -3.04,
+   -0.56
+  ],
+  "pixels": 57483
+ },
+ "catalogue/june": {
+  "hex": "#6d5b47",
+  "lab": [
+   39.79,
+   4.16,
+   14.07
+  ],
+  "pixels": 61141
+ },
+ "catalogue/silver": {
+  "hex": "#b0b4b7",
+  "lab": [
+   73.16,
+   -0.96,
+   -2.03
+  ],
+  "pixels": 31717
+ },
+ "catalogue/rosa": {
+  "hex": "#4c2a16",
+  "lab": [
+   20.91,
+   13.72,
+   19.75
+  ],
+  "pixels": 62176
+ },
+ "catalogue/lena": {
+  "hex": "#7d7c77",
+  "lab": [
+   51.96,
+   -0.84,
+   3.04
+  ],
+  "pixels": 48511
+ },
+ "catalogue/tara": {
+  "hex": "#3c2d1d",
+  "lab": [
+   19.69,
+   4.76,
+   12.93
+  ],
+  "pixels": 58312
+ },
+ "catalogue/kai": {
+  "hex": "#262016",
+  "lab": [
+   12.64,
+   0.81,
+   7.69
+  ],
+  "pixels": 16609
+ },
+ "catalogue/dev": {
+  "hex": "#707575",
+  "lab": [
+   48.66,
+   -1.78,
+   -0.72
+  ],
+  "pixels": 22624
+ },
+ "anjali/kept": {
+  "hex": "#342820",
+  "lab": [
+   17.31,
+   3.85,
+   7.67
+  ],
+  "pixels": 34661
+ },
+ "anjali/own": {
+  "hex": "#3c2e26",
+  "lab": [
+   20.37,
+   4.87,
+   7.42
+  ],
+  "pixels": 36780
+ },
+ "anjali/wig_asha": {
+  "hex": "#372b20",
+  "lab": [
+   18.68,
+   3.76,
+   9.3
+  ],
+  "pixels": 36595
+ },
+ "anjali/wig_meera": {
+  "hex": "#1c1d1b",
+  "lab": [
+   10.64,
+   -1.36,
+   1.38
+  ],
+  "pixels": 62703
+ },
+ "anjali/wig_nora": {
+  "hex": "#402f20",
+  "lab": [
+   20.95,
+   5.69,
+   12.91
+  ],
+  "pixels": 26826
+ },
+ "anjali/wig_ivy": {
+  "hex": "#533824",
+  "lab": [
+   26.13,
+   9.75,
+   17.27
+  ],
+  "pixels": 17075
+ },
+ "anjali/wig_zuri": {
+  "hex": "#161b1d",
+  "lab": [
+   9.35,
+   -2.11,
+   -1.83
+  ],
+  "pixels": 48956
+ },
+ "anjali/wig_amara": {
+  "hex": "#10191b",
+  "lab": [
+   7.81,
+   -3.01,
+   -2.79
+  ],
+  "pixels": 42718
+ },
+ "anjali/wig_june": {
+  "hex": "#6a5947",
+  "lab": [
+   38.97,
+   4.09,
+   13.22
+  ],
+  "pixels": 53713
+ },
+ "anjali/wig_silver": {
+  "hex": "#b4b9bd",
+  "lab": [
+   74.97,
+   -1.25,
+   -2.53
+  ],
+  "pixels": 18230
+ },
+ "anjali/wig_rosa": {
+  "hex": "#4e2d19",
+  "lab": [
+   22.32,
+   12.84,
+   19.37
+  ],
+  "pixels": 75871
+ },
+ "anjali/wig_lena": {
+  "hex": "#7f7e78",
+  "lab": [
+   52.67,
+   -0.77,
+   3.06
+  ],
+  "pixels": 29410
+ },
+ "anjali/wig_tara": {
+  "hex": "#4e3a2b",
+  "lab": [
+   26.11,
+   6.73,
+   12.44
+  ],
+  "pixels": 53898
+ },
+ "anjali/wig_kai": {
+  "hex": "#3a3128",
+  "lab": [
+   21.13,
+   2.4,
+   7.42
+  ],
+  "pixels": 10577
+ },
+ "anjali/wig_dev": {
+  "hex": "#8a8f93",
+  "lab": [
+   59.08,
+   -1.02,
+   -3.03
+  ],
+  "pixels": 10634
+ },
+ "nia/kept": {
+  "hex": "#0d120f",
+  "lab": [
+   4.95,
+   -2.3,
+   1.1
+  ],
+  "pixels": 48304
+ },
+ "nia/own": {
+  "hex": "#111612",
+  "lab": [
+   6.45,
+   -2.83,
+   1.45
+  ],
+  "pixels": 47762
+ },
+ "nia/wig_asha": {
+  "hex": "#2f271c",
+  "lab": [
+   16.16,
+   1.65,
+   8.86
+  ],
+  "pixels": 47057
+ },
+ "nia/wig_meera": {
+  "hex": "#131611",
+  "lab": [
+   6.87,
+   -2.67,
+   2.45
+  ],
+  "pixels": 78233
+ },
+ "nia/wig_nora": {
+  "hex": "#312515",
+  "lab": [
+   15.48,
+   3.33,
+   12.41
+  ],
+  "pixels": 35604
+ },
+ "nia/wig_ivy": {
+  "hex": "#302111",
+  "lab": [
+   14.26,
+   4.92,
+   13.79
+  ],
+  "pixels": 22555
+ },
+ "nia/wig_zuri": {
+  "hex": "#0e1613",
+  "lab": [
+   6.38,
+   -3.61,
+   0.74
+  ],
+  "pixels": 63811
+ },
+ "nia/wig_amara": {
+  "hex": "#081411",
+  "lab": [
+   5.3,
+   -4.28,
+   0.13
+  ],
+  "pixels": 56247
+ },
+ "nia/wig_june": {
+  "hex": "#5d4d37",
+  "lab": [
+   33.63,
+   3.31,
+   15.37
+  ],
+  "pixels": 69169
+ },
+ "nia/wig_silver": {
+  "hex": "#9f9d97",
+  "lab": [
+   64.69,
+   -0.36,
+   3.38
+  ],
+  "pixels": 22568
+ },
+ "nia/wig_rosa": {
+  "hex": "#4a2d18",
+  "lab": [
+   21.61,
+   10.72,
+   18.81
+  ],
+  "pixels": 85967
+ },
+ "nia/wig_lena": {
+  "hex": "#6b6658",
+  "lab": [
+   43.14,
+   -0.57,
+   8.41
+  ],
+  "pixels": 39357
+ },
+ "nia/wig_tara": {
+  "hex": "#392b1b",
+  "lab": [
+   18.73,
+   3.69,
+   12.6
+  ],
+  "pixels": 69858
+ },
+ "nia/wig_kai": {
+  "hex": "#252117",
+  "lab": [
+   12.9,
+   -0.3,
+   7.28
+  ],
+  "pixels": 13494
+ },
+ "nia/wig_dev": {
+  "hex": "#6d6b62",
+  "lab": [
+   45.32,
+   -1.1,
+   5.65
+  ],
+  "pixels": 14112
+ },
+ "margaret/kept": {
+  "hex": "#ad9881",
+  "lab": [
+   64.25,
+   3.99,
+   15.04
+  ],
+  "pixels": 41938
+ },
+ "margaret/own": {
+  "hex": "#ad9a85",
+  "lab": [
+   64.79,
+   3.57,
+   13.93
+  ],
+  "pixels": 40731
+ },
+ "margaret/wig_asha": {
+  "hex": "#31271d",
+  "lab": [
+   16.58,
+   2.61,
+   8.48
+  ],
+  "pixels": 48337
+ },
+ "margaret/wig_meera": {
+  "hex": "#1b1e1a",
+  "lab": [
+   10.88,
+   -2.05,
+   1.99
+  ],
+  "pixels": 87360
+ },
+ "margaret/wig_nora": {
+  "hex": "#413020",
+  "lab": [
+   21.34,
+   5.24,
+   13.46
+  ],
+  "pixels": 37214
+ },
+ "margaret/wig_ivy": {
+  "hex": "#563821",
+  "lab": [
+   26.39,
+   10.45,
+   19.25
+  ],
+  "pixels": 22533
+ },
+ "margaret/wig_zuri": {
+  "hex": "#131b1c",
+  "lab": [
+   8.88,
+   -3.21,
+   -1.84
+  ],
+  "pixels": 69426
+ },
+ "margaret/wig_amara": {
+  "hex": "#0b1617",
+  "lab": [
+   6.35,
+   -3.62,
+   -2
+  ],
+  "pixels": 63912
+ },
+ "margaret/wig_june": {
+  "hex": "#6c5b47",
+  "lab": [
+   39.73,
+   3.92,
+   13.97
+  ],
+  "pixels": 78018
+ },
+ "margaret/wig_silver": {
+  "hex": "#babfc2",
+  "lab": [
+   77.08,
+   -1.16,
+   -2.18
+  ],
+  "pixels": 23334
+ },
+ "margaret/wig_rosa": {
+  "hex": "#502f1a",
+  "lab": [
+   23.18,
+   12.43,
+   20.07
+  ],
+  "pixels": 92423
+ },
+ "margaret/wig_lena": {
+  "hex": "#80807b",
+  "lab": [
+   53.4,
+   -0.62,
+   2.42
+  ],
+  "pixels": 40953
+ },
+ "margaret/wig_tara": {
+  "hex": "#513e2d",
+  "lab": [
+   27.9,
+   5.8,
+   13.52
+  ],
+  "pixels": 74843
+ },
+ "margaret/wig_kai": {
+  "hex": "#41372b",
+  "lab": [
+   23.67,
+   2.68,
+   9.23
+  ],
+  "pixels": 13359
+ },
+ "margaret/wig_dev": {
+  "hex": "#858b8e",
+  "lab": [
+   57.4,
+   -1.22,
+   -2.47
+  ],
+  "pixels": 14760
+ }
+}

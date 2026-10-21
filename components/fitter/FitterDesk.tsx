@@ -1,0 +1,227 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { BOUTIQUE, LENGTH_LABEL, WIGS, inr } from "@/lib/catalogue";
+import { describe, persona } from "@/lib/demo";
+import { measured, wigShade } from "@/lib/colours";
+import { labToHex, nearestShades } from "@/lib/color";
+import { prepare, runTask } from "@/lib/client";
+import { lengthFromTerm } from "@/lib/match";
+import { unseal, type SharePayload } from "@/lib/seal";
+import type { Readings } from "@/lib/demo";
+import s from "./fitter.module.css";
+
+/** A brief built from the demo person, so the desk can be explored without a real link. */
+function demoBrief(): SharePayload {
+  const p = persona("anjali");
+  const lab = measured("anjali/kept");
+  const n = lab ? nearestShades(lab, 1)[0] : null;
+  return {
+    v: 1, name: "Anjali (demo)", keptAt: Date.parse("2026-10-21"), kept: p.kept, readings: p.readings,
+    colour: lab && n ? { hex: labToHex(lab), code: n.code, name: n.name, dE: Math.round(n.dE * 10) / 10 } : null,
+    looks: [
+      { key: "wig:asha", label: "Asha", src: p.wigs.asha, detail: "Sleek lob, centre parting · Lace front · Heat-friendly synthetic" },
+      { key: "wig:tara", label: "Tara", src: p.wigs.tara, detail: "Long, deep side parting, darker root · Hand-tied · Human hair" },
+      { key: "head:turban", label: "Jersey turban", src: p.headwear.turban, detail: "Pre-tied, dusty rose" },
+    ],
+    note: "I'd like to look like myself at work. Something light, and my scalp is sensitive.",
+    appointment: "2026-11-04T11:00",
+  };
+}
+
+export function FitterDesk() {
+  const [brief, setBrief] = useState<SharePayload | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [paste, setPaste] = useState("");
+
+  async function openLink(hash: string) {
+    const m = /s=([\w-]+)\.([\w-]+)/.exec(hash);
+    if (!m) return setErr("That doesn't look like a Hairloom link. It should contain #s= followed by a code.");
+    setLoading(true); setErr(null);
+    try { setBrief(await unseal(m[1], m[2])); } catch (e) { setErr((e as Error).message); } finally { setLoading(false); }
+  }
+
+  useEffect(() => {
+    const h = window.location.hash;
+    if (h.includes("s=")) void openLink(h);
+    else if (h === "#demo") setBrief(demoBrief());
+  }, []);
+
+  return (
+    <>
+      <section className={`night ${s.head}`}>
+        <div className="wrap">
+          <p className="kicker">For wig fitters</p>
+          <h1 className="h-hero">{brief ? `Fitting brief: ${brief.name}` : "The fitter desk"}</h1>
+          <p className="lede">
+            {brief
+              ? "Decrypted in this browser from the link your client sent. Nothing here was readable by our server."
+              : "Open a client's sealed link to see their hair passport and shortlist before they arrive. No account and nothing to install."}
+          </p>
+          {!brief && (
+            <div className={s.open} id="open">
+              <label className="visually-hidden" htmlFor="paste">Client link</label>
+              <input id="paste" placeholder="Paste the link your client sent" value={paste} onChange={(e) => setPaste(e.target.value)} />
+              <button className="btn btn-ivory" disabled={!paste || loading} onClick={() => openLink(paste)}>{loading ? "Opening…" : "Open brief"}</button>
+              <button className="btn btn-ghost" onClick={() => { setBrief(demoBrief()); history.replaceState(null, "", "#demo"); }}>Open a demo brief</button>
+            </div>
+          )}
+          {err && <p className={s.err} role="alert">{err}</p>}
+        </div>
+      </section>
+
+      {brief && <Brief b={brief} onClose={() => { setBrief(null); history.replaceState(null, "", "/fitter"); }} />}
+
+      <Stock />
+      <AutoTag />
+    </>
+  );
+}
+
+function Brief({ b, onClose }: { b: SharePayload; onClose: () => void }) {
+  const r = b.readings as Readings;
+  const d = describe(r);
+  const len = lengthFromTerm(r.length?.term);
+  const when = b.appointment ? new Date(b.appointment).toLocaleString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : null;
+  // One line per wig: a recoloured pick ("shade:<wig>:<code>") wins over the stock shade.
+  const pullMap = new Map<string, { w: (typeof WIGS)[number]; code: string }>();
+  for (const l of b.looks) {
+    const [kind, id, code] = l.key.split(":");
+    const w = WIGS.find((x) => x.id === id);
+    if (!w || (kind !== "wig" && kind !== "shade")) continue;
+    if (kind === "shade" || !pullMap.has(id)) pullMap.set(id, { w, code: kind === "shade" ? code : wigShade(w).code });
+  }
+  const pull = [...pullMap.values()];
+
+  return (
+    <section className={`paper ${s.brief}`} aria-label="Fitting brief">
+      <div className="wrap">
+        <div className={s.briefTop}>
+          <div className={s.keptCol}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={b.kept} alt={`${b.name} before hair loss`} />
+            <p className="small">Kept {new Date(b.keptAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}</p>
+          </div>
+          <div>
+            <dl className={s.facts}>
+              {when && <><dt>Appointment</dt><dd>{when}</dd></>}
+              <dt>Shade</dt><dd>{b.colour ? <><i style={{ background: b.colour.hex }} />Nearest code {b.colour.code}, {b.colour.name.toLowerCase()} <small>(ΔE {b.colour.dE}, measured on the client&rsquo;s device)</small></> : "Not measured"}</dd>
+              <dt>Curl pattern</dt><dd>{d.curl ? `${d.curl.raw}, ${d.curl.label.toLowerCase()}` : "Not read"}</dd>
+              <dt>Frizz</dt><dd>{d.frizz?.label ?? "Not read"}</dd>
+              <dt>Length</dt><dd>{len ? LENGTH_LABEL[len] : d.length?.label ?? "Not read"}</dd>
+              <dt>Face shape</dt><dd>{d.face?.label ?? "Not read"}</dd>
+              <dt>Brows</dt><dd>{d.brows ? <><i style={{ background: d.browHex ?? "#444" }} />{d.brows.label}</> : "Not read"}</dd>
+            </dl>
+            {b.note && <blockquote className={s.note}>&ldquo;{b.note}&rdquo;</blockquote>}
+          </div>
+          <div className={s.prep}>
+            <h2 className="h-sub">Before they arrive</h2>
+            <ul>
+              {pull.map(({ w, code }) => <li key={w.id}>Pull <b>{w.name}</b> in shade {code} and one shade either side.</li>)}
+              <li>Have an adjustable cap ready: heads can be up to a size smaller after hair loss (American Cancer Society).</li>
+              {d.frizz && /frizz/i.test(d.frizz.label) && <li>Their own hair had some frizz; a slightly textured fibre will look more like them.</li>}
+              <li>Offer a soft liner or sleep cap if the scalp is sensitive.</li>
+            </ul>
+            <div className={s.actions}>
+              <button className="btn btn-ink btn-sm" onClick={() => window.print()}>Print brief</button>
+              <button className="btn btn-ghost btn-sm" onClick={onClose}>Close</button>
+            </div>
+          </div>
+        </div>
+        <h2 className="h-sec" style={{ marginTop: 48 }}>Their shortlist, on their own face</h2>
+        <div className={s.looks}>
+          {b.looks.map((l) => (
+            <figure key={l.key}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={l.src} alt={`${b.name} wearing ${l.label}`} />
+              <figcaption><b>{l.label}</b><span>{l.detail}</span></figcaption>
+            </figure>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Stock() {
+  return (
+    <section id="stock" className="night sec" data-noprint>
+      <div className="wrap">
+        <p className="kicker">Demo stock</p>
+        <h2 className="h-sec">{BOUTIQUE.name}, {BOUTIQUE.city}</h2>
+        <p className="lede" style={{ marginTop: 12 }}>{BOUTIQUE.note} Shade codes are measured from each photo&rsquo;s hair pixels, not typed in.</p>
+        <div className={s.stock}>
+          {WIGS.map((w) => {
+            const sh = wigShade(w);
+            return (
+              <article key={w.id} className={s.item}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={`/catalogue/thumb/${w.id}.jpg`} alt={`${w.name} wig on a model`} loading="lazy" />
+                <h3>{w.name}</h3>
+                <p className="small">{w.style}</p>
+                <p className={s.tags}>
+                  <span><i style={{ background: sh.hex }} />{sh.code}</span>
+                  <span>{LENGTH_LABEL[w.length]}</span>
+                  <span>{w.texture}</span>
+                  <span>{w.cap}</span>
+                </p>
+                <p className={s.price}><span className="num">{inr(w.price)}</span> · {w.fibre}</p>
+              </article>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function AutoTag() {
+  const [img, setImg] = useState<string | null>(null);
+  const [out, setOut] = useState<{ length?: string; shade?: string; hex?: string; dE?: number } | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function tag(file?: File) {
+    if (!file) return;
+    setErr(null); setOut(null);
+    const url = await prepare(file, 1024);
+    setImg(url);
+    setBusy(true);
+    const { measureHair } = await import("@/lib/hairColor");
+    const [col, len] = await Promise.all([measureHair(url).catch(() => null), runTask("hairLength", [url])]);
+    setBusy(false);
+    const n = col ? nearestShades(col.lab, 1)[0] : null;
+    if (!len.ok) setErr(len.message);
+    setOut({ length: len.ok ? String((len.results.hair_length as { term?: string })?.term ?? "") : undefined, shade: n ? `${n.code}, ${n.name.toLowerCase()}` : undefined, hex: col?.hex, dE: n?.dE });
+  }
+
+  return (
+    <section className="deep sec" aria-labelledby="tag-title" data-noprint>
+      <div className={`wrap ${s.tagWrap}`}>
+        <div>
+          <p className="kicker">Stock onboarding</p>
+          <h2 id="tag-title" className="h-sec">Tag a wig from its photo.</h2>
+          <p className="lede" style={{ marginTop: 12 }}>
+            Upload a photo of a wig on a model. YouCam&rsquo;s hair-length detection reads the length (2 units) and the hair mask in your browser measures the shade code, so stock is described the same way as each client&rsquo;s passport.
+          </p>
+          <label className="btn btn-ivory" style={{ marginTop: 20, position: "relative" }}>
+            {busy ? "Reading…" : "Upload a wig photo"}
+            <input type="file" accept="image/*" style={{ position: "absolute", opacity: 0, width: 1, height: 1 }} onChange={(e) => tag(e.target.files?.[0])} disabled={busy} />
+          </label>
+          {err && <p className={s.err} role="alert">{err}</p>}
+        </div>
+        <div className={s.tagOut}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          {img ? <img src={img} alt="Uploaded wig photo" /> : <div className={s.tagEmpty}>Your photo appears here</div>}
+          {out && (
+            <dl className={s.facts}>
+              <dt>Length</dt><dd>{out.length || "Not read"}</dd>
+              <dt>Shade</dt><dd>{out.shade ? <><i style={{ background: out.hex }} />{out.shade} <small className="num">ΔE {out.dE?.toFixed(1)}</small></> : "Not enough hair visible"}</dd>
+            </dl>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}

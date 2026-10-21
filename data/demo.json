@@ -1,0 +1,237 @@
+{
+  "generated": "2026-10-21T12:25:57.599Z",
+  "personas": [
+    {
+      "id": "anjali",
+      "name": "Anjali",
+      "age": 45,
+      "city": "Pune",
+      "blurb": "Starts chemotherapy for breast cancer in two weeks. Wants to look like herself at work.",
+      "kept": "/demo/anjali/kept.jpg",
+      "turns": [
+        "/demo/anjali/turn_a.jpg",
+        "/demo/anjali/turn_b.jpg"
+      ],
+      "week4": "/demo/anjali/week4.jpg",
+      "own": "/demo/anjali/own.jpg",
+      "readings": {
+        "type": {
+          "mapping": "1 to 2A",
+          "term": "Straight to Slight Wavy"
+        },
+        "frizz": {
+          "mapping": 1,
+          "term": "Slightly Frizzy"
+        },
+        "length": {
+          "term": "above chest"
+        },
+        "face": {
+          "nose": {},
+          "agegender": {},
+          "eyelid": {},
+          "eyebrow": {
+            "left_shape": "Straight",
+            "right_shape": "Hard Angled",
+            "left_body_thickness": "Dense",
+            "left_tail_thickness": "Sparse",
+            "left_thinness": "Normal",
+            "right_body_thickness": "Average",
+            "right_tail_thickness": "Average",
+            "right_thinness": "Normal"
+          },
+          "color": {
+            "eyebrow_color": "#a17a63",
+            "hair_color": "#FAF0BE",
+            "hair_color_name": "Blonde"
+          },
+          "face_quality": {
+            "has_face": true,
+            "area": "good",
+            "frontal": "good",
+            "lighting": "good",
+            "faceangle": "good"
+          },
+          "cheekbone": {},
+          "faceshape": "Square",
+          "facialratio": {}
+        }
+      },
+      "wigs": {
+        "asha": "/demo/anjali/wig_asha.jpg",
+        "meera": "/demo/anjali/wig_meera.jpg",
+        "nora": "/demo/anjali/wig_nora.jpg",
+        "ivy": "/demo/anjali/wig_ivy.jpg",
+        "zuri": "/demo/anjali/wig_zuri.jpg",
+        "amara": "/demo/anjali/wig_amara.jpg",
+        "june": "/demo/anjali/wig_june.jpg",
+        "silver": "/demo/anjali/wig_silver.jpg",
+        "rosa": "/demo/anjali/wig_rosa.jpg",
+        "lena": "/demo/anjali/wig_lena.jpg",
+        "tara": "/demo/anjali/wig_tara.jpg",
+        "kai": "/demo/anjali/wig_kai.jpg",
+        "dev": "/demo/anjali/wig_dev.jpg"
+      },
+      "headwear": {
+        "turban": "/demo/anjali/head_turban.jpg",
+        "silk": "/demo/anjali/head_silk.jpg",
+        "beanie": "/demo/anjali/head_beanie.jpg",
+        "cap": "/demo/anjali/head_cap.jpg"
+      }
+    },
+    {
+      "id": "nia",
+      "name": "Nia",
+      "age": 38,
+      "city": "London",
+      "blurb": "Has alopecia areata. Patches are spreading and she wants a plan before they show.",
+      "kept": "/demo/nia/kept.jpg",
+      "turns": [
+        "/demo/nia/turn_a.jpg",
+        "/demo/nia/turn_b.jpg"
+      ],
+      "week4": "/demo/nia/week4.jpg",
+      "own": "/demo/nia/own.jpg",
+      "readings": {
+        "type": {
+          "mapping": "4A to 4B",
+          "term": "Kinky Soft to Coily"
+        },
+        "frizz": {
+          "mapping": 1,
+          "term": "Slightly Frizzy"
+        },
+        "length": {
+          "term": "short hair"
+        },
+        "face": {
+          "nose": {},
+          "agegender": {},
+          "eyelid": {},
+          "eyebrow": {
+            "left_shape": "Soft Angled",
+            "right_shape": "Rounded",
+            "left_body_thickness": "Average",
+            "left_tail_thickness": "Average",
+            "left_thinness": "Normal",
+            "right_body_thickness": "Average",
+            "right_tail_thickness": "Sparse",
+            "right_thinness": "Normal"
+          },
+          "color": {
+            "eyebrow_color": "#5b575a"
+          },
+          "face_quality": {
+            "has_face": true,
+            "area": "good",
+            "frontal": "good",
+            "lighting": "good",
+            "faceangle": "good"
+          },
+          "cheekbone": {},
+          "faceshape": "Oval",
+          "facialratio": {}
+        }
+      },
+      "wigs": {
+        "asha": "/demo/nia/wig_asha.jpg",
+        "meera": "/demo/nia/wig_meera.jpg",
+        "nora": "/demo/nia/wig_nora.jpg",
+        "ivy": "/demo/nia/wig_ivy.jpg",
+        "zuri": "/demo/nia/wig_zuri.jpg",
+        "amara": "/demo/nia/wig_amara.jpg",
+        "june": "/demo/nia/wig_june.jpg",
+        "silver": "/demo/nia/wig_silver.jpg",
+        "rosa": "/demo/nia/wig_rosa.jpg",
+        "lena": "/demo/nia/wig_lena.jpg",
+        "tara": "/demo/nia/wig_tara.jpg",
+        "kai": "/demo/nia/wig_kai.jpg",
+        "dev": "/demo/nia/wig_dev.jpg"
+      },
+      "headwear": {
+        "turban": "/demo/nia/head_turban.jpg",
+        "silk": "/demo/nia/head_silk.jpg",
+        "beanie": "/demo/nia/head_beanie.jpg",
+        "cap": "/demo/nia/head_cap.jpg"
+      }
+    },
+    {
+      "id": "margaret",
+      "name": "Margaret",
+      "age": 60,
+      "city": "Leeds",
+      "blurb": "Begins a taxane regimen next month. Has worn her grey-blonde waves for twenty years.",
+      "kept": "/demo/margaret/kept.jpg",
+      "turns": [
+        "/demo/margaret/turn_a.jpg",
+        "/demo/margaret/turn_b.jpg"
+      ],
+      "week4": "/demo/margaret/week4.jpg",
+      "own": "/demo/margaret/own.jpg",
+      "readings": {
+        "type": {
+          "mapping": "2B to 2C",
+          "term": "Medium to Thick Wavy"
+        },
+        "frizz": {
+          "mapping": 2,
+          "term": "Frizzy"
+        },
+        "length": {
+          "term": "short hair"
+        },
+        "face": {
+          "nose": {},
+          "agegender": {},
+          "eyelid": {},
+          "eyebrow": {
+            "left_shape": "Rounded",
+            "right_shape": "Straight",
+            "left_body_thickness": "Average",
+            "left_tail_thickness": "Sparse",
+            "left_thinness": "Normal",
+            "right_body_thickness": "Average",
+            "right_tail_thickness": "Sparse",
+            "right_thinness": "Normal"
+          },
+          "color": {
+            "eyebrow_color": "#a17a63",
+            "hair_color": "#FAF0BE",
+            "hair_color_name": "Blonde"
+          },
+          "face_quality": {
+            "has_face": true,
+            "area": "good",
+            "frontal": "good",
+            "lighting": "good",
+            "faceangle": "good"
+          },
+          "cheekbone": {},
+          "faceshape": "Square",
+          "facialratio": {}
+        }
+      },
+      "wigs": {
+        "asha": "/demo/margaret/wig_asha.jpg",
+        "meera": "/demo/margaret/wig_meera.jpg",
+        "nora": "/demo/margaret/wig_nora.jpg",
+        "ivy": "/demo/margaret/wig_ivy.jpg",
+        "zuri": "/demo/margaret/wig_zuri.jpg",
+        "amara": "/demo/margaret/wig_amara.jpg",
+        "june": "/demo/margaret/wig_june.jpg",
+        "silver": "/demo/margaret/wig_silver.jpg",
+        "rosa": "/demo/margaret/wig_rosa.jpg",
+        "lena": "/demo/margaret/wig_lena.jpg",
+        "tara": "/demo/margaret/wig_tara.jpg",
+        "kai": "/demo/margaret/wig_kai.jpg",
+        "dev": "/demo/margaret/wig_dev.jpg"
+      },
+      "headwear": {
+        "turban": "/demo/margaret/head_turban.jpg",
+        "silk": "/demo/margaret/head_silk.jpg",
+        "beanie": "/demo/margaret/head_beanie.jpg",
+        "cap": "/demo/margaret/head_cap.jpg"
+      }
+    }
+  ]
+}

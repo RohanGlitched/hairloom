@@ -1,0 +1,90 @@
+// Copies precomputed YouCam outputs from ../lab/out into the site:
+//   public/demo/<persona>/*.jpg, public/catalogue/*.jpg, data/demo.json, data/lab-runs.json
+// Run: node scripts/export-demo.mjs
+import fs from "node:fs";
+import path from "node:path";
+import { execFileSync } from "node:child_process";
+
+const ROOT = path.resolve(import.meta.dirname, "..");
+const LAB = path.resolve(ROOT, "../lab/out");
+const PUB = path.join(ROOT, "public");
+const DATA = path.join(ROOT, "data");
+fs.mkdirSync(DATA, { recursive: true });
+
+function resize(src, dst, max, q = 84) {
+  fs.mkdirSync(path.dirname(dst), { recursive: true });
+  execFileSync("python", ["-c", `
+from PIL import Image
+im=Image.open(r'${src}').convert('RGB'); im.thumbnail((${max},${max})); im.save(r'${dst}',quality=${q},optimize=True,progressive=True)`]);
+}
+const readJson = (f) => (fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, "utf8")) : null);
+
+const PERSONAS = [
+  { id: "anjali", name: "Anjali", age: 45, city: "Pune", blurb: "Starts chemotherapy for breast cancer in two weeks. Wants to look like herself at work." },
+  { id: "nia", name: "Nia", age: 38, city: "London", blurb: "Has alopecia areata. Patches are spreading and she wants a plan before they show." },
+  { id: "margaret", name: "Margaret", age: 60, city: "Leeds", blurb: "Begins a taxane regimen next month. Has worn her grey-blonde waves for twenty years." },
+];
+const WIGS = ["asha", "meera", "nora", "ivy", "zuri", "amara", "june", "silver", "rosa", "lena", "tara", "kai", "dev"];
+const HEAD = ["turban", "silk", "beanie", "cap"];
+
+// Catalogue: the full 1024 image is the try-on reference (served publicly); thumbs for the rail.
+for (const w of WIGS) {
+  resize(path.join(LAB, "cat", `${w}_1024.jpg`), path.join(PUB, "catalogue", `${w}.jpg`), 1024, 90);
+  resize(path.join(LAB, "cat", `${w}_1024.jpg`), path.join(PUB, "catalogue", "thumb", `${w}.jpg`), 420, 82);
+}
+
+const out = [];
+for (const p of PERSONAS) {
+  const d = path.join(LAB, "demo", p.id);
+  if (!fs.existsSync(path.join(d, "bald.json"))) { console.log("skip", p.id); continue; }
+  const pub = (n) => `/demo/${p.id}/${n}.jpg`;
+  const copy = (src, n, max = 900) => { if (fs.existsSync(src)) { resize(src, path.join(PUB, "demo", p.id, `${n}.jpg`), max); return pub(n); } return null; };
+  const r = (n) => readJson(path.join(d, `${n}.json`))?.data?.results ?? null;
+  const persona = {
+    ...p,
+    kept: copy(path.join(d, "front.jpg"), "kept"),
+    turns: [copy(path.join(d, "turn_a.jpg"), "turn_a", 600), copy(path.join(d, "turn_b.jpg"), "turn_b", 600)],
+    week4: copy(path.join(d, "bald.jpg"), "week4"),
+    own: copy(path.join(d, "own.jpg"), "own"),
+    readings: { type: r("hair_type")?.hair_type ?? null, frizz: r("hair_frizz")?.hair_frizziness ?? null, length: r("hair_length")?.hair_length ?? null, face: r("face") },
+    wigs: Object.fromEntries(WIGS.map((w) => [w, copy(path.join(d, `wig_${w}.jpg`), `wig_${w}`)]).filter(([, v]) => v)),
+    headwear: Object.fromEntries(HEAD.map((h) => [h, copy(path.join(d, `head_${h}.jpg`), `head_${h}`)]).filter(([, v]) => v)),
+  };
+  out.push(persona);
+  console.log(p.id, Object.keys(persona.wigs).length, "wigs");
+}
+fs.writeFileSync(path.join(DATA, "demo.json"), JSON.stringify({ generated: new Date().toISOString(), personas: out }, null, 2));
+
+// Every lab run, for the evidence page: which API, did it succeed, how long it took.
+const FEATURE = [
+  [/m_brow/, "Makeup Try-On (eyebrows)"],
+  [/t_hat|t_turban_bald/, "Hat Try-On"],
+  [/t_scarf/, "Scarf Try-On"],
+  [/skin_/, "Skin Analysis"],
+  [/d_tone/, "Facial Color Tones Analyzer"],
+  [/d_dens/, "Hair Density Detection"],
+  [/hair_type|d_type/, "Hair Type Detection"],
+  [/hair_frizz|d_frizz/, "Hair Frizziness Detection"],
+  [/hair_length|d_len/, "Hair Length Detection"],
+  [/(^face$|d_face)/, "Face Attribute Analyzer"],
+  [/(wig_|^own$|t_hair|restored)/, "Hairstyle Try-On (hair-transfer)"],
+  [/^(persona|prod_|cat\/)/, "Image Generator (text to image)"],
+  [/(turn_|bald$|head_|ang_|i2i|_turban|p1_bald)/, "Image Generator (image to image)"],
+];
+const runs = [];
+const walk = (dir, rel = "") => {
+  for (const f of fs.readdirSync(dir)) {
+    const full = path.join(dir, f);
+    if (fs.statSync(full).isDirectory()) walk(full, rel + f + "/");
+    else if (f.endsWith(".json") && !f.startsWith("hair_templates")) {
+      const j = readJson(full);
+      const name = (rel + f.replace(/\.json$/, "")).replace(/^demo\/\w+\//, "");
+      const feat = FEATURE.find(([re]) => re.test(name))?.[1];
+      if (!feat || !j?.ms) continue;
+      runs.push({ name: rel + f.replace(/\.json$/, ""), api: feat, ok: j.data?.task_status === "success", error: j.data?.error ?? null, ms: j.ms });
+    }
+  }
+};
+walk(LAB);
+fs.writeFileSync(path.join(DATA, "lab-runs.json"), JSON.stringify(runs, null, 1));
+console.log(runs.length, "runs");

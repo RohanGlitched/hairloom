@@ -1,0 +1,38 @@
+.planWrap { display: grid; grid-template-columns: 320px 1fr; gap: 56px; align-items: start; }
+.planHead { position: sticky; top: 100px; display: grid; gap: 14px; justify-items: start; }
+.planHead label { display: grid; gap: 6px; font-size: 14px; color: var(--mist); width: 100%; }
+.planHead input { font: inherit; color: var(--ivory); background: var(--night-deep); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; color-scheme: dark; }
+.timeline { list-style: none; padding: 0; margin: 0; position: relative; display: grid; gap: 0; }
+.timeline::before { content: ""; position: absolute; left: 118px; top: 8px; bottom: 8px; width: 1px; background: var(--brass-lo); }
+.timeline li { display: grid; grid-template-columns: 100px 1fr; gap: 40px; padding: 0 0 34px; position: relative; }
+.timeline li::before { content: ""; position: absolute; left: 112px; top: 6px; width: 13px; height: 13px; border-radius: 50%; background: var(--night); border: 2px solid var(--brass); }
+.timeline li[data-past="true"]::before { background: var(--brass); }
+.timeline time { font-size: 14px; color: var(--brass); text-align: right; padding-top: 2px; }
+.timeline h3 { margin-bottom: 6px; }
+.timeline p { color: var(--mist); font-size: 15px; }
+.links { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px; }
+.links a:not(:global(.src)) { color: var(--ivory); text-underline-offset: 3px; font-weight: 600; font-size: 14px; }
+
+.skinWrap { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: start; }
+.err { margin-top: 12px; color: #9c3b3b; }
+.skinOut { display: grid; gap: 16px; }
+.maskBox { border-radius: 160px 160px 8px 8px; overflow: hidden; border: 3px solid #b99558; aspect-ratio: 4 / 5; max-width: 340px; background: var(--paper-2); }
+.maskBox img { width: 100%; height: 100%; object-fit: cover; }
+.scoreTabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.scoreTabs button { display: grid; gap: 2px; text-align: left; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--rule); background: #fbf8f9; cursor: pointer; color: var(--ink); }
+.scoreTabs button[aria-selected="true"] { border-color: var(--ink); }
+.scoreTabs span { font-size: 13px; color: var(--ink-soft); }
+.scoreTabs b { font: 400 26px var(--serif); }
+.empty { border: 2px dashed var(--rule); border-radius: 160px 160px 8px 8px; aspect-ratio: 4 / 5; max-width: 340px; display: grid; place-items: center; text-align: center; padding: 40px; color: var(--ink-soft); font-size: 15px; }
+
+@media (max-width: 900px) {
+  .planWrap, .skinWrap { grid-template-columns: 1fr; gap: 32px; }
+  .planHead { position: static; }
+  .scoreTabs { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 560px) {
+  .timeline::before { left: 8px; }
+  .timeline li { grid-template-columns: 1fr; gap: 4px; padding-left: 30px; }
+  .timeline li::before { left: 2px; }
+  .timeline time { text-align: left; }
+}
