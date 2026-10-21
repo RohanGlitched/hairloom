@@ -35,6 +35,13 @@
   "ms": 15228
  },
  {
+  "name": "cat/arjun",
+  "api": "Image Generator (text to image)",
+  "ok": true,
+  "error": null,
+  "ms": 9779
+ },
+ {
   "name": "cat/asha",
   "api": "Image Generator (text to image)",
   "ok": true,
@@ -96,6 +103,13 @@
   "ok": true,
   "error": null,
   "ms": 20847
+ },
+ {
+  "name": "cat/sam",
+  "api": "Image Generator (text to image)",
+  "ok": true,
+  "error": null,
+  "ms": 9774
  },
  {
   "name": "cat/silver",
@@ -189,6 +203,20 @@
   "ms": 33755
  },
  {
+  "name": "demo/anjali/skin_wk0",
+  "api": "Skin Analysis",
+  "ok": true,
+  "error": null,
+  "ms": 21295
+ },
+ {
+  "name": "demo/anjali/skin_wk4",
+  "api": "Skin Analysis",
+  "ok": true,
+  "error": null,
+  "ms": 17078
+ },
+ {
   "name": "demo/anjali/turn_a",
   "api": "Image Generator (image to image)",
   "ok": true,
@@ -208,6 +236,13 @@
   "ok": true,
   "error": null,
   "ms": 25160
+ },
+ {
+  "name": "demo/anjali/wig_arjun",
+  "api": "Hairstyle Try-On (hair-transfer)",
+  "ok": true,
+  "error": null,
+  "ms": 12309
  },
  {
   "name": "demo/anjali/wig_asha",
@@ -271,6 +306,13 @@
   "ok": true,
   "error": null,
   "ms": 17161
+ },
+ {
+  "name": "demo/anjali/wig_sam",
+  "api": "Hairstyle Try-On (hair-transfer)",
+  "ok": true,
+  "error": null,
+  "ms": 12413
  },
  {
   "name": "demo/anjali/wig_silver",
@@ -385,6 +427,13 @@
   "ms": 12502
  },
  {
+  "name": "demo/margaret/wig_arjun",
+  "api": "Hairstyle Try-On (hair-transfer)",
+  "ok": true,
+  "error": null,
+  "ms": 34352
+ },
+ {
   "name": "demo/margaret/wig_asha",
   "api": "Hairstyle Try-On (hair-transfer)",
   "ok": true,
@@ -446,6 +495,13 @@
   "ok": true,
   "error": null,
   "ms": 11688
+ },
+ {
+  "name": "demo/margaret/wig_sam",
+  "api": "Hairstyle Try-On (hair-transfer)",
+  "ok": true,
+  "error": null,
+  "ms": 36436
  },
  {
   "name": "demo/margaret/wig_silver",
@@ -560,6 +616,13 @@
   "ms": 15743
  },
  {
+  "name": "demo/nia/wig_arjun",
+  "api": "Hairstyle Try-On (hair-transfer)",
+  "ok": true,
+  "error": null,
+  "ms": 36766
+ },
+ {
   "name": "demo/nia/wig_asha",
   "api": "Hairstyle Try-On (hair-transfer)",
   "ok": true,
@@ -623,6 +686,13 @@
   "ms": 12076
  },
  {
+  "name": "demo/nia/wig_sam",
+  "api": "Hairstyle Try-On (hair-transfer)",
+  "ok": true,
+  "error": null,
+  "ms": 37859
+ },
+ {
   "name": "demo/nia/wig_silver",
   "api": "Hairstyle Try-On (hair-transfer)",
   "ok": true,
@@ -642,6 +712,195 @@
   "ok": true,
   "error": null,
   "ms": 17255
+ },
+ {
+  "name": "demo/ravi/bald",
+  "api": "Image Generator (image to image)",
+  "ok": true,
+  "error": null,
+  "ms": 10643
+ },
+ {
+  "name": "demo/ravi/face",
+  "api": "Face Attribute Analyzer",
+  "ok": true,
+  "error": null,
+  "ms": 10689
+ },
+ {
+  "name": "demo/ravi/hair_frizz",
+  "api": "Hair Frizziness Detection",
+  "ok": true,
+  "error": null,
+  "ms": 15731
+ },
+ {
+  "name": "demo/ravi/hair_length",
+  "api": "Hair Length Detection",
+  "ok": true,
+  "error": null,
+  "ms": 20084
+ },
+ {
+  "name": "demo/ravi/hair_type",
+  "api": "Hair Type Detection",
+  "ok": true,
+  "error": null,
+  "ms": 25390
+ },
+ {
+  "name": "demo/ravi/head_beanie",
+  "api": "Image Generator (image to image)",
+  "ok": true,
+  "error": null,
+  "ms": 45474
+ },
+ {
+  "name": "demo/ravi/head_cap",
+  "api": "Image Generator (image to image)",
+  "ok": true,
+  "error": null,
+  "ms": 14864
+ },
+ {
+  "name": "demo/ravi/head_silk",
+  "api": "Image Generator (image to image)",
+  "ok": true,
+  "error": null,
+  "ms": 14906
+ },
+ {
+  "name": "demo/ravi/head_turban",
+  "api": "Image Generator (image to image)",
+  "ok": true,
+  "error": null,
+  "ms": 20857
+ },
+ {
+  "name": "demo/ravi/own",
+  "api": "Hairstyle Try-On (hair-transfer)",
+  "ok": true,
+  "error": null,
+  "ms": 42689
+ },
+ {
+  "name": "demo/ravi/turn_a",
+  "api": "Image Generator (image to image)",
+  "ok": true,
+  "error": null,
+  "ms": 24865
+ },
+ {
+  "name": "demo/ravi/turn_b",
+  "api": "Image Generator (image to image)",
+  "ok": true,
+  "error": null,
+  "ms": 25400
+ },
+ {
+  "name": "demo/ravi/wig_amara",
+  "api": "Hairstyle Try-On (hair-transfer)",
+  "ok": true,
+  "error": null,
+  "ms": 12973
+ },
+ {
+  "name": "demo/ravi/wig_arjun",
+  "api": "Hairstyle Try-On (hair-transfer)",
+  "ok": true,
+  "error": null,
+  "ms": 11251
+ },
+ {
+  "name": "demo/ravi/wig_asha",
+  "api": "Hairstyle Try-On (hair-transfer)",
+  "ok": true,
+  "error": null,
+  "ms": 35694
+ },
+ {
+  "name": "demo/ravi/wig_dev",
+  "api": "Hairstyle Try-On (hair-transfer)",
+  "ok": true,
+  "error": null,
+  "ms": 37617
+ },
+ {
+  "name": "demo/ravi/wig_ivy",
+  "api": "Hairstyle Try-On (hair-transfer)",
+  "ok": true,
+  "error": null,
+  "ms": 35017
+ },
+ {
+  "name": "demo/ravi/wig_june",
+  "api": "Hairstyle Try-On (hair-transfer)",
+  "ok": true,
+  "error": null,
+  "ms": 38546
+ },
+ {
+  "name": "demo/ravi/wig_kai",
+  "api": "Hairstyle Try-On (hair-transfer)",
+  "ok": true,
+  "error": null,
+  "ms": 12354
+ },
+ {
+  "name": "demo/ravi/wig_lena",
+  "api": "Hairstyle Try-On (hair-transfer)",
+  "ok": true,
+  "error": null,
+  "ms": 38099
+ },
+ {
+  "name": "demo/ravi/wig_meera",
+  "api": "Hairstyle Try-On (hair-transfer)",
+  "ok": true,
+  "error": null,
+  "ms": 11707
+ },
+ {
+  "name": "demo/ravi/wig_nora",
+  "api": "Hairstyle Try-On (hair-transfer)",
+  "ok": true,
+  "error": null,
+  "ms": 11275
+ },
+ {
+  "name": "demo/ravi/wig_rosa",
+  "api": "Hairstyle Try-On (hair-transfer)",
+  "ok": true,
+  "error": null,
+  "ms": 13030
+ },
+ {
+  "name": "demo/ravi/wig_sam",
+  "api": "Hairstyle Try-On (hair-transfer)",
+  "ok": true,
+  "error": null,
+  "ms": 12183
+ },
+ {
+  "name": "demo/ravi/wig_silver",
+  "api": "Hairstyle Try-On (hair-transfer)",
+  "ok": true,
+  "error": null,
+  "ms": 11912
+ },
+ {
+  "name": "demo/ravi/wig_tara",
+  "api": "Hairstyle Try-On (hair-transfer)",
+  "ok": true,
+  "error": null,
+  "ms": 12838
+ },
+ {
+  "name": "demo/ravi/wig_zuri",
+  "api": "Hairstyle Try-On (hair-transfer)",
+  "ok": true,
+  "error": null,
+  "ms": 12655
  },
  {
   "name": "d_dens_p1",
@@ -754,6 +1013,13 @@
   "ok": true,
   "error": null,
   "ms": 9717
+ },
+ {
+  "name": "persona4",
+  "api": "Image Generator (text to image)",
+  "ok": true,
+  "error": null,
+  "ms": 9829
  },
  {
   "name": "prod_beanie",

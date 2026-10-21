@@ -63,9 +63,18 @@ export async function pollTask(path: string, taskId: string): Promise<TaskState>
   return { status: "running" };
 }
 
-/** Deletes a finished task with its input and output files at YouCam. Best effort. */
-export async function deleteTask(taskId: string): Promise<void> {
-  await api("/s2s/v2.0/task/delete", { method: "POST", body: JSON.stringify({ task_id: taskId }) }).catch(() => undefined);
+/**
+ * Deletes a finished task with its input and output files at YouCam. Verified Oct 21: afterwards the
+ * result URL returns 404 and the input file can no longer be processed (403).
+ */
+export async function deleteTask(taskId: string): Promise<boolean> {
+  try {
+    await api("/s2s/v2.0/task/delete", { method: "POST", body: JSON.stringify({ task_id: taskId }) });
+    return true;
+  } catch (e) {
+    console.warn("youcam task/delete failed", (e as Error).message);
+    return false;
+  }
 }
 
 let creditCache: { at: number; units: number } | null = null;
@@ -73,12 +82,8 @@ let creditCache: { at: number; units: number } | null = null;
 /** Units left on the account, cached for 20 seconds. */
 export async function unitsLeft(): Promise<number> {
   if (creditCache && Date.now() - creditCache.at < 20_000) return creditCache.units;
-  const r = await api<{ results: { amount: number }[] }>("/s2s/v1.0/client/credit");
-  const units = (r.results ?? []).reduce((s, x) => s + (x.amount ?? 0), 0);
+  const r = await api<{ results: { amount?: number; amount_dec?: number }[] }>("/s2s/v1.0/client/credit");
+  const units = Math.floor((r.results ?? []).reduce((s, x) => s + (x.amount_dec ?? x.amount ?? 0), 0));
   creditCache = { at: Date.now(), units };
   return units;
-}
-
-export function spent(units: number) {
-  if (creditCache) creditCache.units -= units;
 }

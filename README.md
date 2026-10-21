@@ -1,7 +1,8 @@
 <p align="center"><img src="docs/cover.png" alt="Hairloom: choose your wig while you still have your hair" width="100%"></p>
 
 <p align="center">
-  <img alt="YouCam API" src="https://img.shields.io/badge/YouCam_API-9_APIs-c9a46a?style=flat-square">
+  <img alt="YouCam API" src="https://img.shields.io/badge/YouCam_API-11_APIs-c9a46a?style=flat-square">
+  <img alt="CI" src="https://github.com/RohanGlitched/hairloom/actions/workflows/ci.yml/badge.svg">
   <img alt="Next.js 15" src="https://img.shields.io/badge/Next.js-15-24192a?style=flat-square">
   <img alt="On-device colour" src="https://img.shields.io/badge/hair_colour-measured_on_device-3a2b43?style=flat-square">
   <img alt="License MIT" src="https://img.shields.io/badge/license-MIT-5f4e5c?style=flat-square">
@@ -11,6 +12,7 @@
   <b><a href="https://hairloom-studio.vercel.app">Live site</a></b> ·
   <b><a href="https://hairloom-studio.vercel.app/studio?p=anjali">Studio with a demo person</a></b> ·
   <b><a href="https://hairloom-studio.vercel.app/fitter#demo">Fitter desk</a></b> ·
+  <b><a href="https://hairloom-studio.vercel.app/business">For retailers</a></b> ·
   <b><a href="https://hairloom-studio.vercel.app/evidence">Evidence</a></b>
 </p>
 
@@ -20,9 +22,9 @@ About 65% of people having chemotherapy lose hair. Hair usually starts to fall o
 
 ## Try it in a minute
 
-1. Open the [studio with Anjali](https://hairloom-studio.vercel.app/studio?p=anjali). Anjali is a demo person, and every image is precomputed YouCam output, so nothing costs units.
-2. **Keep:** read her hair passport and watch her colour being measured in your browser.
-3. **Try:** pick wigs, ranked by how close each one is to the hair she kept. Then press *My own hair*, or recolour a wig to a shade closer to hers. A recolour runs live and costs 1 unit.
+1. Open the [studio with Anjali](https://hairloom-studio.vercel.app/studio?p=anjali). Anjali is a demo person, and every image is precomputed YouCam output, so nothing costs units. Nia (alopecia), Margaret and Ravi are there too.
+2. **Keep:** read her hair passport, with curl, frizz, length, face shape, brows, head size and her colour as a wig shade code.
+3. **Try:** pick wigs on her photo before hair loss, then switch to week 4. Wigs are ranked by how close each is to the hair she kept. You can drag across the mirror to compare, recolour a wig to a closer shade, or preview a topper for thinning hair.
 4. **Brows & headwear**, then **Share:** create a sealed link and open it as the fitter.
 
 Or choose *Use my own photos*. YouCam's JS Camera Kit guides you through the three angles.
@@ -38,18 +40,33 @@ Or choose *Use my own photos*. YouCam's JS Camera Kit guides you through the thr
 | Face Attribute & Ratio Analyzer | Face shape, plus brow shape, thickness and colour. |
 | Makeup Virtual Try-On (eyebrows) | Brows rebuilt in the kept shape and shade, for when they thin. |
 | Hair Color Virtual Try-On | Recolours a chosen wig to the stock shades nearest the kept hair. |
+| Hair Volume Virtual Try-On | Shows how a topper's worth of volume looks, for thinning rather than lost hair. |
+| Hair Extension Virtual Try-On | Shows clip-in length on the kept photo. |
 | AI Image Generator (image to image, text to image) | Headwear that keeps the face. It also generated the demo people and the fictional boutique's stock. |
 | AI Skin Analysis v2.1 | Optional weekly skin check-ins in the journal, using raw scores and concern maps. |
 | JS Camera Kit | Guided three-angle capture (`hairtype` mode). |
 
 ## What we measured
 
-[Evidence](https://hairloom-studio.vercel.app/evidence) lists every YouCam task run while building: 118 tasks, 115 succeeded. It shows success counts and median times by API, the errors we hit, and what they taught us. Highlights:
+[Evidence](https://hairloom-studio.vercel.app/evidence) lists every YouCam task run while building, including the image generation that made the demo, with success counts, median times, the errors we hit and what they taught us. Highlights:
 
-- **Hairstyle try-on works on a bald head.** All 42 week-4 try-ons succeeded, including each person's own hair restored from their kept photo. Restored hair landed within ΔE00 0.9–2.5 of the kept colour.
-- **YouCam's hair-colour field can be far off.** It read Anjali's dark brown hair as "Blonde #FAF0BE", ΔE00 73.5 from the pixels. So Hairloom measures hair colour itself, with MediaPipe's hair segmenter running in the browser, a trimmed CIELAB median and CIEDE2000 against 20 common wig shades. It shows both values.
+- **Hairstyle try-on works on a bald head.** All 64 try-ons on bald demo photos succeeded, including each person's own hair restored from their kept photo. These bald photos are generated edits, so tests on real people are next.
+- **Hair colour comes back from YouCam as a named category.** A wig fitter needs a shade code, so Hairloom measures colour from the hair pixels: MediaPipe's hair segmenter running in the browser, then a trimmed CIELAB median and CIEDE2000 against 20 common wig shades. YouCam's label is kept beside it. For one demo person, the label said "Blonde" for dark brown hair.
+- **`task/delete` really deletes.** Afterwards the result URL returns 404 and the input file can't be reused (403).
 - **Hair type and frizz need three same-size photos in a fixed order.** The order is front, then face towards the right of the picture, then towards the left. Anything else returns `error_face_angle_invalid` or `error_mismatch_image_size`.
 - **Hat try-on restyles the whole outfit.** On a bald head it once added hair under a beanie. Headwear uses image-to-image with an instruction to keep the face instead.
+
+## For retailers and wig banks
+
+[The business page](https://hairloom-studio.vercel.app/business) covers who pays and what a fitting costs.
+
+- **Who pays:**
+  - Patients never pay.
+  - Boutiques pay per client brief.
+  - Wig brands embed [a widget](https://hairloom-studio.vercel.app/embed?wig=asha).
+  - Hospitals and wig banks sponsor passports.
+- **What it costs:** a typical fitting is 41 YouCam units, about $2.
+- **Also on the page:** an ROI model for a boutique, with its assumptions labelled, and an eight-week pilot plan for India.
 
 ## Privacy
 
@@ -70,10 +87,14 @@ IndexedDB passport + renders
 AES-GCM seal  ─────────────────────▶   /api/share  ciphertext only ──▶ GCS (WIF, no keys)
 ```
 
-- `lib/kinds.ts`: the whitelist. The server builds every request body, so no arbitrary feature or prompt can pass through.
+- `lib/kinds.ts`: the whitelist. The server builds every request body and validates options before anything is uploaded.
+- `lib/guard.ts`: spend controls.
+  - Units are reserved before any await and released on failure.
+  - A global daily cap applies.
+  - Task handles are HMAC-signed, so polls only reach YouCam for tasks this server started.
 - `lib/youcam.ts`: upload, task, poll, delete and live unit balance.
 - `lib/hairColor.ts`, `lib/color.ts`: on-device hair colour, CIELAB and CIEDE2000.
-- `lib/seal.ts`, `app/api/share`: sealed fitter links.
+- `lib/seal.ts`, `app/api/share`: sealed fitter links. A decrypted share is validated with zod before rendering, and the fitter desk runs under a strict Content Security Policy.
 - `components/studio/*`: Keep, Try, Brows & headwear, Share.
 - `components/fitter/*`: the fitter desk and stock auto-tagging.
 - `components/journal/*`: the treatment timeline (with .ics export) and skin check-ins.
@@ -94,12 +115,20 @@ npm run dev                                   # http://localhost:3141
 - `scripts/export-demo.mjs` refreshes demo data from the lab runs.
 - `scripts/measure.cjs` re-measures demo hair colours in a real browser.
 - `scripts/e2e.cjs <url>` runs the end-to-end check (1 unit).
+- `npm test` runs:
+  - CIEDE2000 against the Sharma reference pairs;
+  - the whitelist and option validation;
+  - handle signing and unit reservations;
+  - share validation.
+- `lab/` holds the scripts that generated the demo with the YouCam API.
 
 ## Limits
 
 - Hairloom is about appearance, not medical care. It never diagnoses, and the journal's skin scores are YouCam's raw 1–100 scores, not clinical measurements.
 - Wig shade codes are a loose convention that varies by brand; our hex values approximate typical swatches.
-- The boutique, its stock and the demo people are fictional, generated with the YouCam Image Generator.
+- The boutique, its stock and the demo people are fictional, generated with the YouCam Image Generator. Tests with real, consenting people are the next step.
+- The closeness ranking weighs length, texture and colour by hand. It hasn't yet been checked against what fitters and clients choose.
+- On-device hair segmentation and face detection use MediaPipe (Apache 2.0).
 
 ## License
 

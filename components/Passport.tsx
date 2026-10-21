@@ -3,39 +3,50 @@
 import { useEffect, useState } from "react";
 import { SHADES } from "@/lib/catalogue";
 import { nearestShades, type Lab, labToHex } from "@/lib/color";
-import { describe, type Persona } from "@/lib/demo";
+import { describe, type Cap, type Persona } from "@/lib/demo";
+import { capSize } from "@/lib/match";
 import s from "./Passport.module.css";
 
-/** The hair passport: YouCam readings plus our on-device colour measurement and nearest wig codes. */
-export type PassportSubject = Pick<Persona, "name" | "kept" | "turns" | "readings">;
+export type PassportSubject = Pick<Persona, "name" | "kept" | "turns" | "readings"> & { cap?: Cap | null };
 
-export function Passport({ p, number = "0042", date = "21 Oct 2026" }: { p: PassportSubject; number?: string; date?: string }) {
+const PARTING: Record<string, string> = { left: "Left", centre: "Centre", right: "Right", none: "No parting" };
+
+/**
+ * The hair passport: YouCam readings, the fitter's own measurements, and hair colour as a wig shade code.
+ * `lab` is a measurement already taken (demo people); without it, colour is measured here in the browser.
+ */
+export function Passport({ p, lab: given, number, date = "21 Oct 2026" }: { p: PassportSubject; lab?: Lab | null; number?: string; date?: string }) {
   const d = describe(p.readings);
-  const [lab, setLab] = useState<Lab | null>(null);
+  const [lab, setLab] = useState<Lab | null>(given ?? null);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
+    if (given) { setLab(given); return; }
     let live = true;
     setLab(null);
     setFailed(false);
     import("@/lib/hairColor").then(({ measureHair }) => measureHair(p.kept)).then((r) => { if (!live) return; if (r) setLab(r.lab); else setFailed(true); }).catch(() => live && setFailed(true));
     return () => { live = false; };
-  }, [p.kept]);
+  }, [p.kept, given]);
 
   const near = lab ? nearestShades(lab, 3) : null;
+  const no = number ?? passportNo(p.kept);
+  const size = capSize(p.cap?.cm);
   const rows: [string, React.ReactNode, string][] = [
-    ["Curl pattern", d.curl ? `${d.curl.raw} · ${d.curl.label}` : "Needs three angles", "Hair Type Detection"],
-    ["Frizz", d.frizz?.label ?? "Needs three angles", "Hair Frizziness Detection"],
-    ["Length", d.length?.label ?? "—", "Hair Length Detection"],
-    ["Face shape", d.face?.label ?? "—", "Face Attribute Analyzer"],
-    ["Brows", d.brows ? <><i className={s.chip} style={{ background: d.browHex ?? "#555" }} />{d.brows.label}</> : "—", "Face Attribute Analyzer"],
+    ["Curl pattern", d.curl ? d.curl.label : "Needs three angles", d.curl ? `YouCam type ${d.curl.raw}` : ""],
+    ["Frizz", d.frizz?.label ?? "Needs three angles", "YouCam"],
+    ["Length", d.length?.label ?? "—", "YouCam"],
+    ["Face shape", d.face?.label ?? "Not read", "YouCam"],
+    ["Brows", d.brows ? <><i className={s.chip} style={{ background: d.browHex ?? "#555" }} aria-hidden="true" />{d.brows.label}</> : "Not read", "YouCam"],
+    ["Cap size", p.cap?.cm ? `${size}, ${p.cap.cm} cm around` : "Measure with a soft tape", "Measured at home"],
+    ["Parting", p.cap?.parting ? PARTING[p.cap.parting] : "—", ""],
   ];
 
   return (
     <article className={s.card} aria-label={`Hair passport for ${p.name}`}>
       <header className={s.head}>
         <h3>Hair passport</h3>
-        <span>No. {number} · kept {date}</span>
+        <span>No. {no} · kept {date}</span>
       </header>
       <div className={s.body}>
         <div className={s.photos}>
@@ -47,45 +58,50 @@ export function Passport({ p, number = "0042", date = "21 Oct 2026" }: { p: Pass
               <img key={i} src={t!} alt={`${p.name}, turned ${i === 0 ? "one way" : "the other way"}`} />
             ))}
           </div>
+          <p className={s.stamp}>Kept before treatment</p>
         </div>
         <div>
           <dl className={s.rows}>
-            {rows.map(([k, v, api]) => (
-              <div key={k}><dt>{k}</dt><dd>{v}</dd><dd className={s.api}>{api}</dd></div>
+            {rows.map(([k, v, src]) => (
+              <div key={k}><dt>{k}</dt><dd>{v}</dd><dd className={s.api}>{src}</dd></div>
             ))}
           </dl>
           <div className={s.colour}>
-            <h4>Colour, measured on this device</h4>
+            <h4>Colour</h4>
             {near ? (
               <>
-                <div className={s.ring} role="img" aria-label={`Nearest wig shades: ${near.map((n) => n.code).join(", ")}`}>
-                  <span className={s.mine} style={{ background: labToHex(lab!) }} title="Her hair" />
+                <div className={s.ring} role="img" aria-label={`Hair colour; nearest wig shades ${near.map((n) => n.code).join(", ")}`}>
+                  <span className={s.mine} style={{ background: labToHex(lab!) }} />
                   {near.map((n, i) => (
                     <span key={n.code} className={s.sw} style={{ background: n.hex }}>
                       <b>{n.code}</b>
-                      <small className="num">{i === 0 ? "nearest" : ""} ΔE {n.dE.toFixed(1)}</small>
+                      <small>{i === 0 ? "Nearest" : "Also close"}</small>
                     </span>
                   ))}
                 </div>
-                <p className={s.note}>
-                  Wig shade <b>{near[0].code}</b>, {near[0].name.toLowerCase()}. Hair pixels found by a hair mask in your browser; median colour compared with {SHADES.length} common wig shades by CIEDE2000.
-                </p>
+                <p className={s.note}>Wig shade <b>{near[0].code}</b>, {near[0].name.toLowerCase()}. Measured from the hair in the front photo, on this device.</p>
+                <details className={s.more}>
+                  <summary>How the colour is measured</summary>
+                  <p>
+                    A hair mask (MediaPipe) finds the hair pixels; Hairloom takes their median colour in CIELAB, leaving out shadow and shine, and compares it with {SHADES.length} common wig shades using CIEDE2000. Differences: {near.map((n) => `${n.code} ${n.dE.toFixed(1)}`).join(", ")} (under 3 is hard to tell apart). Shade codes vary by brand, so a fitter checks against real swatches.
+                  </p>
+                </details>
               </>
             ) : failed ? (
               <p className={s.note}>Not enough hair was visible to measure colour.</p>
             ) : (
-              <p className={s.note}>Measuring hair colour in your browser…</p>
-            )}
-            {d.apiHair && (
-              <p className={s.cross}>
-                <i className={s.chip} style={{ background: d.apiHair.hex }} />
-                YouCam&rsquo;s own hair-colour field said &ldquo;{d.apiHair.name}&rdquo; ({d.apiHair.hex}) for this photo, so Hairloom measures colour itself and shows both.
-              </p>
+              <p className={s.note}>Measuring hair colour…</p>
             )}
           </div>
         </div>
       </div>
-      <div className={s.stamp} aria-hidden="true">kept<br />before<br />week 1</div>
     </article>
   );
+}
+
+/** A short stable passport number derived from the photo, so two passports never share one. */
+export function passportNo(seed: string) {
+  let h = 2166136261;
+  for (let i = 0; i < seed.length; i += Math.max(1, Math.floor(seed.length / 512))) h = Math.imul(h ^ seed.charCodeAt(i), 16777619);
+  return String((h >>> 0) % 9000 + 1000);
 }

@@ -13,8 +13,9 @@
 .stepList b { display: block; font-weight: 600; font-size: 15px; }
 .stepList small { color: var(--mist); font-size: 13px; }
 .stepNum { flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--brass-lo); font: italic 15px var(--serif); color: var(--brass); }
-.meter { border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 4px; font-size: 14px; }
-.meter b { font: 400 26px var(--serif); color: var(--ivory); margin-right: 4px; }
+.meter { border-top: 1px solid var(--line); padding-top: 16px; font-size: 14px; }
+.meter summary { cursor: pointer; color: var(--mist); }
+.meter p { margin-top: 8px; }
 .sideFoot { display: flex; flex-wrap: wrap; gap: 8px; }
 
 .main { min-width: 0; }
@@ -96,6 +97,30 @@
 .headBtn[aria-pressed="true"] { border-color: var(--brass); background: var(--velvet-2); }
 .headBtn:disabled { opacity: .55; cursor: not-allowed; }
 
+.tryGrid3 { display: grid; grid-template-columns: minmax(0, 320px) minmax(0, 1fr); grid-template-areas: "mirror detail" "rail rail"; gap: 32px 40px; align-items: start; }
+.tryGrid3 .mirrorCol { grid-area: mirror; }
+.tryGrid3 .detail { grid-area: detail; }
+.railCol { grid-area: rail; display: grid; gap: 14px; min-width: 0; }
+.busyLine { font-size: 14px; color: var(--brass-hi); }
+.cant { font-size: 13px; color: #a8969f; border-top: 1px solid var(--line); padding-top: 12px; }
+.more { font-size: 13px; color: var(--mist); }
+.more summary { cursor: pointer; color: var(--ivory); text-decoration: underline; text-underline-offset: 3px; width: fit-content; }
+.more p { margin-top: 6px; }
+.thin { display: grid; gap: 10px; border-top: 1px solid var(--line); padding-top: 24px; }
+.demoNote { font-size: 14px; color: var(--mist); border-top: 1px solid var(--line); padding-top: 16px; }
+.loading { padding: 120px 0; text-align: center; color: var(--mist); }
+.consent { padding: 56px 0 96px; display: grid; gap: 20px; max-width: 760px; }
+.consent ul { margin: 0; padding-left: 20px; display: grid; gap: 10px; color: var(--mist); }
+.check { display: flex; gap: 10px; align-items: flex-start; font-size: 15px; cursor: pointer; }
+.check input { margin-top: 4px; width: 18px; height: 18px; accent-color: var(--brass); }
+.capBox { border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; margin: 0; }
+.capBox legend { padding: 0 6px; font: italic 16px var(--serif); color: var(--brass); }
+.capBox label { display: grid; gap: 6px; font-size: 14px; color: var(--mist); }
+.capBox input, .capBox select { font: inherit; color: var(--ivory); background: var(--night-deep); border: 1px solid var(--line); border-radius: 10px; padding: 9px 12px; color-scheme: dark; }
+.capBox small { font-size: 12px; }
+.doneLine { display: flex; gap: 8px; align-items: center; font: 400 20px var(--serif); color: var(--ivory); }
+.doneLine span { color: var(--good); }
+
 /* Share */
 .shareGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
 .shortlist { list-style: none; padding: 0; margin: 16px 0 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
@@ -126,6 +151,8 @@
   .stepList small { display: none; }
   .stepList b { font-size: 12px; }
   .tryGrid, .shareGrid { grid-template-columns: 1fr; gap: 24px; }
+  .tryGrid3 { grid-template-columns: 1fr; grid-template-areas: "mirror" "rail" "detail"; gap: 24px; }
+  .capBox { grid-template-columns: 1fr; }
   .mirrorCol { max-width: 300px; margin: 0 auto; width: 100%; }
 }
 @media (max-width: 560px) {

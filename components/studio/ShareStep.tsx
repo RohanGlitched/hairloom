@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { HEADWEAR, WIGS } from "@/lib/catalogue";
-import { nearestShades } from "@/lib/color";
+import { nearestShades, labToHex } from "@/lib/color";
+import { measured } from "@/lib/colours";
 import { prepare } from "@/lib/client";
 import { seal, type SharePayload } from "@/lib/seal";
 import type { Ctx } from "./Studio";
@@ -12,10 +13,11 @@ import s from "./studio.module.css";
 export function lookLabel(key: string) {
   if (key === "own") return { label: "Own hair", detail: "Their kept hair, placed on today's photo" };
   const [kind, a, b] = key.split(":");
-  if (kind === "wig") { const w = WIGS.find((x) => x.id === a); return { label: w?.name ?? a, detail: w ? `${w.style} · ${w.cap} · ${w.fibre}` : "" }; }
+  if (kind === "wig" || kind === "hair") { const w = WIGS.find((x) => x.id === a); return { label: w?.name ?? a, detail: w ? `${w.style} · ${w.cap} · ${w.fibre}` : "" }; }
+  if (kind === "thin") return { label: a === "volume" ? "Topper-style volume" : "Clip-in length", detail: "For thinning hair, on the kept photo" };
   if (kind === "shade") { const w = WIGS.find((x) => x.id === a); return { label: `${w?.name ?? a} in shade ${b}`, detail: w ? `${w.style} · recoloured to shade ${b}` : "" }; }
   if (kind === "head") { const h = HEADWEAR.find((x) => x.id === a); return { label: h?.name ?? a, detail: h?.note ?? "" }; }
-  if (kind === "brows") return { label: "Rebuilt brows", detail: `Pattern ${a}, fullness ${b}` };
+  if (kind === "brows") return { label: "Rebuilt brows", detail: "In the kept shape and shade" };
   return { label: key, detail: "" };
 }
 
@@ -41,8 +43,8 @@ export function ShareStep({ ctx }: { ctx: Ctx }) {
   async function create() {
     setBusy(true); setErr(null); setLink(null);
     try {
-      const { measureHair } = await import("@/lib/hairColor");
-      const m = await measureHair(session.kept!).catch(() => null);
+      const pre = session.mode === "demo" && session.personaId ? measured(`${session.personaId}/kept`) : null;
+      const m = pre ? { lab: pre, hex: labToHex(pre) } : await import("@/lib/hairColor").then(({ measureHair }) => measureHair(session.kept!)).catch(() => null);
       const n = m ? nearestShades(m.lab, 1)[0] : null;
       const payload: SharePayload = {
         v: 1,
@@ -54,6 +56,7 @@ export function ShareStep({ ctx }: { ctx: Ctx }) {
         looks: await Promise.all(looks.map(async (k) => ({ key: k, ...lookLabel(k), src: await prepare(session.renders[k].src, 520) }))),
         note: session.note.slice(0, 1200),
         appointment: when || undefined,
+        cap: session.cap ? { cm: session.cap.cm ?? null, parting: session.cap.parting ?? null } : undefined,
       };
       const { id, key } = await seal(payload);
       setLink(`${window.location.origin}/fitter#s=${id}.${key}`);
@@ -99,7 +102,8 @@ export function ShareStep({ ctx }: { ctx: Ctx }) {
           {err && <p className={s.err} role="alert">{err}</p>}
           {link && (
             <div className={s.linkBox}>
-              <p className="small">Send this to your fitter. Anyone with the full link can open it.</p>
+              <p className={s.doneLine}><span aria-hidden="true">✓</span> Your fitter link is ready</p>
+              <p className="small">Send it by message or email. Your fitter sees your passport, these looks on your face and a list of wigs to have ready. Anyone with the full link can open it, and it expires after 60 days.</p>
               <code>{link}</code>
               <div className={s.next}>
                 <button className="btn btn-ivory btn-sm" onClick={async () => { await navigator.clipboard.writeText(link).catch(() => undefined); setCopied(true); }}>{copied ? "Copied" : "Copy link"}</button>

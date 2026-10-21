@@ -2,20 +2,20 @@ import type { Metadata } from "next";
 import { PERSONAS } from "@/lib/demo";
 import { TOTALS, byApi } from "@/lib/evidence";
 import { measured } from "@/lib/colours";
-import { deltaE00, hexToLab, labToHex, nearestShades } from "@/lib/color";
+import { labToHex, nearestShades } from "@/lib/color";
 import s from "./evidence.module.css";
 
 export const metadata: Metadata = { title: "Evidence", description: "Every YouCam task we ran while building Hairloom, what failed, and what we measured." };
 
 const NOTES = [
-  { t: "Hair type and frizz need three same-size photos, in one order", b: "The order is front, then the face turned towards the right of the picture, then towards the left. Any other order, or photos of different sizes, returns error_face_angle_invalid or error_mismatch_image_size. The studio resizes all three to the front photo's size and labels each slot." },
-  { t: "The hair-colour field can be far off", b: "Face Attribute Analyzer and Facial Color Tones Analyzer both returned “Blonde #FAF0BE” for Anjali's dark brown hair. Hairloom measures hair colour itself with an on-device hair mask and shows the YouCam value beside it, rather than hiding the disagreement." },
-  { t: "Hairstyle try-on works on a bald head", b: "The docs list error_hair_too_short, so we expected failures after hair loss. Every one of our 42 week-4 try-ons succeeded, including each person's own hair restored from their kept photo." },
-  { t: "Hat try-on restyles the whole person", b: "Hat and scarf try-on generate a new outfit and background, and on a bald head the beanie came back with long hair under it. For headwear we use image-to-image with an instruction to keep the face, clothes and background, at 1 unit." },
-  { t: "Readings can differ between runs", b: "The same front photo read the left brow tail as “Average” on one run and “Sparse” on another. The passport keeps the reading with the photo it came from and doesn't present one run as fact." },
-  { t: "Density detection is strict about angle", b: "Front-facing and generated head-down photos were all rejected with error_face_angle_invalid. It needs YouCam's camera guide in hairdensity mode, so Hairloom leaves density out of the uploaded-photo flow." },
-  { t: "Skin analysis needs a close-up", b: "The face must fill most of the frame. The journal finds the face on-device and crops to it before sending, which turns a normal selfie into an accepted one." },
-  { t: "Failed tasks are free; delete finished ones", b: "Units are charged only on success. Hairloom calls task/delete after every result, which removes the input photo at YouCam too." },
+  { t: "Hair type and frizz need three same-size photos, in one order", b: "Front, then the face turned towards the right of the picture, then towards the left. Any other order, or different sizes, returns error_face_angle_invalid or error_mismatch_image_size. The studio crops all three to the front photo's size and orders the side photos itself from face landmarks, so a swapped upload still reads." },
+  { t: "Hair colour comes back as a named category", b: "Face Attribute Analyzer and Facial Color Tones Analyzer return one of a few named swatches. That suits a beauty quiz, but a wig fitter needs a shade code, so Hairloom measures colour from the hair pixels and keeps YouCam's label beside it. Where they disagree is listed below." },
+  { t: "Hairstyle try-on works on a bald head", b: "The docs list error_hair_too_short, so we expected failures after hair loss. All 64 of our try-ons on bald demo photos succeeded. These bald photos are generated edits of the kept photo, so tests on real people are still to come." },
+  { t: "Hat try-on restyles the whole person", b: "Hat and scarf try-on generate a new outfit and background, and on a bald head the beanie came back with long hair under it. For headwear Hairloom uses image-to-image with an instruction to keep the face, clothes and background, at 1 unit." },
+  { t: "Readings can differ between runs", b: "The same front photo read the left brow tail as \u201cAverage\u201d on one run and \u201cSparse\u201d on another. The passport keeps the reading with the photo it came from rather than presenting one run as fact." },
+  { t: "Density detection is strict about angle", b: "Front-facing and generated head-down photos were rejected with error_face_angle_invalid. It needs YouCam's camera guide in hairdensity mode, so it is left out of the upload flow." },
+  { t: "Skin analysis needs a close-up", b: "The face must fill most of the frame. The journal finds the face on the device and crops to it before sending, which turns a normal selfie into an accepted one." },
+  { t: "task/delete really deletes", b: "Tested on Oct 21: after task/delete the result URL returns 404, and starting a new task with the same input file fails with a 403. Hairloom deletes each task as soon as the browser has the result." },
 ];
 
 const SOURCES = [
@@ -35,19 +35,22 @@ const SOURCES = [
   ["Sharma, Wu & Dalal: the CIEDE2000 colour-difference formula", "https://doi.org/10.1002/col.20070"],
 ];
 
+/** Our shade codes grouped into the plain colour words YouCam's label uses. */
+function family(code: string) {
+  if (["1", "1B"].includes(code)) return "black";
+  if (["2", "4", "6", "8", "10", "12"].includes(code)) return "brown";
+  if (["14", "16", "24", "613"].includes(code)) return "blonde";
+  if (["27", "30", "33"].includes(code)) return "red";
+  return "grey";
+}
+
 export default function Evidence() {
   const apis = byApi();
   const cross = PERSONAS.map((p) => {
     const mine = measured(`${p.id}/kept`);
-    const own = measured(`${p.id}/own`);
-    const api = p.readings.face?.color?.hair_color;
-    return {
-      name: p.name,
-      api: api ? { hex: api, name: p.readings.face?.color?.hair_color_name ?? "" } : null,
-      mine: mine ? { hex: labToHex(mine), shade: nearestShades(mine, 1)[0] } : null,
-      gap: mine && api ? deltaE00(mine, hexToLab(api)) : null,
-      ownGap: mine && own ? deltaE00(mine, own) : null,
-    };
+    const label = p.readings.face?.color?.hair_color_name ?? null;
+    const shade = mine ? nearestShades(mine, 1)[0] : null;
+    return { name: p.name, label, hex: p.readings.face?.color?.hair_color ?? null, mine: mine ? labToHex(mine) : null, shade, agrees: label && shade ? family(shade.code) === label.toLowerCase() : null };
   });
 
   return (
@@ -57,7 +60,7 @@ export default function Evidence() {
           <p className="kicker">Evidence</p>
           <h1 className="h-hero" style={{ maxWidth: "18ch" }}>What we measured, including what failed.</h1>
           <p className="lede" style={{ marginTop: 14 }}>
-            {TOTALS.runs} YouCam tasks were run while building Hairloom and its demo, and {TOTALS.ok} succeeded. Times are wall-clock from creating the task to having the result, polled every few seconds.
+            {TOTALS.runs} YouCam tasks were run while building Hairloom and its demo, and {TOTALS.ok} succeeded. That includes the image generation that made the demo people and stock. Times are wall-clock from creating the task to having the result, polled every few seconds.
           </p>
         </div>
       </section>
@@ -78,23 +81,30 @@ export default function Evidence() {
             ))}
           </div>
 
-          <h2 className="h-sec" style={{ marginTop: 72 }}>Hair colour: YouCam&rsquo;s field against an on-device measurement</h2>
+          <h2 className="h-sec" style={{ marginTop: 72 }}>Hair colour: YouCam&rsquo;s label and the measured shade</h2>
           <p className="lede" style={{ marginTop: 12 }}>
-            For each demo person, the hair colour YouCam&rsquo;s Face Attribute Analyzer returned, the colour our hair mask measured from the same photo, and the CIEDE2000 difference. Under about 3 is hard to tell apart; above 10 is a different colour. The last column checks the restored-hair render against the kept photo.
+            For each demo person, the colour label YouCam&rsquo;s Face Attribute Analyzer returned for the kept photo, and the shade Hairloom measured from the hair pixels of the same photo.
           </p>
           <div className={s.cross}>
             {cross.map((c) => (
               <div key={c.name} className={s.crossCard}>
                 <h3 className="h-sub">{c.name}</h3>
                 <div className={s.pair}>
-                  <figure><span style={{ background: c.api?.hex }} /><figcaption>YouCam field<br /><b>{c.api ? `${c.api.name} ${c.api.hex}` : "Not returned"}</b></figcaption></figure>
-                  <figure><span style={{ background: c.mine?.hex }} /><figcaption>Measured<br /><b>{c.mine ? `${c.mine.hex}, shade ${c.mine.shade.code}` : "—"}</b></figcaption></figure>
+                  <figure><span style={{ background: c.hex ?? "transparent" }} /><figcaption>YouCam label<br /><b>{c.label ?? "Not returned"}</b></figcaption></figure>
+                  <figure><span style={{ background: c.mine ?? "transparent" }} /><figcaption>Measured<br /><b>{c.shade ? `Shade ${c.shade.code}, ${c.shade.name.toLowerCase()}` : "—"}</b></figcaption></figure>
                 </div>
-                <p className="num">Difference: <b>{c.gap != null ? `ΔE ${c.gap.toFixed(1)}` : "no YouCam value to compare"}</b></p>
-                <p className="num small">Restored hair vs kept: {c.ownGap != null ? `ΔE ${c.ownGap.toFixed(1)}` : "—"}</p>
+                <p>{c.agrees == null ? "Nothing to compare." : c.agrees ? "They agree." : "They disagree, so the passport uses the measured shade."}</p>
               </div>
             ))}
           </div>
+
+          <h2 className="h-sec" style={{ marginTop: 72 }}>Not proven yet</h2>
+          <ul className={s.open}>
+            <li>Every person shown is generated with YouCam. Tests with real, consenting people, including someone who is really bald, are next.</li>
+            <li>YouCam&rsquo;s guided camera has been built in but not yet run on a phone by a real user.</li>
+            <li>The closeness ranking weighs length, texture and colour by hand. It hasn&rsquo;t been checked against what fitters and clients actually choose.</li>
+            <li>Shade codes vary by brand, and our hex values approximate typical swatches without white balance, so a fitter still checks against real swatches.</li>
+          </ul>
         </div>
       </section>
 

@@ -20,11 +20,12 @@ im=Image.open(r'${src}').convert('RGB'); im.thumbnail((${max},${max})); im.save(
 const readJson = (f) => (fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, "utf8")) : null);
 
 const PERSONAS = [
-  { id: "anjali", name: "Anjali", age: 45, city: "Pune", blurb: "Starts chemotherapy for breast cancer in two weeks. Wants to look like herself at work." },
-  { id: "nia", name: "Nia", age: 38, city: "London", blurb: "Has alopecia areata. Patches are spreading and she wants a plan before they show." },
-  { id: "margaret", name: "Margaret", age: 60, city: "Leeds", blurb: "Begins a taxane regimen next month. Has worn her grey-blonde waves for twenty years." },
+  { id: "anjali", name: "Anjali", age: 45, city: "Pune", situation: "chemo", later: "Week 4", fit: "Women", cap: { cm: 55.5, parting: "centre" }, blurb: "Starts chemotherapy for breast cancer in two weeks. Wants to look like herself at work." },
+  { id: "nia", name: "Nia", age: 38, city: "London", situation: "alopecia", later: "Month 3", fit: "Women", cap: { cm: 56, parting: "none" }, blurb: "Has alopecia areata. Patches are spreading and she wants a plan before they show." },
+  { id: "margaret", name: "Margaret", age: 60, city: "Leeds", situation: "chemo", later: "Week 4", fit: "Women", cap: { cm: 54.5, parting: "left" }, blurb: "Begins a taxane regimen next month. Has worn her grey-blonde waves for twenty years." },
+  { id: "ravi", name: "Ravi", age: 52, city: "Bengaluru", situation: "chemo", later: "Week 4", fit: "Men", cap: { cm: 58, parting: "left" }, blurb: "Starts chemotherapy for lymphoma soon. Teaches maths and doesn't want his class to notice." },
 ];
-const WIGS = ["asha", "meera", "nora", "ivy", "zuri", "amara", "june", "silver", "rosa", "lena", "tara", "kai", "dev"];
+const WIGS = ["asha", "meera", "nora", "ivy", "zuri", "amara", "june", "silver", "rosa", "lena", "tara", "kai", "dev", "arjun", "sam"];
 const HEAD = ["turban", "silk", "beanie", "cap"];
 
 // Catalogue: the full 1024 image is the try-on reference (served publicly); thumbs for the rail.
@@ -49,6 +50,19 @@ for (const p of PERSONAS) {
     readings: { type: r("hair_type")?.hair_type ?? null, frizz: r("hair_frizz")?.hair_frizziness ?? null, length: r("hair_length")?.hair_length ?? null, face: r("face") },
     wigs: Object.fromEntries(WIGS.map((w) => [w, copy(path.join(d, `wig_${w}.jpg`), `wig_${w}`)]).filter(([, v]) => v)),
     headwear: Object.fromEntries(HEAD.map((h) => [h, copy(path.join(d, `head_${h}.jpg`), `head_${h}`)]).filter(([, v]) => v)),
+    brows: copy(path.join(d, "brows.jpg"), "brows"),
+    withHair: Object.fromEntries(WIGS.map((w) => [w, copy(path.join(d, `withhair_${w}.jpg`), `withhair_${w}`)]).filter(([, v]) => v)),
+    shades: Object.fromEntries(fs.readdirSync(d).filter((f) => /^shade_\w+_\w+\.jpg$/.test(f)).map((f) => [f.slice(6, -4).replace("_", ":"), copy(path.join(d, f), f.slice(0, -4))])),
+    thinning: Object.fromEntries([["volume", "thin_vol"], ["length", "thin_ext"]].map(([k, n]) => [k, copy(path.join(d, `${n}.jpg`), n)]).filter(([, v]) => v)),
+    skin: ["skin_wk0", "skin_wk4"].filter((n) => fs.existsSync(path.join(d, `${n}.json`))).map((n, i) => {
+      const out = readJson(path.join(d, `${n}.json`))?.data?.results?.output ?? [];
+      return {
+        week: i === 0 ? 0 : 4,
+        photo: copy(path.join(d, `${n}_crop.jpg`), `${n}_crop`, 500),
+        scores: Object.fromEntries(out.filter((o) => ["moisture", "redness", "texture", "radiance"].includes(o.type)).map((o) => [o.type, Math.round(o.raw_score)])),
+        masks: Object.fromEntries(out.map((o) => [o.type, copy(path.join(d, `${n}_${o.type}.jpg`), `${n}_${o.type}`, 600)]).filter(([, v]) => v)),
+      };
+    }),
   };
   out.push(persona);
   console.log(p.id, Object.keys(persona.wigs).length, "wigs");

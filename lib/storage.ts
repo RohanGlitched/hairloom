@@ -11,7 +11,13 @@ import path from "node:path";
  * Local development: files under .data/.
  */
 
-type Store = { read(key: string): Promise<string | null>; write(key: string, text: string): Promise<void> };
+type Store = {
+  read(key: string): Promise<string | null>;
+  /** Creates a new object; fails if the key exists. */
+  write(key: string, text: string): Promise<void>;
+  /** Creates or overwrites. */
+  put(key: string, text: string): Promise<void>;
+};
 
 let token: { value: string; exp: number } | null = null;
 
@@ -50,6 +56,14 @@ async function accessToken(): Promise<string> {
 
 function gcs(bucket: string): Store {
   const b = encodeURIComponent(bucket);
+  const up = async (key: string, text: string, createOnly: boolean) => {
+    const q = new URLSearchParams({ uploadType: "media", name: key });
+    if (createOnly) q.set("ifGenerationMatch", "0");
+    const r = await fetch(`https://storage.googleapis.com/upload/storage/v1/b/${b}/o?${q}`, {
+      method: "POST", headers: { authorization: `Bearer ${await accessToken()}`, "content-type": "text/plain" }, body: text, signal: AbortSignal.timeout(20_000),
+    });
+    if (!r.ok) throw new Error(`GCS write: HTTP ${r.status}`);
+  };
   return {
     async read(key) {
       const r = await fetch(`https://storage.googleapis.com/storage/v1/b/${b}/o/${encodeURIComponent(key)}?alt=media`, {
@@ -60,11 +74,10 @@ function gcs(bucket: string): Store {
       return r.text();
     },
     async write(key, text) {
-      const q = new URLSearchParams({ uploadType: "media", name: key, ifGenerationMatch: "0" });
-      const r = await fetch(`https://storage.googleapis.com/upload/storage/v1/b/${b}/o?${q}`, {
-        method: "POST", headers: { authorization: `Bearer ${await accessToken()}`, "content-type": "text/plain" }, body: text, signal: AbortSignal.timeout(20_000),
-      });
-      if (!r.ok) throw new Error(`GCS write: HTTP ${r.status}`);
+      await up(key, text, true);
+    },
+    async put(key, text) {
+      await up(key, text, false);
     },
   };
 }
@@ -76,6 +89,10 @@ function files(): Store {
       return fs.readFile(path.join(dir, key.replace(/[^\w.-]/g, "_")), "utf8").catch(() => null);
     },
     async write(key, text) {
+      await fs.mkdir(dir, { recursive: true });
+      await fs.writeFile(path.join(dir, key.replace(/[^\w.-]/g, "_")), text, { flag: "wx" });
+    },
+    async put(key, text) {
       await fs.mkdir(dir, { recursive: true });
       await fs.writeFile(path.join(dir, key.replace(/[^\w.-]/g, "_")), text);
     },

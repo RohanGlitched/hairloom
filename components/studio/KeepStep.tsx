@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { Passport } from "@/components/Passport";
-import type { Readings } from "@/lib/demo";
+import type { Cap, Readings } from "@/lib/demo";
+import { measured } from "@/lib/colours";
 import { prepare } from "@/lib/client";
 import { KINDS, type KindName } from "@/lib/kinds";
+import { capSize } from "@/lib/match";
 import { CameraKit } from "./CameraKit";
 import type { Ctx } from "./Studio";
 import s from "./studio.module.css";
@@ -13,8 +15,8 @@ type Job = { kind: KindName; label: string; state: "waiting" | "running" | "done
 
 const SLOTS = [
   { label: "Front", tip: "Face the camera, hair down over your shoulders." },
-  { label: "Turned one way", tip: "Turn your head about 45° so your face points to the right of the photo." },
-  { label: "Turned the other way", tip: "Now about 45° the other way, face pointing to the left of the photo." },
+  { label: "Turned one way", tip: "Turn your head about 45°, like saying no." },
+  { label: "Turned the other way", tip: "Now about 45° the other way." },
 ];
 
 export function KeepStep({ ctx }: { ctx: Ctx }) {
@@ -23,20 +25,23 @@ export function KeepStep({ ctx }: { ctx: Ctx }) {
   const [camera, setCamera] = useState(false);
   const [jobs, setJobs] = useState<Job[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [withFace, setWithFace] = useState(true);
+  const [cap, setCap] = useState<Cap>(session.cap ?? { cm: null, parting: null });
 
   if (session.mode === "demo" && session.readings && session.kept) {
+    const alopecia = session.situation === "alopecia";
     return (
       <div className={s.step}>
-        <StepHead n={1} title={`${session.name}'s hair passport`} lede="Read by YouCam from three photos taken before treatment. Colour is measured in your browser from the front photo." />
-        <Passport p={{ name: session.name, kept: session.kept, turns: session.turns ?? [], readings: session.readings }} />
-        <div className={s.next}><button className="btn btn-ivory" onClick={() => ctx.go("try")}>Next: try wigs on week 4</button></div>
+        <StepHead n={1} title={`${session.name}'s hair passport`} lede={alopecia ? "Read by YouCam from three photos taken while her hair still covered the patches." : "Read by YouCam from three photos taken before treatment, with the head measured at home."} />
+        <Passport p={{ name: session.name, kept: session.kept, turns: session.turns ?? [], readings: session.readings, cap: session.cap }} lab={session.personaId ? measured(`${session.personaId}/kept`) : null} />
+        <div className={s.next}><button className="btn btn-ivory" onClick={() => ctx.go("try")}>Next: try wigs</button></div>
       </div>
     );
   }
 
   const front = photos[0];
   const three = photos.every(Boolean);
-  const cost = (three ? KINDS.hairType.units + KINDS.hairFrizz.units : 0) + KINDS.hairLength.units + KINDS.face.units;
+  const cost = (three ? KINDS.hairType.units + KINDS.hairFrizz.units : 0) + KINDS.hairLength.units + (withFace ? KINDS.face.units : 0);
 
   async function pick(i: number, file: File | undefined) {
     if (!file) return;
@@ -49,16 +54,23 @@ export function KeepStep({ ctx }: { ctx: Ctx }) {
   async function read() {
     if (!front) return;
     setError(null);
-    // The three-angle readings need three photos of identical size, in the order front, right, left.
     let trio: string[] = [];
     if (three) {
       const img = new Image(); img.src = front; await img.decode();
       const size: [number, number] = [img.naturalWidth, img.naturalHeight];
-      trio = await Promise.all(photos.map((p) => prepare(p!, 1024, size)));
+      // YouCam expects [front, face pointing image-right, face pointing image-left]. Check which
+      // side photo is which from face landmarks, so a swapped upload or camera order still reads.
+      let [a, b] = [photos[1]!, photos[2]!];
+      try {
+        const { facing } = await import("@/lib/faceCrop");
+        const [fa, fb] = await Promise.all([facing(a), facing(b)]);
+        if (fa === "left" && fb === "right") [a, b] = [b, a];
+      } catch { /* keep the order given */ }
+      trio = await Promise.all([front, a, b].map((p) => prepare(p, 1024, size)));
     }
     const plan: Job[] = [
       { kind: "hairLength", label: "Length", state: "waiting" },
-      { kind: "face", label: "Face shape and brows", state: "waiting" },
+      ...(withFace ? [{ kind: "face", label: "Face shape and brows", state: "waiting" } as Job] : []),
       ...(three ? [{ kind: "hairType", label: "Curl pattern", state: "waiting" } as Job, { kind: "hairFrizz", label: "Frizz", state: "waiting" } as Job] : []),
     ];
     setJobs(plan);
@@ -78,20 +90,20 @@ export function KeepStep({ ctx }: { ctx: Ctx }) {
       setJob(job.kind, { state: "done" });
     }));
 
-    if (!readings.length && !readings.face) {
+    if (!readings.length && !readings.face && !readings.type) {
       setError("No reading came back. Check the messages above, adjust the photos and try again.");
       return;
     }
-    update((x) => ({ ...x, kept: front, turns: three ? [photos[1]!, photos[2]!] : [], readings, keptAt: Date.now(), today: x.today ?? front }));
+    update((x) => ({ ...x, kept: front, turns: three ? [photos[1]!, photos[2]!] : [], readings, cap, keptAt: Date.now(), base: x.today ? x.base : "kept" }));
   }
 
   return (
     <div className={s.step}>
-      <StepHead n={1} title="Keep your hair as it is today" lede="Three photos with your hair down: front, then turned each way. YouCam reads curl, frizz, length, face shape and brows. Your hair colour is measured here in the browser." />
+      <StepHead n={1} title="Keep your hair as it is today" lede="Three photos with your hair down: front, then turned each way. YouCam reads curl, frizz, length, face shape and brows; your hair colour is measured on this device." />
 
       {session.readings && session.kept ? (
         <>
-          <Passport p={{ name: "Your", kept: session.kept, turns: session.turns ?? [], readings: session.readings }} number="—" date={new Date(session.keptAt ?? Date.now()).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })} />
+          <Passport p={{ name: "Your", kept: session.kept, turns: session.turns ?? [], readings: session.readings, cap: session.cap }} date={new Date(session.keptAt ?? Date.now()).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })} />
           <div className={s.next}>
             <button className="btn btn-ivory" onClick={() => ctx.go("try")}>Next: try wigs</button>
             <button className="btn btn-ghost" onClick={() => update((x) => ({ ...x, readings: undefined }))}>Retake photos</button>
@@ -108,7 +120,7 @@ export function KeepStep({ ctx }: { ctx: Ctx }) {
               <label key={slot.label} className={s.slot}>
                 <span className={s.slotImg}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  {photos[i] ? <img src={photos[i]!} alt={`${slot.label} photo`} /> : <span className={s.slotEmpty}>{i === 0 ? "Required" : "For curl and frizz"}</span>}
+                  {photos[i] ? <img src={photos[i]!} alt={`${slot.label} photo`} /> : <span className={s.slotEmpty}>{i === 0 ? "Needed" : "For curl and frizz"}</span>}
                 </span>
                 <b>{slot.label}</b>
                 <small>{slot.tip}</small>
@@ -117,6 +129,27 @@ export function KeepStep({ ctx }: { ctx: Ctx }) {
               </label>
             ))}
           </div>
+
+          <fieldset className={s.capBox}>
+            <legend>For your fitter (optional)</legend>
+            <label>
+              <span>Head size, cm</span>
+              <input type="number" inputMode="decimal" min={45} max={65} step={0.5} value={cap.cm ?? ""} placeholder="e.g. 55.5"
+                onChange={(e) => setCap((c) => ({ ...c, cm: e.target.value ? Math.min(65, Math.max(45, Number(e.target.value))) : null }))} />
+              <small>Soft tape around your hairline at the front, just above your ears, and round the nape. {capSize(cap.cm) ? `That's an ${capSize(cap.cm)!.toLowerCase()} cap.` : ""}</small>
+            </label>
+            <label>
+              <span>Parting</span>
+              <select value={cap.parting ?? ""} onChange={(e) => setCap((c) => ({ ...c, parting: (e.target.value || null) as Cap["parting"] }))}>
+                <option value="">Choose</option><option value="left">Left</option><option value="centre">Centre</option><option value="right">Right</option><option value="none">No parting</option>
+              </select>
+            </label>
+          </fieldset>
+
+          <label className={s.check}>
+            <input type="checkbox" checked={withFace} onChange={(e) => setWithFace(e.target.checked)} /> Also read face shape and brows (10 units; needed to rebuild your brows later)
+          </label>
+
           {jobs && (
             <ul className={s.jobs}>
               {jobs.map((j) => (
@@ -136,7 +169,7 @@ export function KeepStep({ ctx }: { ctx: Ctx }) {
             </button>
             {!front && <span className="small">Add at least the front photo.</span>}
             {front && !three && <span className="small">With only a front photo, curl and frizz are skipped.</span>}
-            {!ctx.units.live && <span className="small">Live runs are paused. Try a demo person instead.</span>}
+            {!ctx.units.live && <span className="small">The live studio is resting. Try a demo person instead.</span>}
           </div>
         </>
       )}

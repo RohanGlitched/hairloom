@@ -3,7 +3,7 @@
 // The visitor's own passport and try-ons live only in this browser (IndexedDB).
 // Every call is wrapped: private windows and blocked storage fall back to memory.
 
-import type { Readings } from "./demo";
+import type { Cap, Readings } from "./demo";
 
 export type Render = { src: string; api: string; units: number; ms: number; at: number; dE?: number | null };
 
@@ -16,7 +16,13 @@ export type Session = {
   readings?: Readings;
   colour?: { lab: [number, number, number]; hex: string } | null;
   keptAt?: number;
-  today?: string; // base photo for try-ons
+  today?: string; // photo after hair loss, if the person has one
+  base?: "kept" | "today"; // which photo try-ons are placed on
+  later?: string; // label for the later photo ("Week 4", "Today")
+  situation?: "chemo" | "alopecia" | "other";
+  fit?: "Women" | "Men";
+  cap?: Cap;
+  consent?: number;
   renders: Record<string, Render>;
   shortlist: string[];
   note: string;

@@ -35,3 +35,21 @@ export async function cropFace(src: string): Promise<string | null> {
   c.getContext("2d")!.drawImage(img, x, y, side, h, 0, 0, c.width, c.height);
   return c.toDataURL("image/jpeg", 0.92);
 }
+
+/**
+ * Which way the face points in the picture, from BlazeFace keypoints (eyes, nose tip):
+ * "right" when the nose sits right of the eyes' midpoint, "left" when left, else "front".
+ */
+export async function facing(src: string): Promise<"left" | "right" | "front" | null> {
+  const img = new Image();
+  img.src = src;
+  await img.decode();
+  const det = await load();
+  const f = det.detect(img).detections[0];
+  const k = f?.keypoints;
+  if (!k || k.length < 3) return null;
+  const [eyeA, eyeB, nose] = k;
+  const span = Math.abs(eyeA.x - eyeB.x) || 1e-3;
+  const off = (nose.x - (eyeA.x + eyeB.x) / 2) / span;
+  return off > 0.12 ? "right" : off < -0.12 ? "left" : "front";
+}

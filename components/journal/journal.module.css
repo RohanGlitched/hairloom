@@ -36,3 +36,12 @@
   .timeline li::before { left: 2px; }
   .timeline time { text-align: left; }
 }
+
+.modes { display: flex; gap: 6px; flex-wrap: wrap; }
+.modes button { min-height: 38px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: none; cursor: pointer; font-size: 14px; color: var(--mist); }
+.modes button[aria-checked="true"] { border-color: var(--brass); color: var(--ivory); background: var(--velvet); }
+.pay { display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px; margin-top: 32px; }
+.pay div { border-top: 1px solid var(--brass-lo); padding-top: 14px; display: grid; gap: 8px; align-content: start; }
+.pay p { color: var(--mist); font-size: 15px; }
+@media (max-width: 900px) { .pay { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { .pay { grid-template-columns: 1fr; } }

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { prepare, runTask } from "@/lib/client";
 import { get, set } from "@/lib/store";
+import { persona } from "@/lib/demo";
 import s from "./journal.module.css";
 
 type Milestone = { day: number; title: string; body: string; action?: { href: string; label: string }; src?: { label: string; url: string } };
@@ -16,11 +17,18 @@ const CRUK2 = "https://www.cancerresearchuk.org/about-cancer/coping/physically/c
 /** Days are relative to the first treatment; regrowth is relative to the last. */
 const PLAN: Milestone[] = [
   { day: -14, title: "Keep your hair passport", body: "Three photos with your hair down, while it is still yours. This is the record every later step compares with.", action: { href: "/studio", label: "Open the studio" }, src: { label: "ACS: take photos and save a lock of hair", url: ACS } },
-  { day: -10, title: "Choose and fit a wig", body: "Charities advise matching a wig before hair loss, while a fitter can still see your colour and style. Send your shortlist ahead.", action: { href: "/studio", label: "Try wigs" }, src: { label: "CRUK", url: CRUK2 } },
-  { day: -3, title: "Soft headwear and a sleep cap", body: "Have something soft for nights and for the days without a wig.", action: { href: "/studio", label: "Try headwear" } },
+  { day: -10, title: "Choose and fit a wig", body: "Charities advise matching a wig before hair loss, while a fitter can still see your colour and style. Send your shortlist ahead.", action: { href: "/studio?step=try", label: "Try wigs" }, src: { label: "CRUK", url: CRUK2 } },
+  { day: -3, title: "Soft headwear and a sleep cap", body: "Have something soft for nights and for the days without a wig.", action: { href: "/studio?step=look", label: "Try headwear" } },
   { day: 0, title: "First treatment", body: "Check in on your skin and scalp each week if you like. Bring anything that worries you to your care team." },
-  { day: 14, title: "Hair usually starts to fall out", body: "Usually about two to three weeks after the first cycle. Your head may be up to a size smaller: have the wig cap adjusted.", src: { label: "ACS, CRUK", url: CRUK } },
-  { day: 42, title: "Brows and lashes may thin", body: "They can go weeks or months after the hair on your head. Practise your rebuilt brows before you need them.", action: { href: "/studio", label: "Rebuild brows" } },
+  { day: 14, title: "Hair usually starts to fall out", body: "Usually about two to three weeks after the first cycle.", src: { label: "ACS, CRUK", url: CRUK } },
+  { day: 21, title: "Measure your head again", body: "Your head can be up to a size smaller once the hair has gone. Re-measure with a soft tape and have the wig cap adjusted.", src: { label: "ACS", url: ACS } },
+  { day: 42, title: "Brows and lashes may thin", body: "They can go weeks or months after the hair on your head. Practise your rebuilt brows before you need them.", action: { href: "/studio?step=look", label: "Rebuild brows" } },
+];
+const ALOPECIA: Milestone[] = [
+  { day: 0, title: "Keep your hair passport now", body: "While your hair still covers the patches. It is the record a fitter matches to, however things change.", action: { href: "/studio", label: "Open the studio" } },
+  { day: 7, title: "Try toppers before wigs", body: "If the patches are small, a topper or clip-ins may be enough. Preview volume and length on your kept photo.", action: { href: "/studio?step=try", label: "Try toppers" } },
+  { day: 30, title: "Re-photograph each month", body: "Patches in alopecia areata can spread, settle or regrow, so a monthly photo helps you and your dermatologist see the pattern." },
+  { day: 60, title: "Choose with a fitter when you're ready", body: "Send your passport and shortlist ahead, with your head size and parting.", action: { href: "/studio?step=share", label: "Share a brief" } },
 ];
 const REGROWTH: Milestone[] = [
   { day: 90, title: "Regrowth usually starts", body: "Hair usually returns within about three to six months of finishing, sometimes a different colour or curlier. Re-read it and compare with the hair you kept.", action: { href: "/studio", label: "Read new growth" }, src: { label: "CRUK, ACS", url: ACS2 } },
@@ -31,7 +39,7 @@ const CONCERNS = ["moisture", "redness", "texture", "radiance"] as const;
 const LABEL: Record<string, string> = { moisture: "Moisture", redness: "Redness", texture: "Texture", radiance: "Radiance" };
 
 const day = (d: Date, n: number) => new Date(d.getTime() + n * 86400000);
-const fmt = (d: Date) => d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+const fmt = (d: Date) => d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", ...(d.getFullYear() !== new Date().getFullYear() ? { year: "numeric" } : {}) });
 
 export function Journal() {
   // Dates depend on "today", so they are set after mount to keep server and client markup identical.
@@ -46,14 +54,16 @@ export function Journal() {
   const [secs, setSecs] = useState(0);
   const [err, setErr] = useState<string | null>(null);
   const [show, setShow] = useState<string>("redness");
+  const [mode, setMode] = useState<"chemo" | "alopecia">("chemo");
 
   useEffect(() => { get<CheckIn[]>("checkins").then((c) => c && setChecks(c)); }, []);
 
   const items = useMemo(() => {
     if (!start || !end) return [];
     const s0 = new Date(start + "T09:00"), e0 = new Date(end + "T09:00");
+    if (mode === "alopecia") return ALOPECIA.map((m) => ({ ...m, date: day(new Date(), m.day) }));
     return [...PLAN.map((m) => ({ ...m, date: day(s0, m.day) })), ...REGROWTH.map((m) => ({ ...m, date: day(e0, m.day) }))];
-  }, [start, end]);
+  }, [start, end, mode]);
   const today = Date.now();
 
   function ics() {
@@ -85,7 +95,10 @@ export function Journal() {
     }
   }
 
-  const last = checks[checks.length - 1];
+  const demo = persona("anjali").skin ?? [];
+  const example = checks.length === 0 && demo.length > 0;
+  const shown: CheckIn[] = example ? demo.map((d, i) => ({ at: Date.parse("2026-10-21") + d.week * 7 * 86400000 + i, scores: d.scores, masks: d.masks, photo: d.photo })) : checks;
+  const last = shown[shown.length - 1];
 
   return (
     <>
@@ -94,8 +107,14 @@ export function Journal() {
           <div className={s.planHead}>
             <p className="kicker">Plan</p>
             <h2 className="h-sec">Your dates</h2>
-            <label>First treatment<input type="date" value={start} onChange={(e) => setStart(e.target.value)} /></label>
-            <label>Last treatment (expected)<input type="date" value={end} onChange={(e) => setEnd(e.target.value)} /></label>
+            <div className={s.modes} role="radiogroup" aria-label="Kind of hair loss">
+              <button role="radio" aria-checked={mode === "chemo"} onClick={() => setMode("chemo")}>Chemotherapy</button>
+              <button role="radio" aria-checked={mode === "alopecia"} onClick={() => setMode("alopecia")}>Alopecia or thinning</button>
+            </div>
+            {mode === "chemo" && <>
+              <label>First treatment<input type="date" value={start} onChange={(e) => setStart(e.target.value)} /></label>
+              <label>Last treatment (expected)<input type="date" value={end} onChange={(e) => setEnd(e.target.value)} /></label>
+            </>}
             <button className="btn btn-ghost btn-sm" onClick={ics}>Add to my calendar (.ics)</button>
             <p className="small">General timings from cancer charities. Your care team knows your regimen; ask them what to expect.</p>
           </div>
@@ -121,12 +140,12 @@ export function Journal() {
         <div className={`wrap ${s.skinWrap}`}>
           <div>
             <p className="kicker">Weekly skin check-in</p>
-            <h2 id="skin-title" className="h-sec">Notice change early, then ask.</h2>
+            <h2 id="skin-title" className="h-sec">Skin check-ins, once a cycle.</h2>
             <p className="lede" style={{ marginTop: 12 }}>
-              Treatment can leave skin drier or more sensitive. A selfie each week gives you YouCam&rsquo;s raw scores for moisture, redness, texture and radiance, so you can show your care team what changed rather than describe it. Higher is better. This is not a diagnosis.
+              Treatment can leave skin drier or more sensitive. A selfie each treatment cycle gives you YouCam&rsquo;s scores for moisture, redness, texture and radiance, so you can show your care team what changed rather than describe it. It is not a diagnosis; anything that worries you is a question for them.
             </p>
             <label className="btn btn-ink" style={{ marginTop: 22, position: "relative" }}>
-              {busy ? `Reading your skin… ${secs} s` : "Add this week's selfie · 9 units"}
+              {busy ? `Reading your skin… ${secs} s` : "Add a check-in selfie · 9 units"}
               <input type="file" accept="image/*" capture="user" disabled={busy} style={{ position: "absolute", opacity: 0, width: 1, height: 1 }} onChange={(e) => checkIn(e.target.files?.[0])} />
             </label>
             <p className="small" style={{ marginTop: 10 }}>We crop to your face on this device first, because skin analysis needs the face to fill the frame. Photos and scores stay in this browser.</p>
@@ -144,15 +163,33 @@ export function Journal() {
                     <button key={c} role="tab" aria-selected={show === c} onClick={() => setShow(c)}>
                       <span>{LABEL[c]}</span>
                       <b className="num">{last.scores[c] ?? "—"}</b>
-                      <Spark values={checks.map((x) => x.scores[c]).filter((v) => v != null)} />
+                      <Spark values={shown.map((x) => x.scores[c]).filter((v) => v != null)} />
                     </button>
                   ))}
                 </div>
-                <p className="small">{checks.length} check-in{checks.length > 1 ? "s" : ""}, latest {new Date(last.at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}. Scores are YouCam&rsquo;s raw scores (1–100), not the flattered display scores.</p>
+                <p className="small">
+                  {example
+                    ? "Example: Anjali's check-ins before treatment and at week 4 (demo person, real YouCam output). Yours replace these."
+                    : `${checks.length} check-in${checks.length > 1 ? "s" : ""}, latest ${new Date(last.at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}.`}{" "}
+                  Scores are YouCam&rsquo;s raw 1&ndash;100 scores; higher means less of a concern. They describe a photo, not your health.
+                </p>
               </>
             ) : (
               <div className={s.empty}>Your first check-in appears here, with a map of each concern.</div>
             )}
+          </div>
+        </div>
+      </section>
+
+      <section className="night sec" aria-labelledby="pay-title">
+        <div className="wrap">
+          <p className="kicker">Paying for a wig</p>
+          <h2 id="pay-title" className="h-sec">Ask before you buy.</h2>
+          <div className={s.pay}>
+            <div><h3 className="h-sub">India</h3><p>Some hospitals and charities give free wigs made from donated hair, such as the Tata Memorial Centre with the Cherian Foundation, and Cope with Cancer in Mumbai. Ask your oncology team or social worker.</p></div>
+            <div><h3 className="h-sub">UK</h3><p>Wigs are free on the NHS in Scotland and Wales. In England an NHS stock synthetic wig costs &pound;80.15 unless you qualify for free prescriptions.</p><a className="src" href="https://www.nhsbsa.nhs.uk/help-travel-eye-care-wigs-and-fabric-support-costs/wigs-and-fabric-supports" target="_blank" rel="noreferrer">NHSBSA</a></div>
+            <div><h3 className="h-sub">US</h3><p>Original Medicare doesn&rsquo;t cover wigs. Some private plans do with a doctor&rsquo;s prescription for a &ldquo;cranial prosthesis&rdquo;; your passport is useful paperwork.</p><a className="src" href="https://www.breastcancer.org/treatment-side-effects/hair-loss/wigs/insurance" target="_blank" rel="noreferrer">Breastcancer.org</a></div>
+            <div><h3 className="h-sub">Children</h3><p>Hairloom is for adults. Children&rsquo;s hair loss needs a paediatric team and specialist wig charities, who fit wigs for growing heads.</p></div>
           </div>
         </div>
       </section>

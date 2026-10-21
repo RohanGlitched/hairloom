@@ -31,34 +31,50 @@ const STEPS: { id: Step; label: string; hint: string }[] = [
   { id: "share", label: "Share", hint: "Send to your fitter" },
 ];
 
+const pre = (src: string, api: string): Render => ({ src, api, units: 0, ms: 0, at: 0 });
+
 /** Demo sessions are built from precomputed YouCam output, so they cost nothing. */
 function demoSession(p: Persona): Session {
   const renders: Record<string, Render> = {};
-  for (const [w, src] of Object.entries(p.wigs)) renders[`wig:${w}`] = { src, api: "AI Hairstyle Virtual Try-On", units: 0, ms: 0, at: 0 };
-  for (const [h, src] of Object.entries(p.headwear)) renders[`head:${h}`] = { src, api: "AI Image Generator (image to image)", units: 0, ms: 0, at: 0 };
-  renders.own = { src: p.own, api: "AI Hairstyle Virtual Try-On", units: 0, ms: 0, at: 0 };
-  return { ...emptySession("demo", p.name), personaId: p.id, kept: p.kept, turns: p.turns.filter(Boolean) as string[], readings: p.readings, keptAt: Date.parse("2026-10-21"), today: p.week4, renders, shortlist: [] };
+  for (const [w, src] of Object.entries(p.wigs)) renders[`wig:${w}`] = pre(src, "AI Hairstyle Virtual Try-On");
+  for (const [w, src] of Object.entries(p.withHair ?? {})) renders[`hair:${w}`] = pre(src, "AI Hairstyle Virtual Try-On");
+  for (const [k, src] of Object.entries(p.shades ?? {})) renders[`shade:${k}`] = pre(src, "AI Hair Color Virtual Try-On");
+  for (const [h, src] of Object.entries(p.headwear)) renders[`head:${h}`] = pre(src, "AI Image Generator (image to image)");
+  for (const [k, src] of Object.entries(p.thinning ?? {})) renders[`thin:${k}`] = pre(src, k === "volume" ? "AI Hair Volume Virtual Try-On" : "AI Hair Extension Virtual Try-On");
+  if (p.brows) renders["brows:demo"] = pre(p.brows, "AI Makeup Virtual Try-On");
+  renders.own = pre(p.own, "AI Hairstyle Virtual Try-On");
+  return {
+    ...emptySession("demo", p.name), personaId: p.id, kept: p.kept, turns: p.turns.filter(Boolean) as string[], readings: p.readings,
+    keptAt: Date.parse("2026-10-21"), today: p.week4, base: Object.keys(p.withHair ?? {}).length ? "kept" : "today", later: p.later, situation: p.situation, fit: p.fit, cap: p.cap, renders, shortlist: [],
+  };
 }
 
-export function Studio({ initialPersona }: { initialPersona?: string }) {
-  const [session, setSession] = useState<Session | null>(null);
-  const [step, setStep] = useState<Step>("keep");
+const STEP_IDS: Step[] = ["keep", "try", "look", "share"];
+
+export function Studio({ initialPersona, initialStep }: { initialPersona?: string; initialStep?: string }) {
+  // undefined = still loading (avoids flashing the person picker), null = picker
+  const [session, setSession] = useState<Session | null | undefined>(undefined);
+  const [step, setStep] = useState<Step>(STEP_IDS.includes(initialStep as Step) ? (initialStep as Step) : "keep");
   const [units, setUnits] = useState<Units>({ units: null, floor: 120, live: false });
+  const [consenting, setConsenting] = useState(false);
   const loaded = useRef(false);
+
+  const refreshUnits = useCallback(() => {
+    fetch("/api/units").then((r) => r.json()).then((u) => setUnits({ units: u.units, floor: u.floor ?? 120, live: !!u.live })).catch(() => undefined);
+  }, []);
 
   // Restore a saved live session, or start on a demo person.
   useEffect(() => {
     if (loaded.current) return;
     loaded.current = true;
     (async () => {
-      const saved = await get<Session>("session");
       const fromUrl = initialPersona && PERSONAS.find((p) => p.id === initialPersona);
-      if (fromUrl) setSession(demoSession(fromUrl));
-      else if (saved?.mode === "live") setSession(saved);
-      else setSession(null);
+      if (fromUrl) return setSession(demoSession(fromUrl));
+      const saved = await get<Session>("session");
+      setSession(saved?.mode === "live" ? saved : null);
     })();
-    fetch("/api/units").then((r) => r.json()).then((u) => setUnits({ units: u.units, floor: u.floor ?? 120, live: !!u.live })).catch(() => undefined);
-  }, [initialPersona]);
+    refreshUnits();
+  }, [initialPersona, refreshUnits]);
 
   const update = useCallback((fn: (x: Session) => Session) => {
     setSession((prev) => {
@@ -72,19 +88,28 @@ export function Studio({ initialPersona }: { initialPersona?: string }) {
   const live: Ctx["live"] = useCallback(async (kind, images, opt, key, onTick) => {
     const imgs = await Promise.all(images.map((i) => (i.startsWith("data:") ? i : prepare(i))));
     const r = await runTask(kind, imgs, opt, onTick);
-    fetch("/api/units").then((x) => x.json()).then((u) => setUnits({ units: u.units, floor: u.floor ?? 120, live: !!u.live })).catch(() => undefined);
+    refreshUnits();
     if (!r.ok) return { ok: false, message: r.message };
     const render = r.image ? { src: r.image, api: r.api, units: r.units, ms: r.ms, at: Date.now() } : undefined;
     update((x) => ({ ...x, unitsSpent: x.unitsSpent + r.units, renders: key && render ? { ...x.renders, [key]: render } : x.renders }));
     return { ok: true, render, results: r.results };
-  }, [update]);
+  }, [update, refreshUnits]);
 
   const persona = useMemo(() => (session?.personaId ? PERSONAS.find((p) => p.id === session.personaId) ?? null : null), [session?.personaId]);
 
-  if (session === null) return <Start onDemo={(p) => { setSession(demoSession(p)); setStep("keep"); }} onLive={() => { setSession(emptySession("live")); setStep("keep"); }} units={units} />;
+  if (session === undefined) return <div className={s.loading} aria-busy="true">Opening the studio…</div>;
+  if (consenting) {
+    return <Consent onBack={() => setConsenting(false)} onAgree={() => { setConsenting(false); setSession({ ...emptySession("live"), consent: Date.now(), base: "kept", later: "Today" }); setStep("keep"); }} />;
+  }
+  if (session === null) return <Start onDemo={(p) => { setSession(demoSession(p)); setStep("keep"); }} onLive={() => setConsenting(true)} units={units} />;
 
   const ctx: Ctx = { session, persona, update, live, units, go: (st) => { setStep(st); window.scrollTo({ top: 0, behavior: "smooth" }); } };
-  const done = { keep: !!session.readings, try: session.shortlist.some((k) => k.startsWith("wig:") || k.startsWith("shade:") || k === "own"), look: session.shortlist.some((k) => k.startsWith("head:") || k.startsWith("brows:")), share: false };
+  const done = {
+    keep: !!session.readings,
+    try: session.shortlist.some((k) => /^(wig|hair|shade|thin):/.test(k) || k === "own"),
+    look: session.shortlist.some((k) => k.startsWith("head:") || k.startsWith("brows:")),
+    share: false,
+  };
 
   return (
     <div className={s.shell}>
@@ -94,24 +119,28 @@ export function Studio({ initialPersona }: { initialPersona?: string }) {
           {session.kept ? <img src={session.kept} alt="" /> : <span className={s.whoBlank} aria-hidden="true" />}
           <div>
             <b>{session.name}</b>
-            <span>{session.mode === "demo" ? "Demo person · free" : "Your photos · stays on this device"}</span>
+            <span>{session.mode === "demo" ? "Demo person" : "Your photos"}</span>
           </div>
         </div>
         <ol className={s.stepList}>
           {STEPS.map((st, i) => (
             <li key={st.id}>
               <button aria-current={step === st.id ? "step" : undefined} onClick={() => ctx.go(st.id)}>
-                <span className={s.stepNum}>{done[st.id] ? "✓" : i + 1}</span>
+                <span className={s.stepNum} aria-hidden="true">{done[st.id] ? "✓" : i + 1}</span>
                 <span><b>{st.label}</b><small>{st.hint}</small></span>
               </button>
             </li>
           ))}
         </ol>
-        <UnitMeter units={units} spent={session.unitsSpent} />
+        {session.mode === "demo" ? (
+          <p className={s.demoNote}>Everything shown for {session.name} is real YouCam output, prepared in advance, so it&rsquo;s instant and free.</p>
+        ) : (
+          <UnitMeter units={units} spent={session.unitsSpent} />
+        )}
         <div className={s.sideFoot}>
           <button className="btn btn-ghost btn-sm" onClick={() => setSession(null)}>Switch person</button>
           {session.mode === "live" && (
-            <button className="btn btn-ghost btn-sm" onClick={async () => { if (confirmErase()) { await erase(); setSession(null); } }}>Erase my photos</button>
+            <button className="btn btn-ghost btn-sm" onClick={async () => { if (window.confirm("Erase your hair passport and every try-on from this device?")) { await erase(); setSession(null); } }}>Erase my photos</button>
           )}
         </div>
       </aside>
@@ -125,17 +154,35 @@ export function Studio({ initialPersona }: { initialPersona?: string }) {
   );
 }
 
-function confirmErase() {
-  return typeof window !== "undefined" && window.confirm("Erase your hair passport and every try-on from this device?");
-}
-
 function UnitMeter({ units, spent }: { units: Units; spent: number }) {
   return (
-    <div className={s.meter}>
-      <p><b className="num">{units.units ?? "—"}</b> YouCam units left for live runs</p>
+    <details className={s.meter}>
+      <summary>{units.live ? "Live studio is on" : units.units == null ? "Checking the live studio…" : "Live studio is resting"}</summary>
       <p className="small">
-        {units.units == null ? "Checking the live balance…" : units.live ? `You've used ${spent} here. Demo people are free.` : "Live runs are paused to save units for judging. Demo people still work."}
+        Each reading or try-on uses YouCam API units (1–2 for a try-on, up to 16 for a passport). You&rsquo;ve used {spent}; <span className="num">{units.units ?? "—"}</span> are left on this demo account, with some kept back for judging.
       </p>
+    </details>
+  );
+}
+
+function Consent({ onAgree, onBack }: { onAgree: () => void; onBack: () => void }) {
+  const [ok, setOk] = useState(false);
+  return (
+    <div className={s.consent}>
+      <p className="kicker">Before you add photos</p>
+      <h1 className="h-sec">How your photos are handled</h1>
+      <ul>
+        <li>Your photos and passport are kept in this browser. There&rsquo;s no account.</li>
+        <li>For each reading or try-on, the photo it needs is sent through our server to YouCam (Perfect Corp) to be processed. As soon as your browser has the result, we ask YouCam to delete that task and its photo.</li>
+        <li>Hair colour is measured on this device and never uploaded for that.</li>
+        <li>Hairloom helps with appearance. It doesn&rsquo;t diagnose anything; talk to your care team about treatment and hair loss.</li>
+        <li>A try-on shows style and colour. It can&rsquo;t show how a cap fits, how heavy a wig is or how lace looks up close, so try real wigs with a fitter before you buy.</li>
+      </ul>
+      <label className={s.check}><input type="checkbox" checked={ok} onChange={(e) => setOk(e.target.checked)} /> I&rsquo;m 18 or over, these are photos of me, and I agree to the above.</label>
+      <div className={s.next}>
+        <button className="btn btn-ivory" disabled={!ok} onClick={onAgree}>Continue with my photos</button>
+        <button className="btn btn-ghost" onClick={onBack}>Back</button>
+      </div>
     </div>
   );
 }
@@ -146,7 +193,7 @@ function Start({ onDemo, onLive, units }: { onDemo: (p: Persona) => void; onLive
       <div className={s.startHead}>
         <p className="kicker">The studio</p>
         <h1 className="h-sec">Whose hair are we keeping today?</h1>
-        <p className="lede">Start with a demo person to see every step instantly, or use your own photos. Your photos stay in this browser.</p>
+        <p className="lede">Start with a demo person to see every step instantly, or use your own photos. Your passport stays in this browser.</p>
       </div>
       <div className={s.startGrid}>
         {PERSONAS.map((p) => (
@@ -156,16 +203,18 @@ function Start({ onDemo, onLive, units }: { onDemo: (p: Persona) => void; onLive
             <span className={s.startText}>
               <b>{p.name}, {p.age}</b>
               <span>{p.blurb}</span>
-              <small>Demo person · free · precomputed</small>
+              <small>Demo person · instant</small>
             </span>
           </button>
         ))}
         <button className={`${s.startCard} ${s.startLive}`} onClick={onLive} disabled={units.units != null && !units.live}>
-          <span className={s.startArch} aria-hidden="true" />
+          <span className={s.startArch} aria-hidden="true">
+            <svg viewBox="0 0 120 160" width="62%"><g fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M30 150V70a30 30 0 0 1 60 0v80" /><circle cx="60" cy="92" r="16" /><path d="M44 64h32" opacity=".5" /></g></svg>
+          </span>
           <span className={s.startText}>
             <b>Use my own photos</b>
-            <span>Capture three angles with YouCam&rsquo;s camera, or upload photos. A full passport uses 16 units; each try-on 1–2.</span>
-            <small>{units.units == null ? "Checking live units…" : units.live ? `${units.units} units available` : "Live runs paused to save units for judging"}</small>
+            <span>YouCam&rsquo;s camera guides you through three angles, or upload photos. Your passport stays on this device.</span>
+            <small>{units.units == null ? "Checking the live studio…" : units.live ? "Live" : "Resting to save units for judging; demo people still work"}</small>
           </span>
         </button>
       </div>

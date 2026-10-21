@@ -41,3 +41,18 @@ export function closeness(wig: Wig, kept: { length: Length | null; texture: Text
   const score = 100 - l * 14 - t * 16 - Math.min(40, c * 2.2);
   return Math.max(0, Math.round(score));
 }
+
+/** Plain words for the closeness score, instead of a percentage. */
+export function band(score: number) {
+  if (score >= 75) return "Closest to yours";
+  if (score >= 50) return "A small change";
+  return "A new look";
+}
+
+/** Approximate industry cap sizing from head circumference (brands vary). */
+export function capSize(cm: number | null | undefined) {
+  if (!cm) return null;
+  if (cm < 54.5) return "Petite";
+  if (cm <= 57.2) return "Average";
+  return "Large";
+}

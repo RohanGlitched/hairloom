@@ -6,10 +6,10 @@ import { useEffect, useState } from "react";
 import s from "./Nav.module.css";
 
 const LINKS = [
-  { href: "/#how", label: "How it works" },
   { href: "/studio", label: "Studio" },
   { href: "/fitter", label: "For wig fitters" },
   { href: "/journal", label: "Journal" },
+  { href: "/business", label: "For retailers" },
   { href: "/evidence", label: "Evidence" },
 ];
 

@@ -17,6 +17,9 @@ export default function Measure() {
       for (const p of PERSONAS) {
         jobs.push([`${p.id}/kept`, p.kept], [`${p.id}/own`, p.own]);
         for (const [w, src] of Object.entries(p.wigs)) jobs.push([`${p.id}/wig_${w}`, src]);
+        for (const [w, src] of Object.entries(p.withHair ?? {})) jobs.push([`${p.id}/hair_${w}`, src]);
+        for (const [k, src] of Object.entries(p.shades ?? {})) jobs.push([`${p.id}/shade_${k.replace(":", "_")}`, src]);
+        for (const [k, src] of Object.entries(p.thinning ?? {})) jobs.push([`${p.id}/thin_${k}`, src]);
       }
       for (const [k, src] of jobs) {
         const r = await measureHair(src).catch(() => null);

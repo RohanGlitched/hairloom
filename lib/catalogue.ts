@@ -37,6 +37,8 @@ export const WIGS: Wig[] = [
   { id: "tara", name: "Tara", style: "Long, deep side parting, darker root", length: "chest", texture: "straight", code: "4", cap: "Hand-tied", fibre: "Human hair", price: 44900, care: "High", fit: "Women" },
   { id: "kai", name: "Kai", style: "Classic short crop", length: "ear", texture: "straight", code: "4", cap: "Monofilament top", fibre: "Synthetic", price: 9800, care: "Low", fit: "Men" },
   { id: "dev", name: "Dev", style: "Textured short, salt and pepper", length: "ear", texture: "wavy", code: "44", cap: "Classic cap", fibre: "Synthetic", price: 9200, care: "Low", fit: "Men" },
+  { id: "arjun", name: "Arjun", style: "Classic side parting, grey at the temples", length: "ear", texture: "straight", code: "1B", cap: "Lace front", fibre: "Human hair", price: 24500, care: "Medium", fit: "Men" },
+  { id: "sam", name: "Sam", style: "Short natural curls", length: "ear", texture: "curly", code: "4", cap: "Classic cap", fibre: "Synthetic", price: 10400, care: "Low", fit: "Men" },
 ];
 
 export const LENGTH_ORDER: Length[] = ["ear", "chin", "shoulder", "chest", "midback"];

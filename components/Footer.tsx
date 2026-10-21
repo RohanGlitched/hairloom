@@ -4,12 +4,13 @@ import s from "./Footer.module.css";
 
 const COLS = [
   { title: "Hairloom", links: [["How it works", "/#how"], ["Studio", "/studio"], ["Journal", "/journal"], ["Privacy", "/privacy"]] },
-  { title: "For wig fitters", links: [["Fitter desk", "/fitter"], ["Demo boutique", "/fitter#stock"], ["Open a shared passport", "/fitter#open"]] },
+  { title: "For the trade", links: [["Fitter desk", "/fitter"], ["Demo boutique", "/fitter#stock"], ["Retailers and wig banks", "/business"], ["Retailer widget", "/business#embed"]] },
   { title: "Evidence", links: [["What we measured", "/evidence"], ["API notes", "/evidence#notes"], ["Sources", "/evidence#sources"]] },
-  { title: "Runs on", links: [["YouCam API", "https://yce.perfectcorp.com/ai-api"], ["MediaPipe hair segmenter", "https://ai.google.dev/edge/mediapipe/solutions/vision/image_segmenter"], ["Next.js on Vercel", "https://nextjs.org"]] },
+  { title: "Runs on", links: [["YouCam API", "https://yce.perfectcorp.com/ai-api"], ["MediaPipe (Apache 2.0)", "https://ai.google.dev/edge/mediapipe/solutions/vision/image_segmenter"], ["Next.js on Vercel", "https://nextjs.org"]] },
 ] as const;
 
 const CHANGES = [
+  ["Oct 22", "Judge-round fixes: Ravi, cap size, thinning, retailer page and widget, signed task handles, tests"],
   ["Oct 21", "Hair passport, fitting room and demo boutique"],
 ];
 

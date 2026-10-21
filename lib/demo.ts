@@ -11,12 +11,25 @@ export type Readings = {
   } | null;
 };
 
+export type Cap = { cm: number | null; parting: "left" | "centre" | "right" | "none" | null };
+export type SkinCheck = { week: number; photo: string; scores: Record<string, number>; masks: Record<string, string> };
+
 export type Persona = {
   id: string;
   name: string;
   age: number;
   city: string;
   blurb: string;
+  situation: "chemo" | "alopecia";
+  /** Label for the photo taken after hair loss ("Week 4", or "Month 3" for alopecia). */
+  later: string;
+  fit: "Women" | "Men";
+  cap: Cap;
+  brows: string | null;
+  withHair: Record<string, string>;
+  shades: Record<string, string>; // "wig:code" -> render
+  thinning: Record<string, string>;
+  skin: SkinCheck[];
   kept: string;
   turns: (string | null)[];
   week4: string;
@@ -40,7 +53,7 @@ export function describe(r: Readings) {
     length: r.length ? { label: cap(r.length.term), raw: r.length.term } : null,
     face: r.face?.faceshape ? { label: r.face.faceshape, raw: r.face.faceshape } : null,
     brows: brow ? { label: `${brow.left_shape}, ${brow.left_body_thickness?.toLowerCase()}`, raw: `${brow.left_shape}/${brow.right_shape}` } : null,
-    browHex: r.face?.color?.eyebrow_color ?? null,
+    browHex: /^#[0-9a-fA-F]{6}$/.test(r.face?.color?.eyebrow_color ?? "") ? r.face!.color!.eyebrow_color! : null,
     apiHair: r.face?.color?.hair_color ? { hex: r.face.color.hair_color, name: r.face.color.hair_color_name ?? "" } : null,
   };
 }

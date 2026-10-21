@@ -1,5 +1,7 @@
 "use client";
 
+import { z } from "zod";
+
 // End-to-end sealing for fitter links: AES-GCM-256 in the browser, key carried in the URL fragment.
 
 const b64u = (b: ArrayBuffer | Uint8Array) => {
@@ -20,7 +22,34 @@ export type SharePayload = {
   looks: { key: string; label: string; src: string; detail: string }[];
   note: string;
   appointment?: string;
+  cap?: { cm: number | null; parting: "left" | "centre" | "right" | "none" | null };
 };
+
+const hex = z.string().regex(/^#[0-9a-fA-F]{6}$/);
+const jpeg = z.string().regex(/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/).max(1_500_000);
+const short = (n: number) => z.string().max(n);
+/** A decrypted share is still untrusted input: anyone can seal anything. */
+export const PayloadSchema = z.object({
+  v: z.literal(1),
+  name: short(80),
+  keptAt: z.number().finite(),
+  kept: jpeg,
+  readings: z.object({
+    type: z.object({ mapping: short(20), term: short(60) }).nullable(),
+    frizz: z.object({ mapping: z.number(), term: short(60) }).nullable(),
+    length: z.object({ term: short(60) }).nullable(),
+    face: z.object({
+      faceshape: short(30).optional(),
+      eyebrow: z.record(z.string(), short(40)).optional(),
+      color: z.object({ eyebrow_color: hex.optional(), hair_color: hex.optional(), hair_color_name: short(30).optional() }).partial().optional(),
+    }).passthrough().nullable(),
+  }),
+  colour: z.object({ hex, code: short(8), name: short(40), dE: z.number().finite() }).nullable(),
+  looks: z.array(z.object({ key: short(60), label: short(80), src: jpeg, detail: short(200) })).max(6),
+  note: short(1200),
+  appointment: short(40).optional(),
+  cap: z.object({ cm: z.number().min(40).max(70).nullable(), parting: z.enum(["left", "centre", "right", "none"]).nullable() }).optional(),
+});
 
 export async function seal(payload: SharePayload): Promise<{ id: string; key: string }> {
   const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt"]);
@@ -39,8 +68,11 @@ export async function unseal(id: string, keyB64: string): Promise<SharePayload> 
   const key = await crypto.subtle.importKey("raw", unb64u(keyB64), "AES-GCM", false, ["decrypt"]);
   try {
     const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv: unb64u(j.iv) }, key, unb64u(j.data));
-    return JSON.parse(new TextDecoder().decode(plain));
+    var raw: unknown = JSON.parse(new TextDecoder().decode(plain));
   } catch {
     throw new Error("This link's key doesn't match. Copy the whole link, including everything after #.");
   }
+  const parsed = PayloadSchema.safeParse(raw);
+  if (!parsed.success) throw new Error("This link opened, but its contents aren't a Hairloom passport.");
+  return parsed.data as SharePayload;
 }

@@ -4,7 +4,7 @@ import { HEADWEAR, WIGS } from "./catalogue";
 
 export type KindName =
   | "hairType" | "hairFrizz" | "hairLength" | "face"
-  | "wig" | "ownHair" | "hairColor" | "headwear" | "brows" | "skin";
+  | "wig" | "ownHair" | "hairColor" | "headwear" | "brows" | "skin" | "hairVol" | "hairExt";
 
 type Ctx = { files: string[]; opt: Record<string, string | number | undefined> };
 
@@ -19,6 +19,9 @@ export type Kind = {
 };
 
 const SKIN = ["moisture", "redness", "texture", "radiance"];
+/** YouCam's template ids for toppers and volumisers (hair-vol) and clip-in lengths (hair-ext). */
+export const VOLUME = ["female_subtle", "female_natural", "female_medium", "female_high"];
+export const EXTENSION = ["all_length_1", "all_length_2_", "all_length_3"];
 
 export const KINDS: Record<KindName, Kind> = {
   hairType: { path: "/s2s/v2.0/task/hair-type-detection", images: 3, units: 2, api: "AI Hair Type Detection", body: ({ files }) => ({ src_file_ids: files }) },
@@ -66,11 +69,27 @@ export const KINDS: Record<KindName, Kind> = {
       const hex = String(opt.hex ?? "#3a2a22");
       const name = String(opt.pattern ?? "SoftArch20");
       if (!/^#[0-9a-fA-F]{6}$/.test(hex) || !/^[A-Za-z]+\d+$/.test(name)) throw new Error("bad brow");
-      const thickness = Math.max(-100, Math.min(100, Number(opt.thickness ?? 20)));
+      const raw = Number(opt.thickness ?? 20);
+      if (!Number.isFinite(raw)) throw new Error("bad brow");
+      const thickness = Math.round(Math.max(-100, Math.min(100, raw)));
       return {
         src_file_id: files[0],
         effects: [{ category: "eyebrows", pattern: { type: "shape", name, curvature: 0, thickness, definition: 60 }, palettes: [{ color: hex, colorIntensity: 70, texture: "matte" }] }],
       };
+    },
+  },
+  hairVol: {
+    path: "/s2s/v2.0/task/hair-vol", images: 1, units: 2, api: "AI Hair Volume Virtual Try-On",
+    body: ({ files, opt }) => {
+      if (!VOLUME.includes(String(opt.template))) throw new Error("unknown volume");
+      return { src_file_id: files[0], template_id: String(opt.template) };
+    },
+  },
+  hairExt: {
+    path: "/s2s/v2.0/task/hair-ext", images: 1, units: 1, api: "AI Hair Extension Virtual Try-On",
+    body: ({ files, opt }) => {
+      if (!EXTENSION.includes(String(opt.template))) throw new Error("unknown extension");
+      return { src_file_id: files[0], template_id: String(opt.template) };
     },
   },
   skin: {
@@ -79,4 +98,16 @@ export const KINDS: Record<KindName, Kind> = {
   },
 };
 
-export const isKind = (k: unknown): k is KindName => typeof k === "string" && k in KINDS;
+export const isKind = (k: unknown): k is KindName => typeof k === "string" && Object.hasOwn(KINDS, k);
+
+/** Checks a kind's options without uploading anything. Returns an error message, or null when valid. */
+export function validate(name: KindName, opt: Record<string, string | number | undefined>): string | null {
+  const kind = KINDS[name];
+  try {
+    kind.ref?.(opt);
+    kind.body({ files: Array.from({ length: kind.images + (kind.ref ? 1 : 0) }, (_, i) => `check-${i}`), opt });
+    return null;
+  } catch (e) {
+    return (e as Error).message;
+  }
+}

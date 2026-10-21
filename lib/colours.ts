@@ -21,3 +21,9 @@ export function keptDelta(personaId: string, renderKey: string) {
   const a = measured(`${personaId}/kept`), b = measured(`${personaId}/${renderKey}`);
   return a && b ? deltaE00(a, b) : null;
 }
+
+/** Build-time measurement for a studio render key ("wig:asha", "hair:asha", "shade:asha:4", "own", "thin:volume"). */
+export function renderLab(personaId: string, key: string): Lab | null {
+  const k = key === "own" ? "own" : key.replace(/:/g, "_");
+  return measured(`${personaId}/${k}`);
+}

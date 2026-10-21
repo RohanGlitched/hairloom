@@ -1,28 +1,19 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { KINDS, isKind } from "@/lib/kinds";
-import { YouCamError, createTask, deleteTask, pollTask, spent, unitsLeft, upload } from "@/lib/youcam";
+import { KINDS, isKind, validate } from "@/lib/kinds";
+import { YouCamError, createTask, deleteTask, pollTask, unitsLeft, upload } from "@/lib/youcam";
+import { dailyAllows, held, hold, pollAllowed, readHandle, reserve, signHandle } from "@/lib/guard";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
 // Units kept back so the account never runs dry during judging.
 const FLOOR = Number(process.env.UNIT_FLOOR ?? 120);
-// Per visitor (IP) budget, per rolling hour. In-memory per server instance: a courtesy limit, not security.
-const PER_HOUR = Number(process.env.UNITS_PER_VISITOR_HOUR ?? 60);
-const ledger = new Map<string, { at: number; units: number }[]>();
+// Skin analysis also returns a resized source image; only the concern maps are passed on.
+const SKIN_TYPES = new Set(["moisture", "redness", "texture", "radiance"]);
 
-function visitor(req: NextRequest) {
-  return (req.headers.get("x-forwarded-for") ?? "local").split(",")[0].trim();
-}
-
-function usedThisHour(ip: string) {
-  const now = Date.now();
-  const rows = (ledger.get(ip) ?? []).filter((r) => now - r.at < 3_600_000);
-  ledger.set(ip, rows);
-  return rows.reduce((s, r) => s + r.units, 0);
-}
-
+const visitor = (req: NextRequest) => (req.headers.get("x-forwarded-for") ?? "local").split(",")[0].trim();
 const fail = (code: string, message: string, status = 400) => NextResponse.json({ ok: false, code, message }, { status });
+const toErr = (e: unknown) => (e instanceof YouCamError ? e : new YouCamError("unknown", "Something went wrong talking to YouCam."));
 
 const FRIENDLY: Record<string, string> = {
   error_face_angle_invalid: "Your head angle is outside what this step accepts. Face the camera for the front photo and turn clearly to each side for the others.",
@@ -37,94 +28,98 @@ const FRIENDLY: Record<string, string> = {
   error_nsfw_content_detected: "This photo can't be processed. Try a different one.",
 };
 
+/** Starts a whitelisted task. Returns a signed handle; the raw YouCam task id never leaves the server. */
 export async function POST(req: NextRequest) {
   let body: { kind?: unknown; images?: unknown; opt?: unknown };
-  try {
-    body = await req.json();
-  } catch {
-    return fail("bad_request", "The request could not be read.");
-  }
+  try { body = await req.json(); } catch { return fail("bad_request", "The request could not be read."); }
   if (!isKind(body.kind)) return fail("bad_kind", "Unknown step.");
-  const kind = KINDS[body.kind];
+  const name = body.kind;
+  const kind = KINDS[name];
   const images = Array.isArray(body.images) ? body.images : [];
-  if (images.length !== kind.images || !images.every((s) => typeof s === "string" && s.length < 2_800_000)) {
-    return fail("bad_images", `This step needs ${kind.images} photo${kind.images > 1 ? "s" : ""} under 2 MB each.`);
+  if (images.length !== kind.images || !images.every((s) => typeof s === "string" && /^data:image\/(jpeg|png);base64,/.test(s) && s.length < 2_800_000)) {
+    return fail("bad_images", `This step needs ${kind.images} JPEG or PNG photo${kind.images > 1 ? "s" : ""} under 2 MB each.`);
   }
   const opt = (body.opt && typeof body.opt === "object" ? body.opt : {}) as Record<string, string | number>;
+  // Options are checked before anything is uploaded, so a bad request never leaves a photo at YouCam.
+  const bad = validate(name, opt);
+  if (bad) return fail("bad_option", bad);
 
-  const ip = visitor(req);
-  if (usedThisHour(ip) + kind.units > PER_HOUR) {
-    return fail("visitor_limit", "You've used this hour's share of live units. The demo people stay free to explore, or come back in an hour.", 429);
-  }
+  // Reserve synchronously, before any await, so parallel requests can't all pass the same check.
+  const release = reserve(visitor(req), kind.units);
+  if (!release) return fail("visitor_limit", "You've used this hour's share of live units. The demo people stay free to explore, or come back in an hour.", 429);
+  const unhold = hold(kind.units);
+  let started = false;
   try {
     const left = await unitsLeft();
-    if (left - kind.units < FLOOR) {
-      return fail("resting", "The live studio is resting to save units for judging. Everything still works with the demo people.", 503);
-    }
+    if (left - held() < FLOOR) return fail("resting", "The live studio is resting to save units for judging. Everything still works with the demo people.", 503);
+    const day = await dailyAllows(kind.units);
+    if (!day.ok) return fail("resting", "Today's live allowance is used up. Everything still works with the demo people, and live runs return tomorrow.", 503);
+
     const files: string[] = [];
     for (const [i, b64] of (images as string[]).entries()) {
-      const bytes = Uint8Array.from(Buffer.from(b64.replace(/^data:image\/\w+;base64,/, ""), "base64"));
-      files.push(await upload(bytes, `hairloom-${i}.jpg`));
+      files.push(await upload(Uint8Array.from(Buffer.from(b64.slice(b64.indexOf(",") + 1), "base64")), `hairloom-${i}.jpg`));
     }
-    let reqBody: unknown;
-    try {
-      if (kind.ref) {
-        const r = await fetch(new URL(kind.ref(opt), req.nextUrl.origin));
-        if (!r.ok) return fail("bad_option", "That catalogue item couldn't be loaded.");
-        files.push(await upload(new Uint8Array(await r.arrayBuffer()), "reference.jpg"));
-      }
-      reqBody = kind.body({ files, opt });
-    } catch (e) {
-      return fail("bad_option", (e as Error).message);
+    if (kind.ref) {
+      const r = await fetch(new URL(kind.ref(opt), req.nextUrl.origin));
+      if (!r.ok) return fail("bad_option", "That catalogue item couldn't be loaded.");
+      files.push(await upload(new Uint8Array(await r.arrayBuffer()), "reference.jpg"));
     }
-    const taskId = await createTask(kind.path, reqBody);
-    ledger.get(ip)?.push({ at: Date.now(), units: kind.units }) ?? ledger.set(ip, [{ at: Date.now(), units: kind.units }]);
-    spent(kind.units);
-    return NextResponse.json({ ok: true, taskId, units: kind.units, api: kind.api });
+    const taskId = await createTask(kind.path, kind.body({ files, opt }));
+    started = true;
+    return NextResponse.json({ ok: true, handle: signHandle(name, taskId), units: kind.units, api: kind.api });
   } catch (e) {
-    const err = e instanceof YouCamError ? e : new YouCamError("unknown", "Something went wrong talking to YouCam.");
+    const err = toErr(e);
+    return fail(err.code, err.message, err.status);
+  } finally {
+    unhold();
+    if (!started) release();
+  }
+}
+
+/** Polls a task by its signed handle. The task is NOT deleted here: the client confirms receipt with DELETE. */
+export async function GET(req: NextRequest) {
+  const handle = req.nextUrl.searchParams.get("h") ?? "";
+  const h = readHandle(handle);
+  if (!h || !isKind(h.kind)) return fail("bad_handle", "This task link isn't valid. Start the step again.", 403);
+  if (!pollAllowed(handle)) return NextResponse.json({ ok: true, status: "running" });
+  const kind = KINDS[h.kind];
+  try {
+    const st = await pollTask(kind.path, h.taskId);
+    if (st.status === "running") return NextResponse.json({ ok: true, status: "running" });
+    if (st.status === "error") {
+      await deleteTask(h.taskId);
+      return NextResponse.json({ ok: true, status: "error", code: st.error, message: FRIENDLY[st.error] ?? st.message ?? "YouCam couldn't process this photo." });
+    }
+    // Fetch result files now so the browser never depends on 2-hour signed URLs.
+    // If any download fails, report "running" and try again on the next poll; nothing is lost.
+    let image: string | undefined;
+    const results: Record<string, unknown> = { ...st.results };
+    if (typeof results.url === "string") {
+      const r = await fetch(results.url).catch(() => null);
+      if (!r?.ok) return NextResponse.json({ ok: true, status: "running" });
+      image = `data:${r.headers.get("content-type") ?? "image/jpeg"};base64,${Buffer.from(await r.arrayBuffer()).toString("base64")}`;
+    }
+    delete results.url;
+    if (Array.isArray(results.output)) {
+      const rows = (results.output as { type?: string; raw_score?: number; ui_score?: number; mask_urls?: string[] }[]).filter((o) => o.type && SKIN_TYPES.has(o.type));
+      results.output = await Promise.all(rows.map(async (o) => {
+        const u = o.mask_urls?.[0];
+        const r = u ? await fetch(u).catch(() => null) : null;
+        const mask = r?.ok ? `data:${r.headers.get("content-type") ?? "image/jpeg"};base64,${Buffer.from(await r.arrayBuffer()).toString("base64")}` : null;
+        return { type: o.type, raw_score: o.raw_score, ui_score: o.ui_score, mask };
+      }));
+    }
+    return NextResponse.json({ ok: true, status: "success", results, image });
+  } catch (e) {
+    const err = toErr(e);
     return fail(err.code, err.message, err.status);
   }
 }
 
-export async function GET(req: NextRequest) {
-  const k = req.nextUrl.searchParams.get("kind");
-  const id = req.nextUrl.searchParams.get("id") ?? "";
-  if (!isKind(k) || !/^[\w+/=-]{10,200}$/.test(id)) return fail("bad_request", "Unknown task.");
-  const kind = KINDS[k];
-  try {
-    const st = await pollTask(kind.path, id);
-    if (st.status === "running") return NextResponse.json({ ok: true, status: "running" });
-    if (st.status === "error") {
-      await deleteTask(id);
-      return NextResponse.json({ ok: true, status: "error", code: st.error, message: FRIENDLY[st.error] ?? st.message ?? "YouCam couldn't process this photo." });
-    }
-    // Download any result image here so the browser never depends on a 2-hour signed URL,
-    // then delete the task (and its input photos) at YouCam.
-    let image: string | undefined;
-    const url = typeof st.results.url === "string" ? st.results.url : undefined;
-    if (url) {
-      const r = await fetch(url);
-      if (r.ok) image = `data:${r.headers.get("content-type") ?? "image/jpeg"};base64,${Buffer.from(await r.arrayBuffer()).toString("base64")}`;
-    }
-    const results = { ...st.results };
-    delete results.url;
-    // Skin analysis returns one mask per concern; fetch them now, before the task is deleted.
-    if (Array.isArray(results.output)) {
-      results.output = await Promise.all(
-        (results.output as { mask_urls?: string[] }[]).map(async (o) => {
-          const u = o.mask_urls?.[0];
-          if (!u) return { ...o, mask_urls: [] };
-          const r = await fetch(u).catch(() => null);
-          const mask = r?.ok ? `data:image/png;base64,${Buffer.from(await r.arrayBuffer()).toString("base64")}` : null;
-          return { ...o, mask_urls: [], mask };
-        }),
-      );
-    }
-    await deleteTask(id);
-    return NextResponse.json({ ok: true, status: "success", results, image });
-  } catch (e) {
-    const err = e instanceof YouCamError ? e : new YouCamError("unknown", "Something went wrong talking to YouCam.");
-    return fail(err.code, err.message, err.status);
-  }
+/** The client confirms it has the result; the task, its input photos and outputs are deleted at YouCam. */
+export async function DELETE(req: NextRequest) {
+  const h = readHandle(req.nextUrl.searchParams.get("h") ?? "");
+  if (!h) return fail("bad_handle", "This task link isn't valid.", 403);
+  const ok = await deleteTask(h.taskId);
+  return NextResponse.json({ ok });
 }

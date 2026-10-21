@@ -6,7 +6,9 @@ import { Reveal } from "@/components/Reveal";
 import { PERSONAS, persona } from "@/lib/demo";
 import { TOTALS, byApi } from "@/lib/evidence";
 import { BOUTIQUE, WIGS } from "@/lib/catalogue";
-import { wigShade } from "@/lib/colours";
+import { measured } from "@/lib/colours";
+import { demoBrief } from "@/lib/brief";
+import { capSize } from "@/lib/match";
 import s from "./home.module.css";
 
 const anjali = persona("anjali");
@@ -58,6 +60,7 @@ const APIS = [
 
 export default function Home() {
   const apis = byApi();
+  const brief = demoBrief();
   return (
     <>
       {/* Hero */}
@@ -74,16 +77,16 @@ export default function Home() {
             </div>
           </div>
           <div className={s.mirrors}>
-            <Mirror src={anjali.kept} alt="Anjali with shoulder-length dark brown hair, kept before treatment" caption="Kept" note="21 October · before week 1" priority />
+            <Mirror src={anjali.withHair.june ?? anjali.kept} alt="Anjali before treatment, trying a wavy ash-brown wig on her own photo" caption="Trying wigs" note="Before treatment, with her hair" priority />
             <div className={s.centre}>
-              <Reveal before={anjali.week4} after={anjali.own} beforeAlt="Anjali at week 4, bald" afterAlt="Anjali at week 4 with her own hair restored from her kept photo" label="Compare Anjali at week 4 with and without her own hair" />
+              <Reveal before={anjali.week4} after={anjali.own} beforeAlt="Anjali at week 4, bald" afterAlt="Anjali at week 4 with her own hair restored from her kept photo" beforeLabel="Week 4" afterLabel="Her hair" label="Compare Anjali at week 4 with and without her own hair" initial={50} />
               <p className={s.capC}>Her hair, back</p>
               <p className={s.noteC}>Week 4 photo, her kept photo as the reference</p>
             </div>
             <Mirror src={anjali.headwear.turban} alt="Anjali at week 4 wearing a dusty rose jersey turban" caption="For the evenings" note="Jersey turban, dusty rose" priority />
           </div>
           <p className={s.disclose}>
-            Anjali is a demo person made with the YouCam Image Generator. Every image on this page is real YouCam API output, unretouched.
+            Anjali is a demo person made with the YouCam Image Generator, as are her week-4 photos. Every image on this page is real YouCam API output, unretouched.
           </p>
         </div>
         <div className={s.shelf} aria-hidden="true" />
@@ -93,7 +96,7 @@ export default function Home() {
       <section className={`paper sec`} aria-labelledby="why-title">
         <div className="wrap">
           <p className="kicker">Why before</p>
-          <h2 id="why-title" className="h-sec">Most people choose a wig after the hair it should match has gone.</h2>
+          <h2 id="why-title" className="h-sec">The best time to choose a wig is before you need one.</h2>
           <div className={s.facts}>
             {FACTS.map((f) => (
               <div key={f.big} className={s.fact}>
@@ -138,10 +141,10 @@ export default function Home() {
           <div className={s.secHead}>
             <div>
               <p className="kicker">The fitting room</p>
-              <h2 id="fit-title" className="h-sec">Eleven wigs, three people, week 4.</h2>
+              <h2 id="fit-title" className="h-sec">{WIGS.length} wigs, {PERSONAS.length} people, after hair loss.</h2>
             </div>
             <p className="lede">
-              Pick a person and a wig. Each render puts a wig from {BOUTIQUE.name}, our demo boutique, onto that person&rsquo;s week-4 photo. Colour difference against the hair they kept is measured in your browser as you choose.
+              Pick a person and a wig. Each render puts a wig from {BOUTIQUE.name}, our demo boutique, onto that person&rsquo;s photo after hair loss, and ranks it against the hair they kept: length, texture and measured colour.
             </p>
           </div>
           <FittingRoom personas={PERSONAS} />
@@ -158,13 +161,14 @@ export default function Home() {
               Charities advise keeping photos and a lock of hair. Hairloom keeps the photos and reads them: curl pattern, frizz, length, face shape and brows from YouCam, and colour as a common wig shade code.
             </p>
             <ul className={s.ticks}>
-              <li>Three angles, captured with YouCam&rsquo;s camera guide so each reading is accepted first time.</li>
-              <li>Colour measured by a hair mask running in your browser, then matched to wig shades by CIEDE2000.</li>
+              <li>Three angles, captured with YouCam&rsquo;s guided camera, which checks face angle and light before each shot.</li>
+              <li>Head size and parting, measured at home with a soft tape, so the fitter can have the right cap ready.</li>
+              <li>Colour measured from the hair pixels on your device and matched to common wig shade codes.</li>
               <li>Stays on your device until you choose to share it.</li>
             </ul>
             <Link href="/studio" className="btn btn-ink">Start your hair passport</Link>
           </div>
-          <Passport p={anjali} />
+          <Passport p={anjali} lab={measured("anjali/kept")} />
         </div>
       </section>
 
@@ -183,20 +187,39 @@ export default function Home() {
             </div>
           </div>
           <div className={s.brief}>
-            <p className={s.briefHead}><span>Fitting brief</span><span>Anjali · Wed 4 Nov, 11:00</span></p>
+            <p className={s.briefHead}><span>Fitting brief</span><span>{brief.name} · Wed 4 Nov, 11:00</span></p>
             <div className={s.briefRow}>
-              {["asha", "tara", "nora"].map((w) => (
+              {brief.looks.slice(0, 3).map((l) => (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img key={w} src={anjali.wigs[w]} alt={`Anjali wearing ${w}`} />
+                <img key={l.key} src={l.src} alt={`Anjali: ${l.label}`} />
               ))}
             </div>
             <ul>
-              <li><span>Shortlist</span>{["asha", "tara", "nora"].map((id) => { const w = WIGS.find((x) => x.id === id)!; return `${w.name} (${wigShade(w).code})`; }).join(", ")}</li>
-              <li><span>Her shade</span>Measured on her phone, nearest code shown on the passport</li>
-              <li><span>Texture</span>Straight, slight frizz</li>
-              <li><span>Note</span>Prefers lace front; works in an office</li>
+              <li><span>Shortlist</span>{brief.looks.slice(0, 3).map((l) => l.label).join(", ")}</li>
+              <li><span>Her shade</span>{brief.colour ? `${brief.colour.code}, ${brief.colour.name.toLowerCase()}` : "—"}</li>
+              <li><span>Cap</span>{brief.cap?.cm ? `${capSize(brief.cap.cm)}, ${brief.cap.cm} cm, ${brief.cap.parting} parting` : "—"}</li>
+              <li><span>Note</span>{brief.note}</li>
             </ul>
+            <Link href="/fitter#demo" className="btn btn-ghost btn-sm" style={{ marginTop: 16 }}>Open the full brief</Link>
           </div>
+        </div>
+      </section>
+
+      {/* Business */}
+      <section className="deep sec" aria-labelledby="biz-title">
+        <div className={`wrap ${s.split}`}>
+          <div>
+            <p className="kicker">For retailers and wig banks</p>
+            <h2 id="biz-title" className="h-sec">About $2 of YouCam units per client fitted.</h2>
+            <p className="lede">
+              A full fitting, with passport, eight wigs, own hair, three shades, headwear and brows, is 41 YouCam units. Boutiques pay per client brief, wig brands embed a widget, and hospitals and wig banks sponsor passports. Patients never pay.
+            </p>
+            <div className={s.ctas}>
+              <Link href="/business" className="btn btn-ivory">See the business case</Link>
+              <Link href="/business#embed" className="btn btn-ghost">The retailer widget</Link>
+            </div>
+          </div>
+          <iframe src="/embed?wig=tara" title="Hairloom retailer widget for the Tara wig" className={s.embed} loading="lazy" />
         </div>
       </section>
 
@@ -234,7 +257,7 @@ export default function Home() {
           <h2 id="priv-title" className="h-sec">Your photos are yours.</h2>
           <div className={s.privacy}>
             <div><h3 className="h-sub">On your device</h3><p>Your passport and try-ons are kept in your browser. There is no account and no server copy.</p></div>
-            <div><h3 className="h-sub">Deleted at YouCam</h3><p>Every task is deleted at YouCam, with its input photo, the moment its result comes back.</p></div>
+            <div><h3 className="h-sub">Deleted at YouCam</h3><p>Each photo goes to YouCam only for the step that needs it, and the task is deleted there, with its photo, as soon as your browser has the result.</p></div>
             <div><h3 className="h-sub">Sealed when shared</h3><p>A fitter link is encrypted in your browser. The key travels in the link itself and never reaches our server.</p></div>
           </div>
         </div>
@@ -259,7 +282,7 @@ export default function Home() {
             <Link href="/studio" className="btn btn-ivory">Open the studio</Link>
             <Link href="/journal" className="btn btn-ghost">Plan around your treatment</Link>
           </div>
-          <p className="small" style={{ marginTop: 18 }}>{WIGS.length} wigs, 4 headwear styles and 3 demo people ready to try without a photo of your own.</p>
+          <p className="small" style={{ marginTop: 18 }}>{WIGS.length} wigs, 4 headwear styles and {PERSONAS.length} demo people ready to try without a photo of your own.</p>
         </div>
       </section>
     </>

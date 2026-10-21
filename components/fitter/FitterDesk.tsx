@@ -2,32 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { BOUTIQUE, LENGTH_LABEL, WIGS, inr } from "@/lib/catalogue";
-import { describe, persona } from "@/lib/demo";
-import { measured, wigShade } from "@/lib/colours";
-import { labToHex, nearestShades } from "@/lib/color";
+import { describe } from "@/lib/demo";
+import { demoBrief } from "@/lib/brief";
+import { capSize } from "@/lib/match";
+import { wigShade } from "@/lib/colours";
+import { nearestShades } from "@/lib/color";
 import { prepare, runTask } from "@/lib/client";
-import { lengthFromTerm } from "@/lib/match";
 import { unseal, type SharePayload } from "@/lib/seal";
 import type { Readings } from "@/lib/demo";
 import s from "./fitter.module.css";
-
-/** A brief built from the demo person, so the desk can be explored without a real link. */
-function demoBrief(): SharePayload {
-  const p = persona("anjali");
-  const lab = measured("anjali/kept");
-  const n = lab ? nearestShades(lab, 1)[0] : null;
-  return {
-    v: 1, name: "Anjali (demo)", keptAt: Date.parse("2026-10-21"), kept: p.kept, readings: p.readings,
-    colour: lab && n ? { hex: labToHex(lab), code: n.code, name: n.name, dE: Math.round(n.dE * 10) / 10 } : null,
-    looks: [
-      { key: "wig:asha", label: "Asha", src: p.wigs.asha, detail: "Sleek lob, centre parting · Lace front · Heat-friendly synthetic" },
-      { key: "wig:tara", label: "Tara", src: p.wigs.tara, detail: "Long, deep side parting, darker root · Hand-tied · Human hair" },
-      { key: "head:turban", label: "Jersey turban", src: p.headwear.turban, detail: "Pre-tied, dusty rose" },
-    ],
-    note: "I'd like to look like myself at work. Something light, and my scalp is sensitive.",
-    appointment: "2026-11-04T11:00",
-  };
-}
 
 export function FitterDesk() {
   const [brief, setBrief] = useState<SharePayload | null>(null);
@@ -82,15 +65,14 @@ export function FitterDesk() {
 function Brief({ b, onClose }: { b: SharePayload; onClose: () => void }) {
   const r = b.readings as Readings;
   const d = describe(r);
-  const len = lengthFromTerm(r.length?.term);
   const when = b.appointment ? new Date(b.appointment).toLocaleString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : null;
-  // One line per wig: a recoloured pick ("shade:<wig>:<code>") wins over the stock shade.
+  // One line per wig, pulled in the client's own measured shade (a recoloured pick names its shade).
   const pullMap = new Map<string, { w: (typeof WIGS)[number]; code: string }>();
   for (const l of b.looks) {
     const [kind, id, code] = l.key.split(":");
     const w = WIGS.find((x) => x.id === id);
-    if (!w || (kind !== "wig" && kind !== "shade")) continue;
-    if (kind === "shade" || !pullMap.has(id)) pullMap.set(id, { w, code: kind === "shade" ? code : wigShade(w).code });
+    if (!w || !["wig", "hair", "shade"].includes(kind)) continue;
+    if (kind === "shade" || !pullMap.has(id)) pullMap.set(id, { w, code: kind === "shade" ? code : b.colour?.code ?? wigShade(w).code });
   }
   const pull = [...pullMap.values()];
 
@@ -109,7 +91,8 @@ function Brief({ b, onClose }: { b: SharePayload; onClose: () => void }) {
               <dt>Shade</dt><dd>{b.colour ? <><i style={{ background: b.colour.hex }} />Nearest code {b.colour.code}, {b.colour.name.toLowerCase()} <small>(ΔE {b.colour.dE}, measured on the client&rsquo;s device)</small></> : "Not measured"}</dd>
               <dt>Curl pattern</dt><dd>{d.curl ? `${d.curl.raw}, ${d.curl.label.toLowerCase()}` : "Not read"}</dd>
               <dt>Frizz</dt><dd>{d.frizz?.label ?? "Not read"}</dd>
-              <dt>Length</dt><dd>{len ? LENGTH_LABEL[len] : d.length?.label ?? "Not read"}</dd>
+              <dt>Length</dt><dd>{d.length?.label ?? "Not read"}</dd>
+              <dt>Cap size</dt><dd>{b.cap?.cm ? `${capSize(b.cap.cm)}, ${b.cap.cm} cm` : "Not measured"}{b.cap?.parting ? ` · ${b.cap.parting === "none" ? "no" : b.cap.parting} parting` : ""}</dd>
               <dt>Face shape</dt><dd>{d.face?.label ?? "Not read"}</dd>
               <dt>Brows</dt><dd>{d.brows ? <><i style={{ background: d.browHex ?? "#444" }} />{d.brows.label}</> : "Not read"}</dd>
             </dl>
@@ -119,7 +102,7 @@ function Brief({ b, onClose }: { b: SharePayload; onClose: () => void }) {
             <h2 className="h-sub">Before they arrive</h2>
             <ul>
               {pull.map(({ w, code }) => <li key={w.id}>Pull <b>{w.name}</b> in shade {code} and one shade either side.</li>)}
-              <li>Have an adjustable cap ready: heads can be up to a size smaller after hair loss (American Cancer Society).</li>
+              <li>Have an adjustable cap ready{b.cap?.cm ? ` around ${capSize(b.cap.cm)!.toLowerCase()}` : ""}: heads can be up to a size smaller after hair loss (American Cancer Society). Re-measure at the fitting.</li>
               {d.frizz && /frizz/i.test(d.frizz.label) && <li>Their own hair had some frizz; a slightly textured fibre will look more like them.</li>}
               <li>Offer a soft liner or sleep cap if the scalp is sensitive.</li>
             </ul>

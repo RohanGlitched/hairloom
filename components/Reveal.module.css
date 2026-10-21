@@ -1,10 +1,15 @@
 .wrap { width: 100%; max-width: 330px; }
+.fill { max-width: none; }
 .frame { padding: 8px; border-radius: 999px 999px 8px 8px; background: linear-gradient(155deg, var(--brass-hi) 0%, var(--brass) 28%, var(--brass-lo) 62%, var(--brass) 100%); box-shadow: 0 0 0 1px rgba(0,0,0,.35), 0 40px 80px -34px rgba(0,0,0,.9); }
 .glass { position: relative; overflow: hidden; border-radius: 999px 999px 3px 3px; aspect-ratio: 3 / 4; background: #d9d3d6; touch-action: pan-y; }
 .img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 18%; }
 .line { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--brass-hi); box-shadow: 0 0 0 1px rgba(0,0,0,.2); pointer-events: none; }
-.line::after { content: ""; position: absolute; top: 58%; left: 50%; width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 50%; background: var(--night); border: 2px solid var(--brass-hi); }
+.knob { position: absolute; top: 60%; left: 50%; width: 36px; height: 36px; margin: -18px 0 0 -18px; border-radius: 50%; background: var(--night); border: 2px solid var(--brass-hi); display: block; }
+.knob::before, .knob::after { content: ""; position: absolute; top: 50%; width: 0; height: 0; margin-top: -5px; border: 5px solid transparent; }
+.knob::before { left: 4px; border-right-color: var(--brass-hi); }
+.knob::after { right: 4px; border-left-color: var(--brass-hi); }
+.tag { position: absolute; bottom: 12px; font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: rgba(26, 18, 31, .72); color: var(--ivory); transition: opacity .2s; pointer-events: none; }
+.tagL { left: 12px; }
+.tagR { right: 12px; }
 .range { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: ew-resize; }
-.range:focus-visible + * { outline: none; }
 .glass:has(.range:focus-visible) { outline: 2px solid var(--brass-hi); outline-offset: 4px; }
-.hint { margin-top: 12px; font-size: 13px; color: var(--mist); text-align: center; min-height: 20px; }
