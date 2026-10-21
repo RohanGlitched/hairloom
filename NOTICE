@@ -1,0 +1,45 @@
+Third-party notices
+
+Hairloom's own code is released under the MIT licence (see LICENSE). The items below are not
+covered by that licence.
+
+1. Photographs in public/real/ (the real-photograph tests on the /evidence page)
+
+   These are nine portraits from Unsplash, used under the Unsplash License
+   (https://unsplash.com/license). They are not MIT licensed. The Unsplash License lets people
+   use the photos freely, but it does not include model releases. The people shown are stock
+   models, not patients, and nobody in them has been asked to take part in this project. The
+   folders in public/real/ are named by Unsplash photo id, and each photo's page credits its
+   photographer:
+
+   QXevDflbl8A   Štefan Štefančík    https://unsplash.com/photos/QXevDflbl8A
+   qXzOsNZP7mA   Jude Infantini      https://unsplash.com/photos/qXzOsNZP7mA
+   7jZiSQ_Jyqg   Soroush Sedghi      https://unsplash.com/photos/7jZiSQ_Jyqg
+   7YVZYZeITc8   Jurica Koletić      https://unsplash.com/photos/7YVZYZeITc8
+   CGKYNN3uuVo   Filipp Romanovski   https://unsplash.com/photos/CGKYNN3uuVo
+   f5xiGmFwXIU   Zoran Borojevic     https://unsplash.com/photos/f5xiGmFwXIU
+   XvnVGXhNV94   Ben Masora          https://unsplash.com/photos/XvnVGXhNV94
+   raCWeevBPWs   Lisa Marie Theck    https://unsplash.com/photos/raCWeevBPWs
+   tFA_OQ-9NDU   Tekeyah Whit        https://unsplash.com/photos/tFA_OQ-9NDU
+
+   public/real/<id>/src.jpg is the original photo, resized. The other files in each folder are
+   outputs of the YouCam API run on that photo. They were made only to test the product, and
+   are shown on the /evidence page with the photographer credited. If you appear in one of
+   these photos and want it removed, open an issue and it will be taken down.
+
+2. MediaPipe models and library (on-device hair segmentation and face detection)
+
+   public/mp/hair_segmenter.tflite and public/mp/blaze_face_short_range.tflite are Google
+   MediaPipe models, and @mediapipe/tasks-vision is the MediaPipe Tasks library. All are
+   licensed under the Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0).
+   Copyright Google LLC.
+
+3. Demo people and boutique wigs (public/demo/, public/catalogue/)
+
+   Generated with the YouCam AI Image Generator for this project. They are not real people,
+   customers or products.
+
+4. Other dependencies
+
+   Next.js, React, zod and the other npm packages in package-lock.json keep their own
+   licences, which are listed in each package.

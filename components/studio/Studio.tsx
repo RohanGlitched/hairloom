@@ -1,17 +1,19 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { WIGS } from "@/lib/catalogue";
 import { PERSONAS, type Persona } from "@/lib/demo";
-import { prepare, runTask } from "@/lib/client";
+import { fetchUnits, prepare, runTask, type UnitsInfo } from "@/lib/client";
 import type { KindName } from "@/lib/kinds";
 import { type Session, type Render, emptySession, erase, get, set } from "@/lib/store";
 import { KeepStep } from "./KeepStep";
 import { TryStep } from "./TryStep";
 import { LookStep } from "./LookStep";
 import { ShareStep } from "./ShareStep";
+import { JudgeCode } from "./JudgeCode";
 import s from "./studio.module.css";
 
-export type Units = { units: number | null; floor: number; live: boolean };
+export type Units = UnitsInfo;
 
 export type Ctx = {
   session: Session;
@@ -21,6 +23,8 @@ export type Ctx = {
   live: (kind: KindName, images: string[], opt: Record<string, string | number>, key?: string, onTick?: (n: number) => void) => Promise<{ ok: true; render?: Render; results: Record<string, unknown> } | { ok: false; message: string }>;
   units: Units;
   go: (step: Step) => void;
+  /** A wig the shopper arrived with, from a shop's widget: pinned first in Try. */
+  wig?: string;
 };
 
 export type Step = "keep" | "try" | "look" | "share";
@@ -40,18 +44,18 @@ function demoSession(p: Persona): Session {
   for (const [w, src] of Object.entries(p.withHair ?? {})) renders[`hair:${w}`] = pre(src, "AI Hairstyle Virtual Try-On");
   for (const [k, src] of Object.entries(p.shades ?? {})) renders[`shade:${k}`] = pre(src, "AI Hair Color Virtual Try-On");
   for (const [h, src] of Object.entries(p.headwear)) renders[`head:${h}`] = pre(src, "AI Image Generator (image to image)");
-  for (const [k, src] of Object.entries(p.thinning ?? {})) renders[`thin:${k}`] = pre(src, k === "volume" ? "AI Hair Volume Virtual Try-On" : "AI Hair Extension Virtual Try-On");
+  for (const [k, src] of Object.entries(p.thinning ?? {})) renders[`thin:${k}`] = pre(src, k.startsWith("female_") ? "AI Hair Volume Virtual Try-On" : "AI Hair Extension Virtual Try-On");
   if (p.brows) renders["brows:demo"] = pre(p.brows, "AI Makeup Virtual Try-On");
   renders.own = pre(p.own, "AI Hairstyle Virtual Try-On");
   return {
     ...emptySession("demo", p.name), personaId: p.id, kept: p.kept, turns: p.turns.filter(Boolean) as string[], readings: p.readings,
-    keptAt: Date.parse("2026-10-21"), today: p.week4, base: Object.keys(p.withHair ?? {}).length ? "kept" : "today", later: p.later, situation: p.situation, fit: p.fit, cap: p.cap, renders, shortlist: [],
+    keptAt: Date.parse("2026-10-21"), today: p.week4, base: "today", later: p.later, situation: p.situation, fit: p.fit, cap: p.cap, renders, shortlist: [],
   };
 }
 
 const STEP_IDS: Step[] = ["keep", "try", "look", "share"];
 
-export function Studio({ initialPersona, initialStep }: { initialPersona?: string; initialStep?: string }) {
+export function Studio({ initialPersona, initialStep, initialWig }: { initialPersona?: string; initialStep?: string; initialWig?: string }) {
   // undefined = still loading (avoids flashing the person picker), null = picker
   const [session, setSession] = useState<Session | null | undefined>(undefined);
   const [step, setStep] = useState<Step>(STEP_IDS.includes(initialStep as Step) ? (initialStep as Step) : "keep");
@@ -60,7 +64,7 @@ export function Studio({ initialPersona, initialStep }: { initialPersona?: strin
   const loaded = useRef(false);
 
   const refreshUnits = useCallback(() => {
-    fetch("/api/units").then((r) => r.json()).then((u) => setUnits({ units: u.units, floor: u.floor ?? 120, live: !!u.live })).catch(() => undefined);
+    fetchUnits().then((u) => u && setUnits(u));
   }, []);
 
   // Restore a saved live session, or start on a demo person.
@@ -101,14 +105,14 @@ export function Studio({ initialPersona, initialStep }: { initialPersona?: strin
   if (consenting) {
     return <Consent onBack={() => setConsenting(false)} onAgree={() => { setConsenting(false); setSession({ ...emptySession("live"), consent: Date.now(), base: "kept", later: "Today" }); setStep("keep"); }} />;
   }
-  if (session === null) return <Start onDemo={(p) => { setSession(demoSession(p)); setStep("keep"); }} onLive={() => setConsenting(true)} units={units} />;
+  if (session === null) return <Start onDemo={(p) => { setSession(demoSession(p)); setStep(STEP_IDS.includes(initialStep as Step) ? (initialStep as Step) : "keep"); }} onLive={() => setConsenting(true)} units={units} onCode={refreshUnits} />;
 
-  const ctx: Ctx = { session, persona, update, live, units, go: (st) => { setStep(st); window.scrollTo({ top: 0, behavior: "smooth" }); } };
+  const ctx: Ctx = { session, persona, update, live, units, wig: WIGS.some((w) => w.id === initialWig) ? initialWig : undefined, go: (st) => { setStep(st); window.scrollTo({ top: 0, behavior: "smooth" }); } };
   const done = {
     keep: !!session.readings,
     try: session.shortlist.some((k) => /^(wig|hair|shade|thin):/.test(k) || k === "own"),
     look: session.shortlist.some((k) => k.startsWith("head:") || k.startsWith("brows:")),
-    share: false,
+    share: !!session.sharedAt,
   };
 
   return (
@@ -187,7 +191,7 @@ function Consent({ onAgree, onBack }: { onAgree: () => void; onBack: () => void 
   );
 }
 
-function Start({ onDemo, onLive, units }: { onDemo: (p: Persona) => void; onLive: () => void; units: Units }) {
+function Start({ onDemo, onLive, units, onCode }: { onDemo: (p: Persona) => void; onLive: () => void; units: Units; onCode: () => void }) {
   return (
     <div className={s.start}>
       <div className={s.startHead}>
@@ -214,10 +218,17 @@ function Start({ onDemo, onLive, units }: { onDemo: (p: Persona) => void; onLive
           <span className={s.startText}>
             <b>Use my own photos</b>
             <span>YouCam&rsquo;s camera guides you through three angles, or upload photos. Your passport stays on this device.</span>
-            <small>{units.units == null ? "Checking the live studio…" : units.live ? "Live" : "Resting to save units for judging; demo people still work"}</small>
+            <small>
+              {units.units == null ? "Checking the live studio…"
+                : units.lane === "bad_code" ? "That judge code isn't right; check it or clear it"
+                : units.live ? `Live${units.lane === "judge" ? " (judge allowance)" : ""}${units.dayLeft != null ? ` · ${units.dayLeft} of ${units.dayCap} units left today` : ""}`
+                : units.dayLeft === 0 ? "Today's live units are used up; live runs return at 05:30 IST, demo people still work"
+                : "Resting to save units for judging; demo people still work"}
+            </small>
           </span>
         </button>
       </div>
+      <JudgeCode onChange={onCode} />
     </div>
   );
 }

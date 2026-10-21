@@ -26,7 +26,7 @@ export type SharePayload = {
 };
 
 const hex = z.string().regex(/^#[0-9a-fA-F]{6}$/);
-const jpeg = z.string().regex(/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/).max(1_500_000);
+const jpeg = z.string().regex(/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/).max(400_000);
 const short = (n: number) => z.string().max(n);
 /** A decrypted share is still untrusted input: anyone can seal anything. */
 export const PayloadSchema = z.object({

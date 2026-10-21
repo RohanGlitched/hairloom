@@ -32,7 +32,7 @@
 .startCard { display: grid; grid-template-rows: auto 1fr; gap: 14px; padding: 0; text-align: left; background: none; border: 0; cursor: pointer; }
 .startCard img, .startArch { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; object-position: 50% 18%; border-radius: 999px 999px 8px 8px; border: 3px solid var(--brass-lo); transition: border-color .15s; display: block; }
 .startCard:hover img, .startCard:hover .startArch { border-color: var(--brass); }
-.startArch { background: radial-gradient(circle at 50% 40%, var(--velvet-2), var(--velvet)); border-style: dashed; }
+.startArch { background: radial-gradient(circle at 50% 40%, var(--velvet-2), var(--velvet)); border-style: dashed; display: grid; place-items: center; color: var(--brass); }
 .startText { display: grid; gap: 6px; }
 .startText b { font: 400 22px var(--serif); }
 .startText span { font-size: 14px; color: var(--mist); }

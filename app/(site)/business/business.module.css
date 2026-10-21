@@ -7,17 +7,9 @@
 .buyers p:not(.pays) { color: var(--ink-soft); font-size: 15px; }
 .pays { font: italic 16px var(--serif); color: #7d5a2c; }
 .costWrap { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 48px; align-items: start; }
-.total { display: grid; gap: 4px; margin: 26px 0 14px; }
-.total b { font: 400 44px/1 var(--serif); }
-.total span { color: var(--brass); font-size: 18px; }
-.table { width: 100%; border-collapse: collapse; font-size: 15px; }
-.table th { text-align: left; font-weight: 500; color: var(--mist); font-size: 13px; padding: 8px 10px 8px 0; border-bottom: 1px solid var(--brass-lo); }
-.table td { padding: 10px 10px 10px 0; border-bottom: 1px solid var(--line); }
-.table td:nth-child(2) { color: var(--mist); font-size: 14px; }
-.table tfoot td { font-weight: 600; border-bottom: 0; }
 .embedWrap { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
 .code { margin-top: 20px; background: var(--night-deep); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; font-size: 13px; overflow-x: auto; white-space: pre; color: var(--ivory); }
-.frame { width: 100%; height: 300px; border: 1px solid var(--brass-lo); border-radius: 12px; background: var(--night); }
+.frame { width: 100%; height: 320px; border: 1px solid var(--brass-lo); border-radius: 12px; background: var(--night); }
 .pilot { list-style: none; padding: 0; margin: 28px 0 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
 .pilot li { display: grid; gap: 6px; border-top: 1px solid var(--ink); padding-top: 14px; }
 .pilot b { font: 400 22px var(--serif); }
@@ -29,7 +21,12 @@
 }
 @media (max-width: 560px) {
   .stats, .buyers { grid-template-columns: 1fr; }
-  .table td:nth-child(2), .table th:nth-child(2) { display: none; }
-  .frame { height: 520px; }
+
 }
 .costWrap > *, .embedWrap > * { min-width: 0; }
+
+.thresholds { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 18px; }
+.thresholds p { display: grid; gap: 4px; border-top: 1px solid var(--ink); padding-top: 14px; }
+.thresholds b { font: 400 38px/1 var(--serif); }
+.thresholds span { color: var(--ink-soft); font-size: 15px; }
+@media (max-width: 760px) { .thresholds { grid-template-columns: 1fr; } }

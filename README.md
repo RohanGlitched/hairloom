@@ -43,15 +43,16 @@ Or choose *Use my own photos*. YouCam's JS Camera Kit guides you through the thr
 | Hair Volume Virtual Try-On | Shows how a topper's worth of volume looks, for thinning rather than lost hair. |
 | Hair Extension Virtual Try-On | Shows clip-in length on the kept photo. |
 | AI Image Generator (image to image, text to image) | Headwear that keeps the face. It also generated the demo people and the fictional boutique's stock. |
-| AI Skin Analysis v2.1 | Optional weekly skin check-ins in the journal, using raw scores and concern maps. |
-| JS Camera Kit | Guided three-angle capture (`hairtype` mode). |
+| AI Skin Analysis v2.1 | Optional skin check-ins in the journal, once per treatment cycle, using raw scores and concern maps. |
+| JS Camera Kit (an SDK, not one of the 11 APIs) | Guided three-angle capture (`hairtype` mode). Built in, but not yet tested on a real phone. |
 
 ## What we measured
 
-[Evidence](https://hairloom-studio.vercel.app/evidence) lists every YouCam task run while building, including the image generation that made the demo, with success counts, median times, the errors we hit and what they taught us. Highlights:
+[Evidence](https://hairloom-studio.vercel.app/evidence) lists every YouCam task whose output we kept (233: 164 for the demo, 41 on real photographs, 28 early research), including the image generation that made the demo, with success counts, median times, the errors we hit and what they taught us. The studio's 12 task kinds call 11 distinct YouCam APIs (the wig and own-hair kinds share hair-transfer), and each has at least one successful run in the ledger. `node scripts/export-runs.mjs` rebuilds it from the lab outputs. Highlights:
 
-- **Hairstyle try-on works on a bald head.** All 64 try-ons on bald demo photos succeeded, including each person's own hair restored from their kept photo. These bald photos are generated edits, so tests on real people are next.
-- **Hair colour comes back from YouCam as a named category.** A wig fitter needs a shade code, so Hairloom measures colour from the hair pixels: MediaPipe's hair segmenter running in the browser, then a trimmed CIELAB median and CIEDE2000 against 20 common wig shades. YouCam's label is kept beside it. For one demo person, the label said "Blonde" for dark brown hair.
+- **Hairstyle try-on works on a bald head.** All 64 try-ons on bald demo photos succeeded, including each person's own hair restored from their kept photo, and so did 8 of 8 on real stock photos of shaved heads. The demo photos are generated edits and the real ones are smooth shaved scalps, so patchy hair loss and tests on people with hair loss are next.
+- **Real photos were stricter than generated ones.** Face Attribute rejected 5 of 5 real portraits at the default angle strictness and read 5 of 5 at `flexible`; hair length read 2 of 5.
+- **Hair colour comes back from YouCam as a named category.** A wig fitter needs a shade code, so Hairloom measures colour from the hair pixels: MediaPipe's hair segmenter running in the browser, then a trimmed CIELAB median and CIEDE2000 against 20 common wig shades. YouCam's label is kept beside it. On the generated demo people it said "Blonde" every time it answered, whatever the hair, so those matches are chance. On real photos it fit the hair on 2 of the 3 it labelled (by eye, no reference swatch yet).
 - **`task/delete` really deletes.** Afterwards the result URL returns 404 and the input file can't be reused (403).
 - **Hair type and frizz need three same-size photos in a fixed order.** The order is front, then face towards the right of the picture, then towards the left. Anything else returns `error_face_angle_invalid` or `error_mismatch_image_size`.
 - **Hat try-on restyles the whole outfit.** On a bald head it once added hair under a beanie. Headwear uses image-to-image with an instruction to keep the face instead.
@@ -85,17 +86,18 @@ The server never sees client photos. For live try-ons, pair it with YouCam's hos
 
 ## Privacy
 
-- **Photos and passport** live only in the browser (IndexedDB). There are no accounts.
+- **Photos and passport** live only in the browser (IndexedDB). There are no accounts and no photo copy on our server.
 - **Colour** is measured on the device.
-- **YouCam tasks:** every task's result is downloaded by our server, which then calls `task/delete` at YouCam. That removes the input photo too.
-- **Fitter links** are encrypted with AES-GCM in the browser. The server stores only ciphertext, in a private GCS bucket reached through keyless workload identity federation. Shares are deleted after 60 days. The key lives in the URL fragment, which never reaches a server.
+- **YouCam tasks:** photos pass through our server's memory to YouCam and are written nowhere on our side. Every task's result is downloaded by our server, then the browser confirms receipt and the task is deleted with `task/delete`, which removes the input photo too. A tab closed mid-task leaves the task at YouCam until it expires.
+- **Fitter links** are encrypted with AES-GCM in the browser. The server stores only ciphertext, in a private GCS bucket reached through keyless workload identity federation. Shares are deleted after 60 days by a bucket lifecycle rule. The key lives in the URL fragment, which never reaches a server.
+- **What the server does keep:** a per-day count of YouCam units used (one number per date, in the same bucket), and in memory only, hourly unit and link-creation tallies per IP address. No photos, no readable health data, no analytics or cookies. See [/privacy](https://hairloom-studio.vercel.app/privacy).
 
 ## Architecture
 
 ```
 browser                                   server (Next.js on Vercel)                YouCam API v2
 ──────────────────────────────            ───────────────────────────               ─────────────
-Camera Kit / upload → resize       ──▶   /api/try  whitelist of 10 task kinds ──▶  file upload → task
+Camera Kit / upload → resize       ──▶   /api/try  whitelist of 12 task kinds ──▶  file upload → task
 MediaPipe hair mask → Lab → ΔE00          unit floor + per-visitor budget            poll → result
 MediaPipe face crop (skin)         ◀──   download result, then task/delete   ◀──
 IndexedDB passport + renders
@@ -127,7 +129,7 @@ npm run dev                                   # http://localhost:3141
 - **Shares** are written to `.data/` locally. Set `GCS_BUCKET` and `GCS_WIF_AUDIENCE` for production.
 
 **Scripts:**
-- `scripts/export-demo.mjs` refreshes demo data from the lab runs.
+- `scripts/export-demo.mjs` refreshes demo data from the lab runs, `scripts/export-real.mjs` the real-photo tests, and `scripts/export-runs.mjs` the evidence ledger (`data/lab-runs.json`).
 - `scripts/measure.cjs` re-measures demo hair colours in a real browser.
 - `scripts/e2e.cjs <url>` runs the end-to-end check (1 unit).
 - `npm test` runs:
@@ -141,10 +143,12 @@ npm run dev                                   # http://localhost:3141
 
 - Hairloom is about appearance, not medical care. It never diagnoses, and the journal's skin scores are YouCam's raw 1–100 scores, not clinical measurements.
 - Wig shade codes are a loose convention that varies by brand; our hex values approximate typical swatches.
-- The boutique, its stock and the demo people are fictional, generated with the YouCam Image Generator. Tests with real, consenting people are the next step.
+- The boutique, its stock and the demo people are fictional, generated with the YouCam Image Generator, so nothing has been tested on a real retailer's product photos.
+- No real person with hair loss has used it end to end. The real-photo tests are nine Unsplash stock portraits (four shaved heads), not patients. Tests with real, consenting people are the next step.
 - The closeness ranking weighs length, texture and colour by hand. It hasn't yet been checked against what fitters and clients choose.
 - On-device hair segmentation and face detection use MediaPipe (Apache 2.0).
+- Brows were only tried on faces that still have brows, and the measured hair shade missed once on the real photos (backlit brown read as off black).
 
 ## License
 
-MIT
+The code is MIT (see `LICENSE`). The Unsplash photos in `public/real/` are not MIT: they are used under the [Unsplash License](https://unsplash.com/license), credited per photo, for testing only, and the people in them are stock models, not patients. MediaPipe models are Apache 2.0. See [`NOTICE`](NOTICE) for the credits and full list.

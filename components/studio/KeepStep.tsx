@@ -33,7 +33,7 @@ export function KeepStep({ ctx }: { ctx: Ctx }) {
     return (
       <div className={s.step}>
         <StepHead n={1} title={`${session.name}'s hair passport`} lede={alopecia ? "Read by YouCam from three photos taken while her hair still covered the patches." : "Read by YouCam from three photos taken before treatment, with the head measured at home."} />
-        <Passport p={{ name: session.name, kept: session.kept, turns: session.turns ?? [], readings: session.readings, cap: session.cap }} lab={session.personaId ? measured(`${session.personaId}/kept`) : null} />
+        <Passport p={{ name: session.name, kept: session.kept, turns: session.turns ?? [], readings: session.readings, cap: session.cap, situation: session.situation }} lab={session.personaId ? measured(`${session.personaId}/kept`) : null} />
         <div className={s.next}><button className="btn btn-ivory" onClick={() => ctx.go("try")}>Next: try wigs</button></div>
       </div>
     );
@@ -113,7 +113,7 @@ export function KeepStep({ ctx }: { ctx: Ctx }) {
         <>
           <div className={s.captureBar}>
             <button className="btn btn-ivory" onClick={() => setCamera(true)}>Use YouCam&rsquo;s guided camera</button>
-            <span className="small">It checks your face angle and light, then takes all three shots for you.</span>
+            <span className="small">It shows your face position and light as you shoot, and walks you through all three angles.</span>
           </div>
           <div className={s.slots}>
             {SLOTS.map((slot, i) => (

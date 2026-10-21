@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { prepare, runTask } from "@/lib/client";
 import { get, set } from "@/lib/store";
 import { persona } from "@/lib/demo";
+import { Consent, hasConsent } from "@/components/Consent";
 import s from "./journal.module.css";
 
 type Milestone = { day: number; title: string; body: string; action?: { href: string; label: string }; src?: { label: string; url: string } };
@@ -19,7 +20,7 @@ const PLAN: Milestone[] = [
   { day: -14, title: "Keep your hair passport", body: "Three photos with your hair down, while it is still yours. This is the record every later step compares with.", action: { href: "/studio", label: "Open the studio" }, src: { label: "ACS: take photos and save a lock of hair", url: ACS } },
   { day: -10, title: "Choose and fit a wig", body: "Charities advise matching a wig before hair loss, while a fitter can still see your colour and style. Send your shortlist ahead.", action: { href: "/studio?step=try", label: "Try wigs" }, src: { label: "CRUK", url: CRUK2 } },
   { day: -3, title: "Soft headwear and a sleep cap", body: "Have something soft for nights and for the days without a wig.", action: { href: "/studio?step=look", label: "Try headwear" } },
-  { day: 0, title: "First treatment", body: "Check in on your skin and scalp each week if you like. Bring anything that worries you to your care team." },
+  { day: 0, title: "First treatment", body: "If it helps, add a skin check-in once per treatment cycle. Bring anything that worries you to your care team." },
   { day: 14, title: "Hair usually starts to fall out", body: "Usually about two to three weeks after the first cycle.", src: { label: "ACS, CRUK", url: CRUK } },
   { day: 21, title: "Measure your head again", body: "Your head can be up to a size smaller once the hair has gone. Re-measure with a soft tape and have the wig cap adjusted.", src: { label: "ACS", url: ACS } },
   { day: 42, title: "Brows and lashes may thin", body: "They can go weeks or months after the hair on your head. Practise your rebuilt brows before you need them.", action: { href: "/studio?step=look", label: "Rebuild brows" } },
@@ -27,7 +28,7 @@ const PLAN: Milestone[] = [
 const ALOPECIA: Milestone[] = [
   { day: 0, title: "Keep your hair passport now", body: "While your hair still covers the patches. It is the record a fitter matches to, however things change.", action: { href: "/studio", label: "Open the studio" } },
   { day: 7, title: "Try toppers before wigs", body: "If the patches are small, a topper or clip-ins may be enough. Preview volume and length on your kept photo.", action: { href: "/studio?step=try", label: "Try toppers" } },
-  { day: 30, title: "Re-photograph each month", body: "Patches in alopecia areata can spread, settle or regrow, so a monthly photo helps you and your dermatologist see the pattern." },
+  { day: 30, title: "Re-photograph each month", body: "Patches in alopecia areata can spread, settle or regrow, so a monthly photo helps you and your dermatologist see the pattern. It is a photo record, not a measurement." },
   { day: 60, title: "Choose with a fitter when you're ready", body: "Send your passport and shortlist ahead, with your head size and parting.", action: { href: "/studio?step=share", label: "Share a brief" } },
 ];
 const REGROWTH: Milestone[] = [
@@ -54,9 +55,14 @@ export function Journal() {
   const [secs, setSecs] = useState(0);
   const [err, setErr] = useState<string | null>(null);
   const [show, setShow] = useState<string>("redness");
+  const [map, setMap] = useState(false);
   const [mode, setMode] = useState<"chemo" | "alopecia">("chemo");
+  // Same consent as the studio before any photo leaves the device. A ref, so the picker opens in the same click.
+  const agreed = useRef(false);
+  const [asking, setAsking] = useState(false);
+  const picker = useRef<HTMLInputElement>(null);
 
-  useEffect(() => { get<CheckIn[]>("checkins").then((c) => c && setChecks(c)); }, []);
+  useEffect(() => { get<CheckIn[]>("checkins").then((c) => c && setChecks(c)); hasConsent().then((v) => { agreed.current = v; }); }, []);
 
   const items = useMemo(() => {
     if (!start || !end) return [];
@@ -79,7 +85,8 @@ export function Journal() {
     if (!file) return;
     setErr(null); setBusy(true); setSecs(0);
     try {
-      const full = await prepare(file, 1600);
+      // Crop from the full photo (up to YouCam's 2560 px), not a downscaled copy.
+      const full = await prepare(file, 2560);
       const { cropFace } = await import("@/lib/faceCrop");
       const face = await cropFace(full);
       if (!face) { setErr("We need one clear face in the photo. Face the camera in good light."); return; }
@@ -90,6 +97,8 @@ export function Journal() {
       const next = [...checks, c].slice(-12);
       setChecks(next);
       await set("checkins", next);
+    } catch {
+      setErr("This photo couldn't be read. Try another, or check your connection.");
     } finally {
       setBusy(false);
     }
@@ -116,7 +125,7 @@ export function Journal() {
               <label>Last treatment (expected)<input type="date" value={end} onChange={(e) => setEnd(e.target.value)} /></label>
             </>}
             <button className="btn btn-ghost btn-sm" onClick={ics}>Add to my calendar (.ics)</button>
-            <p className="small">General timings from cancer charities. Your care team knows your regimen; ask them what to expect.</p>
+            <p className="small">{mode === "chemo" ? "General timings from cancer charities. Your care team knows your regimen; ask them what to expect." : "General guidance, not medical advice. Your dermatologist knows your pattern; ask them what to expect."}</p>
           </div>
           <ol className={s.timeline}>
             {items.map((m) => (
@@ -139,15 +148,25 @@ export function Journal() {
       <section className="paper sec" aria-labelledby="skin-title">
         <div className={`wrap ${s.skinWrap}`}>
           <div>
-            <p className="kicker">Weekly skin check-in</p>
-            <h2 id="skin-title" className="h-sec">Skin check-ins, once a cycle.</h2>
+            <p className="kicker">Skin check-in</p>
+            <h2 id="skin-title" className="h-sec">{mode === "chemo" ? "Skin check-ins, once a cycle." : "Skin check-ins, when you want a record."}</h2>
             <p className="lede" style={{ marginTop: 12 }}>
-              Treatment can leave skin drier or more sensitive. A selfie each treatment cycle gives you YouCam&rsquo;s scores for moisture, redness, texture and radiance, so you can show your care team what changed rather than describe it. It is not a diagnosis; anything that worries you is a question for them.
+              {mode === "chemo"
+                ? <>Treatment can leave skin drier or more sensitive. A selfie each treatment cycle gives you YouCam&rsquo;s scores for moisture, redness, texture and radiance, so you can show your care team what changed rather than describe it. It is not a diagnosis; anything that worries you is a question for them.</>
+                : <>A selfie gives you YouCam&rsquo;s cosmetic scores for moisture, redness, texture and radiance, a photo record you can show your dermatologist if your skin changes. It doesn&rsquo;t measure hair loss and it is not a diagnosis.</>}
             </p>
-            <label className="btn btn-ink" style={{ marginTop: 22, position: "relative" }}>
-              {busy ? `Reading your skin… ${secs} s` : "Add a check-in selfie · 9 units"}
-              <input type="file" accept="image/*" capture="user" disabled={busy} style={{ position: "absolute", opacity: 0, width: 1, height: 1 }} onChange={(e) => checkIn(e.target.files?.[0])} />
+            <label className="btn btn-ink" style={{ marginTop: 22, position: "relative" }} onClick={(e) => { if (!agreed.current && !busy) { e.preventDefault(); setAsking(true); } }}>
+              {busy ? `Reading your skin… ${secs} s` : <>Check in on my skin <small style={{ fontWeight: 400, opacity: 0.75 }}>· 9 units</small></>}
+              <input ref={picker} type="file" accept="image/*" capture="user" disabled={busy} style={{ position: "absolute", opacity: 0, width: 1, height: 1 }} onChange={(e) => { void checkIn(e.target.files?.[0]); e.target.value = ""; }} />
             </label>
+            {asking && (
+              <Consent
+                agree="I’m 18 or over, this is a photo of me, and I agree to the above."
+                button="btn-ink"
+                onCancel={() => setAsking(false)}
+                onAgree={() => { agreed.current = true; setAsking(false); picker.current?.click(); }}
+              />
+            )}
             <p className="small" style={{ marginTop: 10 }}>We crop to your face on this device first, because skin analysis needs the face to fill the frame. Photos and scores stay in this browser.</p>
             {err && <p className={s.err} role="alert">{err}</p>}
           </div>
@@ -156,22 +175,36 @@ export function Journal() {
               <>
                 <div className={s.maskBox}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={last.masks[show] ?? last.photo} alt={`${LABEL[show]} map from your latest check-in`} />
+                  <img src={last.photo} alt="Your latest check-in photo" />
+                  {/* The concern map is faint, kept to the face, and shown only on request. */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  {map && last.masks[show] && <img className={s.mask} src={last.masks[show]} alt={`${LABEL[show]} map, faded over the face`} />}
                 </div>
+                {last.masks[show] && (
+                  <button className={s.mapBtn} aria-pressed={map} onClick={() => setMap(!map)}>{map ? `Hide the ${LABEL[show].toLowerCase()} map` : `Show where YouCam read ${LABEL[show].toLowerCase()}`}</button>
+                )}
                 <div className={s.scoreTabs} role="tablist">
-                  {CONCERNS.map((c) => (
-                    <button key={c} role="tab" aria-selected={show === c} onClick={() => setShow(c)}>
-                      <span>{LABEL[c]}</span>
-                      <b className="num">{last.scores[c] ?? "—"}</b>
-                      <Spark values={shown.map((x) => x.scores[c]).filter((v) => v != null)} />
-                    </button>
-                  ))}
+                  {CONCERNS.map((c) => {
+                    const vals = shown.map((x) => x.scores[c]).filter((v) => v != null);
+                    const d = vals.length > 1 ? vals[vals.length - 1] - vals[vals.length - 2] : null;
+                    return (
+                      <button key={c} role="tab" aria-selected={show === c} onClick={() => setShow(c)}>
+                        <span>{LABEL[c]} <i className={s.dir}>higher is better</i></span>
+                        <b className="num">{last.scores[c] ?? "—"}</b>
+                        <Spark values={vals} />
+                        {d != null && <small className={s.trend} data-trend={Math.abs(d) < 3 ? "same" : d > 0 ? "better" : "worse"}>{Math.abs(d) < 3 ? "About the same" : d > 0 ? `Better by ${d}` : `Worse by ${-d}`}</small>}
+                      </button>
+                    );
+                  })}
                 </div>
                 <p className="small">
                   {example
                     ? "Example: Anjali's check-ins before treatment and at week 4 (demo person, real YouCam output). Yours replace these."
                     : `${checks.length} check-in${checks.length > 1 ? "s" : ""}, latest ${new Date(last.at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}.`}{" "}
-                  Scores are YouCam&rsquo;s raw 1&ndash;100 scores; higher means less of a concern. They describe a photo, not your health.
+                  Scores are YouCam&rsquo;s raw 1&ndash;100 scores, and higher is better for every concern.
+                </p>
+                <p className={s.cosmetic}>
+                  These are cosmetic scores read from a photo, not a medical assessment. Light, camera and make-up change them; ask your care team about anything that worries you.
                 </p>
               </>
             ) : (

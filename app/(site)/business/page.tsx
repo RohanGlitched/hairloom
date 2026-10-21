@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { KINDS, type KindName } from "@/lib/kinds";
+import { KINDS } from "@/lib/kinds";
+import { BRIEF_INR, fitting, unitsOf, usd } from "@/lib/pricing";
+import { CostTable } from "@/components/CostTable";
+import { EmbedFrame } from "@/components/EmbedFrame";
 import { Roi } from "@/components/Roi";
 import s from "./business.module.css";
 
@@ -9,25 +12,25 @@ export const metadata: Metadata = {
   description: "Who pays for Hairloom, what a fitting costs in YouCam API units, an ROI model for wig boutiques, a retailer widget and an India pilot plan.",
 };
 
-const USD = { sub: 0.048, payg: 0.055 };
-
-const FITTING: [KindName, number, string][] = [
-  ["hairType", 1, "Curl pattern"],
-  ["hairFrizz", 1, "Frizz"],
-  ["hairLength", 1, "Length"],
-  ["face", 1, "Face shape and brows (optional)"],
-  ["wig", 8, "Wig try-ons"],
-  ["ownHair", 1, "Own hair, restored"],
-  ["hairColor", 3, "Recolour to closer shades"],
-  ["headwear", 3, "Headwear"],
-  ["brows", 1, "Rebuilt brows"],
-];
+const FX = 88; // rupees per dollar, the same assumption as the ROI model
+const rs = (dollars: string) => "₹" + Math.round(Number(dollars) * FX);
+const CHEMO = unitsOf(fitting("chemo"));
+const SPONSORED = unitsOf(fitting("sponsored"));
+const SPONSOR_INR = 150;
+const REPO = "https://github.com/RohanGlitched/hairloom";
+const PILOT_ISSUE = `${REPO}/issues/new?labels=pilot&title=${encodeURIComponent("Pilot: your boutique, wig bank or hospital")}&body=${encodeURIComponent("City:\nClients fitted a month:\nWho fits wigs today:\nBest way to reach you:\n\nPlease don't include any patient details here.")}`;
 
 const BUYERS = [
   { who: "People facing hair loss", pays: "Free", body: "They bring the need and the photos. Charging them at the hardest moment is wrong, and they are the reason shops and hospitals pay." },
-  { who: "Wig boutiques and fitters", pays: "Per client brief", body: "A passport, the shortlist on the client's face and the cap size arrive before the first visit. Draft pilot price: ₹300 a client, against about ₹175 of API cost." },
-  { who: "Wig brands and online shops", pays: "Per try-on, via the widget", body: "A “see it after hair loss” panel beside each product, and a door into the full studio. It is the same try-on that Perfect Corp's 800+ beauty brands already buy." },
-  { who: "Hospitals, wig banks and CSR", pays: "Sponsored passports", body: "Oncology centres and donated-hair wig programmes give every patient a passport at diagnosis. Indian company CSR budgets fund patient-support programmes like this." },
+  { who: "Wig boutiques and fitters", pays: "Per client brief", body: `A passport, the shortlist on the client's face and the cap size arrive before the first visit. Draft pilot price: ₹${BRIEF_INR} a client plus GST, against ${rs(usd(CHEMO, "sub"))}–${rs(usd(CHEMO, "payg"))} of API cost.` },
+  { who: "Wig brands and online shops", pays: "Per studio session, via the widget", body: "A “see it after hair loss” panel beside each product, free to show, and a door into the studio with that wig first. Draft price: ₹49 for each studio session that tries wigs on the shopper's own photo." },
+  { who: "Hospitals, wig banks and CSR", pays: "Sponsored passports", body: `Every patient gets a passport at diagnosis: ${SPONSORED} units, about ${rs(usd(SPONSORED, "sub"))} of API cost. At a sponsor price of ₹${SPONSOR_INR}, 500 patients cost ₹${(500 * SPONSOR_INR).toLocaleString("en-IN")}. Health care is an eligible CSR activity under section 135 of India's Companies Act.` },
+];
+
+const THRESHOLDS = [
+  ["60%", "of patients offered a passport keep one before their hair falls out"],
+  ["−25%", "fitting visits per client, against the two months before"],
+  ["80%", "of wigs bought are still worn at four weeks"],
 ];
 
 const PILOT = [
@@ -37,7 +40,6 @@ const PILOT = [
 ];
 
 export default function Business() {
-  const units = FITTING.reduce((n, [k, times]) => n + KINDS[k].units * times, 0);
   const lite = KINDS.hairType.units + KINDS.hairFrizz.units + KINDS.hairLength.units;
   return (
     <>
@@ -69,7 +71,7 @@ export default function Business() {
               </article>
             ))}
           </div>
-          <p className="small" style={{ marginTop: 20 }}>Insurers are a later step: in the US, a “cranial prosthesis” prescription can be reimbursed by some private plans, and a passport is useful paperwork. Prices here are drafts for a pilot, not offers.</p>
+          <p className="small" style={{ marginTop: 20 }}>Insurers are a later step: in the US, some private plans reimburse a wig prescribed as a “cranial prosthesis”, and a passport could support that claim with photos and measurements. Prices here are drafts for a pilot, not offers.</p>
         </div>
       </section>
 
@@ -78,23 +80,11 @@ export default function Business() {
           <div>
             <h2 className="h-sec">What one fitting costs</h2>
             <p className="lede" style={{ marginTop: 12 }}>
-              Unit costs from YouCam&rsquo;s price list (${USD.sub} a unit on a subscription, ${USD.payg} pay as you go), for the typical client we designed for.
+              Unit costs from YouCam&rsquo;s price list: $0.048 a unit on the 500-unit subscription ($0.046 at 10,000 a month), $0.055 pay as you go. The table is built from the same task list the studio runs, and matches the MCP server&rsquo;s fitting_cost tool.
             </p>
-            <p className={s.total}>
-              <b className="num">{units} units</b>
-              <span className="num">${(units * USD.sub).toFixed(2)}–{(units * USD.payg).toFixed(2)} a client</span>
-            </p>
-            <p className="small">A lighter passport (curl, frizz, length only) is {lite} units. Skin check-ins in the journal are {KINDS.skin.units} units each, so we suggest one per treatment cycle, not one a week.</p>
+            <p className="small" style={{ marginTop: 14 }}>A lighter passport (curl, frizz, length only) is {lite} units. The face reading is optional and the dearest single step, at {KINDS.face.units} units. Skin check-ins in the journal are {KINDS.skin.units} units each, so we suggest one per treatment cycle.</p>
           </div>
-          <table className={s.table}>
-            <thead><tr><th>Step</th><th>YouCam API</th><th>Times</th><th>Units</th></tr></thead>
-            <tbody>
-              {FITTING.map(([k, times, label]) => (
-                <tr key={k}><td>{label}</td><td>{KINDS[k].api}</td><td className="num">{times}</td><td className="num">{KINDS[k].units * times}</td></tr>
-              ))}
-            </tbody>
-            <tfoot><tr><td colSpan={3}>Total</td><td className="num">{units}</td></tr></tfoot>
-          </table>
+          <CostTable />
         </div>
       </section>
 
@@ -110,12 +100,16 @@ export default function Business() {
         <div className={`wrap ${s.embedWrap}`}>
           <div>
             <h2 className="h-sec">For wig shops: one line on a product page</h2>
-            <p className="lede" style={{ marginTop: 12 }}>The widget shows the wig on people after hair loss and opens the studio for the shopper&rsquo;s own photo. It works today for the demo stock.</p>
-            <pre className={s.code}><code>{`<iframe src="https://hairloom-studio.vercel.app/embed?wig=asha"
-  title="See this wig after hair loss"
-  width="560" height="300" style="border:0"></iframe>`}</code></pre>
+            <p className="lede" style={{ marginTop: 12 }}>The widget wipes between a demo person after hair loss and the same person in this wig, then opens the studio with that wig first, for the shopper&rsquo;s own photo. It resizes itself on phones.</p>
+            <pre className={s.code}><code>{`<iframe id="hairloom" src="https://hairloom-studio.vercel.app/embed?wig=asha"
+  title="See this wig after hair loss" style="border:0;width:100%;height:320px"></iframe>
+<script>addEventListener("message", (e) => {
+  if (e.origin === "https://hairloom-studio.vercel.app" && e.data?.hairloom === "height")
+    document.getElementById("hairloom").style.height = e.data.h + "px";
+});</script>`}</code></pre>
+            <p className="small" style={{ marginTop: 14 }}>It works today for the demo stock. A shop&rsquo;s own catalogue needs one product photo per wig: Hairloom measures the shade from the photo and YouCam renders the wig on the demo people once, so showing the widget costs nothing per view.</p>
           </div>
-          <iframe src="/embed?wig=asha" title="Hairloom widget for the Asha wig" className={s.frame} loading="lazy" />
+          <EmbedFrame wig="asha" className={s.frame} />
         </div>
       </section>
 
@@ -125,6 +119,11 @@ export default function Business() {
           <ol className={s.pilot}>
             {PILOT.map(([w, t]) => <li key={w}><b>{w}</b><span>{t}</span></li>)}
           </ol>
+          <h3 className="h-sub" style={{ marginTop: 40 }}>It works if, after eight weeks</h3>
+          <div className={s.thresholds}>
+            {THRESHOLDS.map(([n, t]) => <p key={t}><b className="num">{n}</b><span>{t}</span></p>)}
+          </div>
+          <div style={{ marginTop: 28 }}><a className="btn btn-ink" href={PILOT_ISSUE} target="_blank" rel="noreferrer">Ask for a pilot</a></div>
           <p className="small" style={{ marginTop: 20 }}>
             Natural partners already exist: the Tata Memorial Centre and Cherian Foundation give donated-hair wigs to patients, and Cope with Cancer in Mumbai makes free wigs for women on chemotherapy. A passport helps them match a donated wig to the person.
           </p>

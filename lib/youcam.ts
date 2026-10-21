@@ -32,10 +32,10 @@ async function api<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 /** Registers a file with YouCam and PUTs the bytes to the pre-signed URL. Returns the file_id. */
-export async function upload(bytes: Uint8Array, name = "photo.jpg"): Promise<string> {
+export async function upload(bytes: Uint8Array, name = "photo.jpg", type: "image/jpeg" | "image/png" = "image/jpeg"): Promise<string> {
   const reg = await api<{ data: { files: { file_id: string; requests: { url: string; headers: Record<string, string> }[] }[] } }>(
     "/s2s/v2.0/file",
-    { method: "POST", body: JSON.stringify({ files: [{ content_type: "image/jpeg", file_name: name, file_size: bytes.length }] }) },
+    { method: "POST", body: JSON.stringify({ files: [{ content_type: type, file_name: name, file_size: bytes.length }] }) },
   );
   const f = reg.data.files[0];
   const put = await fetch(f.requests[0].url, { method: "PUT", headers: f.requests[0].headers, body: bytes as BodyInit });

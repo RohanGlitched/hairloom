@@ -71,12 +71,12 @@ export const SHADES: { code: string; name: string; hex: string }[] = [
 
 export const shade = (code: string) => SHADES.find((s) => s.code === code) ?? SHADES[0];
 
-export type Headwear = { id: string; name: string; note: string; prompt: string };
+export type Headwear = { id: string; name: string; note: string; prompt: string; men?: boolean };
 export const HEADWEAR: Headwear[] = [
   { id: "turban", name: "Jersey turban", note: "Pre-tied, dusty rose. Soft on a sensitive scalp.", prompt: "a soft dusty rose jersey cotton turban head wrap that fully covers the head" },
   { id: "silk", name: "Silk headscarf", note: "Green and gold botanical print, tied at the nape.", prompt: "a printed silk headscarf with a green and gold botanical pattern, tied at the nape and fully covering the head" },
-  { id: "beanie", name: "Wool beanie", note: "Oatmeal knit for cold days and errands.", prompt: "a soft oatmeal knitted wool beanie that fully covers the head, with no hair showing underneath" },
-  { id: "cap", name: "Sleep cap", note: "Charcoal cotton, for nights and under a wig.", prompt: "a fitted charcoal cotton sleep cap that fully covers the head" },
+  { id: "beanie", men: true, name: "Wool beanie", note: "Oatmeal knit for cold days and errands.", prompt: "a soft oatmeal knitted wool beanie that fully covers the head, with no hair showing underneath" },
+  { id: "cap", men: true, name: "Sleep cap", note: "Charcoal cotton, for nights and under a wig.", prompt: "a fitted charcoal cotton sleep cap that fully covers the head" },
 ];
 
 export const inr = (n: number) => "₹" + n.toLocaleString("en-IN");

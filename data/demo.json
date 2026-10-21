@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-21T14:21:28.923Z",
+  "generated": "2026-10-21T15:25:27.006Z",
   "personas": [
     {
       "id": "anjali",
@@ -100,10 +100,8 @@
         "asha:2": "/demo/anjali/shade_asha_2.jpg",
         "asha:4": "/demo/anjali/shade_asha_4.jpg"
       },
-      "thinning": {
-        "volume": "/demo/anjali/thin_vol.jpg",
-        "length": "/demo/anjali/thin_ext.jpg"
-      },
+      "thinPhoto": null,
+      "thinning": {},
       "skin": [
         {
           "week": 0,
@@ -232,7 +230,11 @@
         "zuri:1B": "/demo/nia/shade_zuri_1B.jpg",
         "zuri:2": "/demo/nia/shade_zuri_2.jpg"
       },
-      "thinning": {},
+      "thinPhoto": null,
+      "thinning": {
+        "female_medium": "/demo/nia/thin_female_medium.jpg",
+        "all_length_2_": "/demo/nia/thin_all_length_2_.jpg"
+      },
       "skin": []
     },
     {
@@ -328,9 +330,15 @@
         "june:16": "/demo/margaret/shade_june_16.jpg",
         "june:24": "/demo/margaret/shade_june_24.jpg"
       },
+      "thinPhoto": "/demo/margaret/thinning.jpg",
       "thinning": {
-        "volume": "/demo/margaret/thin_vol.jpg",
-        "length": "/demo/margaret/thin_ext.jpg"
+        "female_subtle": "/demo/margaret/thin_female_subtle.jpg",
+        "female_natural": "/demo/margaret/thin_female_natural.jpg",
+        "female_medium": "/demo/margaret/thin_female_medium.jpg",
+        "female_high": "/demo/margaret/thin_female_high.jpg",
+        "all_length_1": "/demo/margaret/thin_all_length_1.jpg",
+        "all_length_2_": "/demo/margaret/thin_all_length_2_.jpg",
+        "all_length_3": "/demo/margaret/thin_all_length_3.jpg"
       },
       "skin": []
     },
@@ -427,6 +435,7 @@
         "arjun:1B": "/demo/ravi/shade_arjun_1B.jpg",
         "arjun:2": "/demo/ravi/shade_arjun_2.jpg"
       },
+      "thinPhoto": null,
       "thinning": {},
       "skin": []
     }

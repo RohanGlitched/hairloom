@@ -1,13 +1,13 @@
 import { LENGTH_LABEL, LENGTH_ORDER, TEXTURE_ORDER, type Length, type Texture, type Wig } from "./catalogue";
 
-/** YouCam hair-length terms -> our five lengths. */
+/** YouCam hair-length terms ("ear length", "short hair", "above chest", "long hair") -> our five lengths. */
 export function lengthFromTerm(term?: string | null): Length | null {
   if (!term) return null;
   const t = term.toLowerCase();
   if (t.includes("ear")) return "ear";
   if (t.includes("chin") || t.includes("neck") || t.includes("short")) return "chin";
   if (t.includes("above chest") || t.includes("shoulder")) return "shoulder";
-  if (t.includes("chest")) return "chest";
+  if (t.includes("chest") || t.includes("long")) return "chest";
   if (t.includes("back") || t.includes("waist")) return "midback";
   return null;
 }
@@ -34,7 +34,7 @@ export function textureStep(from: Texture | null, to: Texture) {
 }
 
 /** 0-100 closeness to the kept hair, from length, texture and measured colour difference. */
-export function closeness(wig: Wig, kept: { length: Length | null; texture: Texture | null }, dE?: number | null) {
+export function closeness(wig: Pick<Wig, "length" | "texture">, kept: { length: Length | null; texture: Texture | null }, dE?: number | null) {
   const l = kept.length ? Math.abs(LENGTH_ORDER.indexOf(wig.length) - LENGTH_ORDER.indexOf(kept.length)) : 1;
   const t = kept.texture ? Math.abs(TEXTURE_ORDER.indexOf(wig.texture) - TEXTURE_ORDER.indexOf(kept.texture)) : 1;
   const c = dE == null ? 6 : dE;

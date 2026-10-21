@@ -5,7 +5,8 @@ import { store } from "@/lib/storage";
 export const runtime = "nodejs";
 
 // Stores a sealed (AES-GCM) fitter link. The server sees only ciphertext and never the key.
-const MAX = 3_500_000;
+// A sealed brief is a 420 px photo and up to six 520 px looks: under 1 MB of ciphertext in practice.
+const MAX = 1_500_000;
 // Per-visitor courtesy limit on new links (in-memory per instance).
 const made = new Map<string, number[]>();
 function allowed(ip: string) {

@@ -1,0 +1,16 @@
+.box { display: grid; gap: 14px; min-width: 0; }
+.tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+.tabs button { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: none; color: var(--mist); font: inherit; font-size: 14px; cursor: pointer; }
+.tabs button span { color: var(--brass); }
+.tabs button[aria-selected="true"] { border-color: var(--brass); color: var(--ivory); background: rgba(255, 255, 255, .04); }
+.tabs button:focus-visible { outline: 2px solid var(--brass-hi); outline-offset: 2px; }
+.who { color: var(--mist); font-size: 15px; max-width: 60ch; }
+.total { display: grid; gap: 4px; }
+.total b { font: 400 44px/1 var(--serif); }
+.total span { color: var(--brass); font-size: 18px; }
+.table { width: 100%; border-collapse: collapse; font-size: 15px; }
+.table th { text-align: left; font-weight: 500; color: var(--mist); font-size: 13px; padding: 8px 10px 8px 0; border-bottom: 1px solid var(--brass-lo); }
+.table td { padding: 10px 10px 10px 0; border-bottom: 1px solid var(--line); }
+.table td.api { color: var(--mist); font-size: 14px; }
+.table tfoot td { font-weight: 600; border-bottom: 0; }
+@media (max-width: 560px) { .table .api { display: none; } }

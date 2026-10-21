@@ -23,6 +23,8 @@ export type Session = {
   fit?: "Women" | "Men";
   cap?: Cap;
   consent?: number;
+  /** When a fitter link was last made, so the Share step shows as done. */
+  sharedAt?: number;
   renders: Record<string, Render>;
   shortlist: string[];
   note: string;

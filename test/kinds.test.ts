@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { KINDS, isKind, validate } from "../lib/kinds.ts";
+import { KINDS, isKind, readOptions, validate } from "../lib/kinds.ts";
 
 test("the whitelist rejects prototype keys and unknown kinds", () => {
   for (const k of ["constructor", "toString", "__proto__", "hasOwnProperty", "cloth", "", 42, null]) assert.equal(isKind(k), false, String(k));
@@ -35,4 +35,28 @@ test("three-angle kinds need three photos; unit costs match YouCam's price list"
   assert.equal(KINDS.wig.units, 2);
   assert.equal(KINDS.face.units, 10);
   assert.equal(KINDS.skin.units, 9);
+});
+
+test("options are strict: no arrays, objects or coercion", () => {
+  assert.deepEqual(readOptions(undefined), {});
+  assert.deepEqual(readOptions({ hex: "#123456", thickness: 20 }), { hex: "#123456", thickness: 20 });
+  for (const bad of [null, [], ["#123456"], "x", 3, { hex: ["#123456"] }, { hex: { a: 1 } }, { hex: null }, { hex: true }, { thickness: NaN }, { "a-b": "x" }, { hex: "x".repeat(65) }]) {
+    assert.equal(readOptions(bad), null, JSON.stringify(bad));
+  }
+  assert.equal(readOptions(Object.fromEntries(Array.from({ length: 9 }, (_, i) => [`k${"abcdefghi"[i]}`, 1]))), null, "too many keys");
+  // Even past readOptions, the kinds refuse the wrong types instead of calling String() on them.
+  const anyOpt = (o: unknown) => o as Record<string, string | number>;
+  assert.match(validate("hairColor", anyOpt({ hex: ["#123456"] })) ?? "", /bad colour/, "the judge's array hex");
+  assert.match(validate("wig", anyOpt({ wig: ["asha"] })) ?? "", /bad wig|unknown wig/);
+  assert.match(validate("hairVol", anyOpt({ template: ["female_medium"] })) ?? "", /unknown volume/);
+  assert.match(validate("hairExt", anyOpt({ template: 2 })) ?? "", /unknown extension/);
+  assert.match(validate("brows", { pattern: "SoftArch20", hex: "#3a2a22", thickness: "20" }) ?? "", /bad brow/, "a numeric string is not a number");
+  assert.equal(validate("brows", { pattern: "SoftArch20", hex: "#3a2a22", thickness: 20 }), null);
+  assert.equal(validate("hairVol", { template: "female_medium" }), null);
+});
+
+test("hair-transfer kinds take JPEG only", () => {
+  assert.equal(KINDS.wig.jpegOnly, true);
+  assert.equal(KINDS.ownHair.jpegOnly, true);
+  assert.equal(KINDS.skin.jpegOnly, undefined);
 });

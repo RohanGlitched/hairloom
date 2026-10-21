@@ -23,9 +23,12 @@ function loadSdk(): Promise<YMKGlobal> {
     const sc = document.createElement("script");
     sc.src = SDK;
     sc.async = true;
-    sc.onerror = () => { loading = null; rej(new Error("The YouCam camera could not load. Upload photos instead.")); };
+    const fail = () => { loading = null; rej(new Error("The YouCam camera could not load. Upload photos instead.")); };
+    sc.onerror = fail;
     document.body.appendChild(sc);
     setTimeout(() => window.YMK && res(window.YMK), 4000);
+    // The script loaded but never set up YMK: give up rather than wait forever.
+    setTimeout(() => (window.YMK ? res(window.YMK) : fail()), 20_000);
   });
   return loading;
 }
@@ -41,6 +44,9 @@ export function CameraKit({ mode, onDone, onCancel }: { mode: "hairtype" | "make
   const [status, setStatus] = useState("Loading the YouCam camera…");
   const [quality, setQuality] = useState<Record<string, string | boolean> | null>(null);
   const ids = useRef<unknown[]>([]);
+  // Callers pass an inline onDone; keeping it in a ref stops each re-render from re-opening the camera.
+  const done = useRef(onDone);
+  useEffect(() => { done.current = onDone; }, [onDone]);
 
   const close = useCallback(() => {
     try { window.YMK?.close(); } catch { /* already closed */ }
@@ -61,7 +67,7 @@ export function CameraKit({ mode, onDone, onCancel }: { mode: "hairtype" | "make
             const imgs = ((r as { images: Img[] }).images ?? []).sort((a, b) => a.phase - b.phase);
             const urls = await Promise.all(imgs.map((i) => toDataUrl(i.image)));
             close();
-            onDone(urls);
+            done.current(urls);
           }),
         );
         Y.init({ faceDetectionMode: mode, imageFormat: "base64", language: "enu", qualityLevel: "moderate", width: Math.min(480, window.innerWidth - 32), height: Math.min(640, window.innerHeight - 180) });
@@ -69,7 +75,7 @@ export function CameraKit({ mode, onDone, onCancel }: { mode: "hairtype" | "make
       })
       .catch((e: Error) => setStatus(e.message));
     return () => { live = false; close(); };
-  }, [mode, onDone, close]);
+  }, [mode, close]);
 
   return (
     <div className={s.camSheet} role="dialog" aria-modal="true" aria-label="YouCam camera">

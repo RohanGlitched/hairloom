@@ -1,5 +1,5 @@
 // Copies precomputed YouCam outputs from ../lab/out into the site:
-//   public/demo/<persona>/*.jpg, public/catalogue/*.jpg, data/demo.json, data/lab-runs.json
+//   public/demo/<persona>/*.jpg, public/catalogue/*.jpg, data/demo.json
 // Run: node scripts/export-demo.mjs
 import fs from "node:fs";
 import path from "node:path";
@@ -34,6 +34,7 @@ for (const w of WIGS) {
   resize(path.join(LAB, "cat", `${w}_1024.jpg`), path.join(PUB, "catalogue", "thumb", `${w}.jpg`), 420, 82);
 }
 
+const THIN = ["female_subtle", "female_natural", "female_medium", "female_high", "all_length_1", "all_length_2_", "all_length_3"];
 const out = [];
 for (const p of PERSONAS) {
   const d = path.join(LAB, "demo", p.id);
@@ -53,7 +54,9 @@ for (const p of PERSONAS) {
     brows: copy(path.join(d, "brows.jpg"), "brows"),
     withHair: Object.fromEntries(WIGS.map((w) => [w, copy(path.join(d, `withhair_${w}.jpg`), `withhair_${w}`)]).filter(([, v]) => v)),
     shades: Object.fromEntries(fs.readdirSync(d).filter((f) => /^shade_\w+_\w+\.jpg$/.test(f)).map((f) => [f.slice(6, -4).replace("_", ":"), copy(path.join(d, f), f.slice(0, -4))])),
-    thinning: Object.fromEntries([["volume", "thin_vol"], ["length", "thin_ext"]].map(([k, n]) => [k, copy(path.join(d, `${n}.jpg`), n)]).filter(([, v]) => v)),
+    // Thinning previews, keyed by YouCam template id; Margaret's run on a generated thinning photo.
+    thinPhoto: copy(path.join(d, "thinning.jpg"), "thinning"),
+    thinning: Object.fromEntries(THIN.map((t) => [t, copy(path.join(d, `thin_${t}.jpg`), `thin_${t}`)]).filter(([, v]) => v)),
     skin: ["skin_wk0", "skin_wk4"].filter((n) => fs.existsSync(path.join(d, `${n}.json`))).map((n, i) => {
       const out = readJson(path.join(d, `${n}.json`))?.data?.results?.output ?? [];
       return {
@@ -69,36 +72,4 @@ for (const p of PERSONAS) {
 }
 fs.writeFileSync(path.join(DATA, "demo.json"), JSON.stringify({ generated: new Date().toISOString(), personas: out }, null, 2));
 
-// Every lab run, for the evidence page: which API, did it succeed, how long it took.
-const FEATURE = [
-  [/m_brow/, "Makeup Try-On (eyebrows)"],
-  [/t_hat|t_turban_bald/, "Hat Try-On"],
-  [/t_scarf/, "Scarf Try-On"],
-  [/skin_/, "Skin Analysis"],
-  [/d_tone/, "Facial Color Tones Analyzer"],
-  [/d_dens/, "Hair Density Detection"],
-  [/hair_type|d_type/, "Hair Type Detection"],
-  [/hair_frizz|d_frizz/, "Hair Frizziness Detection"],
-  [/hair_length|d_len/, "Hair Length Detection"],
-  [/(^face$|d_face)/, "Face Attribute Analyzer"],
-  [/(wig_|^own$|t_hair|restored)/, "Hairstyle Try-On (hair-transfer)"],
-  [/^(persona|prod_|cat\/)/, "Image Generator (text to image)"],
-  [/(turn_|bald$|head_|ang_|i2i|_turban|p1_bald)/, "Image Generator (image to image)"],
-];
-const runs = [];
-const walk = (dir, rel = "") => {
-  for (const f of fs.readdirSync(dir)) {
-    const full = path.join(dir, f);
-    if (fs.statSync(full).isDirectory()) walk(full, rel + f + "/");
-    else if (f.endsWith(".json") && !f.startsWith("hair_templates")) {
-      const j = readJson(full);
-      const name = (rel + f.replace(/\.json$/, "")).replace(/^demo\/\w+\//, "");
-      const feat = FEATURE.find(([re]) => re.test(name))?.[1];
-      if (!feat || !j?.ms) continue;
-      runs.push({ name: rel + f.replace(/\.json$/, ""), api: feat, ok: j.data?.task_status === "success", error: j.data?.error ?? null, ms: j.ms });
-    }
-  }
-};
-walk(LAB);
-fs.writeFileSync(path.join(DATA, "lab-runs.json"), JSON.stringify(runs, null, 1));
-console.log(runs.length, "runs");
+// The evidence ledger (data/lab-runs.json) is built by scripts/export-runs.mjs from every output file, not just the demo's.

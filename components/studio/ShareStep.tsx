@@ -60,6 +60,7 @@ export function ShareStep({ ctx }: { ctx: Ctx }) {
       };
       const { id, key } = await seal(payload);
       setLink(`${window.location.origin}/fitter#s=${id}.${key}`);
+      ctx.update((x) => ({ ...x, sharedAt: Date.now() }));
     } catch (e) {
       setErr((e as Error).message || "The link couldn't be made.");
     } finally {

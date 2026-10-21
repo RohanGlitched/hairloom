@@ -2,6 +2,51 @@
 
 import type { KindName } from "./kinds";
 
+export type UnitsInfo = { units: number | null; floor: number; live: boolean; dayLeft?: number | null; dayCap?: number; lane?: string };
+
+/* An optional judge code (from the Devpost testing notes) draws on the judges' own daily allowance. */
+const JUDGE = "hairloom:judge";
+export function judgeCode(): string {
+  try { return sessionStorage.getItem(JUDGE) ?? ""; } catch { return ""; }
+}
+export function setJudgeCode(code: string) {
+  try { if (code.trim()) sessionStorage.setItem(JUDGE, code.trim()); else sessionStorage.removeItem(JUDGE); } catch { /* not stored */ }
+}
+const judged = (h: Record<string, string> = {}): Record<string, string> => {
+  const c = judgeCode();
+  return c ? { ...h, "x-judge-code": c } : h;
+};
+
+export async function fetchUnits(): Promise<UnitsInfo | null> {
+  return fetch("/api/units", { headers: judged(), cache: "no-store" })
+    .then((r) => r.json())
+    .then((u) => ({ units: u.units, floor: u.floor ?? 120, live: !!u.live, dayLeft: u.dayLeft, dayCap: u.dayCap, lane: u.lane }))
+    .catch(() => null);
+}
+
+/* Tasks still running. If the tab closes, a beacon asks the server to delete them at YouCam. */
+const inflight = new Set<string>();
+let hooked = false;
+function watch(h: string) {
+  inflight.add(h);
+  if (hooked || typeof window === "undefined") return;
+  hooked = true;
+  window.addEventListener("pagehide", () => {
+    for (const x of inflight) {
+      const url = `/api/try?h=${x}&_method=DELETE`;
+      if (!navigator.sendBeacon?.(url)) void fetch(url, { method: "POST", keepalive: true }).catch(() => undefined);
+    }
+    inflight.clear();
+  });
+}
+/** Done with a task: delete it, its photos and outputs at YouCam. */
+function drop(h: string) {
+  inflight.delete(h);
+  void fetch(`/api/try?h=${h}`, { method: "DELETE", keepalive: true }).catch(() => undefined);
+}
+// Worth another poll after a pause: YouCam's rate limit, a cold start, a network blip.
+const transient = (status: number, code?: string) => status === 429 || status >= 500 || !code || code === "rate_limited" || code === "unknown" || /^http_5/.test(code);
+
 export type RunResult =
   | { ok: true; image?: string; results: Record<string, unknown>; units: number; api: string; ms: number }
   | { ok: false; code: string; message: string };
@@ -38,7 +83,7 @@ export async function runTask(
   const t0 = Date.now();
   let start: Response;
   try {
-    start = await fetch("/api/try", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ kind, images, opt }) });
+    start = await fetch("/api/try", { method: "POST", headers: judged({ "content-type": "application/json" }), body: JSON.stringify({ kind, images, opt }) });
   } catch {
     return { ok: false, code: "offline", message: "We couldn't reach the server. Check your connection and try again." };
   }
@@ -46,18 +91,24 @@ export async function runTask(
   if (!s.ok) return { ok: false, code: s.code, message: s.message };
 
   const h = encodeURIComponent(s.handle);
-  for (let i = 0; i < 60; i++) {
-    await new Promise((r) => setTimeout(r, i === 0 ? 4000 : 3000));
+  watch(h);
+  // Polls every 3 s; transient failures back off (6, 12 s). Three minutes in all, as before.
+  const deadline = t0 + 180_000;
+  let wait = 4000, fails = 0;
+  while (Date.now() + wait < deadline) {
+    await new Promise((r) => setTimeout(r, wait));
     onTick?.(Math.round((Date.now() - t0) / 1000));
-    const p = await fetch(`/api/try?h=${h}`).then((r) => r.json()).catch(() => null);
-    if (!p) continue;
-    if (!p.ok) return { ok: false, code: p.code, message: p.message };
+    let status = 0;
+    const p = await fetch(`/api/try?h=${h}`).then((r) => { status = r.status; return r.json(); }).catch(() => null);
+    if (!p || (!p.ok && transient(status, p.code))) { fails++; wait = Math.min(12_000, 3000 * 2 ** fails); continue; }
+    fails = 0; wait = 3000;
+    if (!p.ok) { drop(h); return { ok: false, code: p.code, message: p.message }; }
     if (p.status === "running") continue;
-    if (p.status === "error") return { ok: false, code: p.code, message: p.message };
+    if (p.status === "error") { inflight.delete(h); return { ok: false, code: p.code, message: p.message }; } // the server already deleted it
     // We hold the result now: ask the server to delete the task and its photos at YouCam.
-    void fetch(`/api/try?h=${h}`, { method: "DELETE", keepalive: true }).catch(() => undefined);
+    drop(h);
     return { ok: true, image: p.image, results: p.results ?? {}, units: s.units, api: s.api, ms: Date.now() - t0 };
   }
-  void fetch(`/api/try?h=${h}`, { method: "DELETE", keepalive: true }).catch(() => undefined);
+  drop(h);
   return { ok: false, code: "timeout", message: "YouCam took longer than three minutes. Try again in a moment." };
 }

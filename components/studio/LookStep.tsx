@@ -90,7 +90,7 @@ export function LookStep({ ctx }: { ctx: Ctx }) {
 
           <h2 className="h-sub" style={{ marginTop: 28 }}>Headwear</h2>
           <div className={s.headGrid}>
-            {HEADWEAR.map((h) => {
+            {HEADWEAR.filter((h) => session.fit !== "Men" || h.men).map((h) => {
               const key = `head:${h.id}`;
               const has = !!session.renders[key];
               return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { LENGTH_LABEL, WIGS, inr } from "@/lib/catalogue";
 import { deltaE00, matchWord, nearestShades, type Lab } from "@/lib/color";
 import { measured, renderLab, wigShade } from "@/lib/colours";
@@ -44,34 +44,39 @@ export function TryStep({ ctx }: { ctx: Ctx }) {
   }, [session.kept, pid]);
   useEffect(() => {
     setNowLab(null);
-    if (!render || !sel) return;
+    if (!render || !sel || sel.startsWith("thin:")) return;
     const pre = pid ? renderLab(pid, sel) : null;
     if (pre) return setNowLab(pre);
     import("@/lib/hairColor").then(({ measureHair }) => measureHair(render.src)).then((r) => setNowLab(r?.lab ?? null)).catch(() => undefined);
   }, [render, sel, pid]);
 
+  const shaded = (id: string) => !!pid && Object.keys(session.renders).some((k) => k.startsWith(`shade:${id}:`));
   const ranked = useMemo(
-    () => WIGS.filter((w) => fit === "All" || w.fit === fit)
+    // Demo people show only prepared looks: nothing on a demo screen spends units.
+    () => WIGS.filter((w) => (fit === "All" || w.fit === fit) && (!pid || !!session.renders[`${prefix}:${w.id}`]))
       .map((w) => {
         const lab = pid ? renderLab(pid, `${prefix}:${w.id}`) ?? renderLab(pid, `wig:${w.id}`) : null;
         const dE = keptLab && lab ? deltaE00(keptLab, lab) : null;
         return { w, score: closeness(w, { length: keptLen, texture: keptTex }, dE) };
       })
-      // Demo people: prepared looks first, so nothing on the first screen needs a live run.
-      .sort((a, b) => (pid ? Number(!!session.renders[`${prefix}:${b.w.id}`]) - Number(!!session.renders[`${prefix}:${a.w.id}`]) : 0) || b.score - a.score),
-    [fit, pid, prefix, keptLab, keptLen, keptTex, session.renders],
+      // The wig a shop sent the shopper here with comes first; then, for demo people, the wig with
+      // prepared shades and other prepared looks, so nothing on the first screen needs a live run.
+      .sort((a, b) => Number(b.w.id === ctx.wig) - Number(a.w.id === ctx.wig) || Number(shaded(b.w.id)) - Number(shaded(a.w.id)) || (pid ? Number(!!session.renders[`${prefix}:${b.w.id}`]) - Number(!!session.renders[`${prefix}:${a.w.id}`]) : 0) || b.score - a.score),
+    [fit, pid, prefix, keptLab, keptLen, keptTex, session.renders, ctx.wig],
   );
 
-  // Start on the closest prepared look for this photo, and again whenever the photo changes.
+  // Open on her own hair back (demo, after hair loss), else the closest prepared look. Follow the
+  // ranking while it settles (colour is measured after the first render) until someone picks.
   const best = ranked.find(({ w }) => session.renders[`${prefix}:${w.id}`]);
+  const opening = pid && base === "today" && session.renders.own && !ctx.wig ? "own" : best ? `${prefix}:${best.w.id}` : null;
+  const picked = useRef(false);
+  useEffect(() => { picked.current = false; }, [base]);
   useEffect(() => {
-    setSel(best ? `${prefix}:${best.w.id}` : null);
-  }, [base]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    if (sel === null && best) setSel(`${prefix}:${best.w.id}`);
-  }, [best, sel, prefix]);
+    if (!picked.current) setSel(opening);
+  }, [opening]);
 
   async function tryOn(key: string, kind: "wig" | "ownHair" | "hairColor" | "hairVol" | "hairExt", opt: Record<string, string | number>, images: string[]) {
+    picked.current = true;
     if (session.renders[key]) return setSel(key);
     if (session.mode === "demo" && !window.confirm("This one isn't prepared for the demo person, so it runs live on YouCam (about 15 seconds). Go ahead?")) return;
     setBusy(key); setMsg(null); setSecs(0);
@@ -101,6 +106,14 @@ export function TryStep({ ctx }: { ctx: Ctx }) {
   const ready = (k: string) => !!session.renders[k];
   const hasBoth = !!session.today && (session.mode === "live" || Object.keys(session.renders).some((k) => k.startsWith("hair:")));
   const shadeSource = wig ? session.renders[`${prefix}:${wig.id}`] : undefined;
+  // Thinning previews run on the photo of thinning hair: the kept photo for a live session.
+  const thinPhoto = ctx.persona?.thinPhoto ?? session.kept;
+  const thinSel = sel?.startsWith("thin:") ? sel.slice(5) : null;
+  const thinOpts = [...VOLUME.map((t, i) => ({ t, kind: "hairVol" as const, label: ["Subtle", "Natural", "Medium", "High"][i] + " volume", units: 2 })),
+    ...EXTENSION.map((t, i) => ({ t, kind: "hairExt" as const, label: ["Short", "Medium", "Long"][i] + " clip-ins", units: 1 }))]
+    .filter((o) => (session.mode === "live" ? session.fit !== "Men" : ready(`thin:${o.t}`)));
+  const mirrorBase = thinSel ? thinPhoto! : basePhoto;
+  const mirrorLabel = thinSel ? (ctx.persona?.thinPhoto ? "Thinning" : "Kept") : baseLabel;
   const title = session.mode === "demo" ? `Wigs on ${session.name}` : "Try wigs on your own face";
 
   return (
@@ -115,9 +128,9 @@ export function TryStep({ ctx }: { ctx: Ctx }) {
       )}
 
       <div className={s.tryGrid3}>
-        <div className={s.mirrorCol}>
+        <div className={s.mirrorCol} id="try-mirror">
           {render ? (
-            <Reveal before={basePhoto} after={render.src} beforeAlt={baseLabel} afterAlt="Try-on result" beforeLabel={baseLabel} afterLabel={wig ? wig.name : sel === "own" ? "Own hair" : "Try-on"} label="Compare the try-on with the photo underneath" initial={100} size="fill" />
+            <Reveal before={mirrorBase} after={render.src} beforeAlt={mirrorLabel} afterAlt="Try-on result" beforeLabel={mirrorLabel} afterLabel={wig ? wig.name : sel === "own" ? "Own hair" : thinSel ? (thinSel.startsWith("female_") ? "Volume" : "Clip-ins") : "Try-on"} label="Compare the try-on with the photo underneath" initial={58} size="fill" />
           ) : (
             <div className={s.frame}><div className={s.glass}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -157,7 +170,7 @@ export function TryStep({ ctx }: { ctx: Ctx }) {
                   onClick={() => tryOn(key, "wig", { wig: w.id }, [basePhoto])}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={has ? session.renders[key].src : `/catalogue/thumb/${w.id}.jpg`} alt="" loading="lazy" />
-                  <span><b>{w.name}</b><small>{busy === key ? "Fitting…" : has ? band(score) : session.mode === "demo" ? "Try live" : "Try on · 2 units"}</small></span>
+                  <span><b>{w.name}</b><small>{busy === key ? "Fitting…" : w.id === ctx.wig && !has ? "From the shop" : has ? band(score) : session.mode === "demo" ? "Try live" : "Try on · 2 units"}</small></span>
                 </button>
               );
             })}
@@ -175,16 +188,17 @@ export function TryStep({ ctx }: { ctx: Ctx }) {
                 <li><span>Colour</span>{dE != null ? matchWord(dE) : render ? "Measuring…" : "Try it on to compare"}</li>
                 <li><span>Stock shade</span><i style={{ background: wigShade(wig).hex }} aria-hidden="true" />{wigShade(wig).code}, {wigShade(wig).name.toLowerCase()}</li>
               </ul>
-              {shadeSource && keptLab && (
+              {pid && !shaded(wig.id) && <p className="small">Shades are prepared for {ranked.find(({ w }) => shaded(w.id))?.w.name ?? "one wig"} in this demo. With your own photo, any wig can be recoloured.</p>}
+              {shadeSource && keptLab && (!pid || shaded(wig.id)) && (
                 <div className={s.shades}>
                   <p className="small">Order it in a shade closer to your own hair:</p>
                   <div>
-                    {nearestShades(keptLab, 3).map((n) => {
+                    {nearestShades(keptLab, 3).filter((n) => !pid || ready(`shade:${wig.id}:${n.code}`)).map((n) => {
                       const key = `shade:${wig.id}:${n.code}`;
                       return (
                         <button key={key} className={s.shadeBtn} disabled={!!busy || (!ready(key) && !ctx.units.live)} aria-pressed={sel === key}
                           onClick={() => tryOn(key, "hairColor", { hex: n.hex }, [shadeSource.src])}>
-                          <i style={{ background: n.hex }} aria-hidden="true" />{n.code}<small>{ready(key) ? "" : session.mode === "demo" ? "live" : "1 unit"}</small>
+                          <i style={{ background: n.hex }} aria-hidden="true" />{n.code}<small>{ready(key) ? "" : "1 unit"}</small>
                         </button>
                       );
                     })}
@@ -205,8 +219,12 @@ export function TryStep({ ctx }: { ctx: Ctx }) {
             </>
           ) : sel?.startsWith("thin:") ? (
             <>
-              <h2 className="h-sub">{sel === "thin:volume" ? "A topper's worth of volume" : "A little more length"}</h2>
-              <p className="small">For thinning rather than lost hair: a topper or clip-ins may be enough. Previewed with YouCam&rsquo;s {sel === "thin:volume" ? "hair volume" : "hair extension"} try-on on the kept photo.</p>
+              <h2 className="h-sub">{thinOpts.find((o) => o.t === thinSel)?.label ?? "Thinning preview"}</h2>
+              {thinSel?.startsWith("female_") ? (
+                <p className="small">YouCam&rsquo;s hair volume try-on fills out the lengths and sides. It doesn&rsquo;t cover a widening parting or a thin crown; that is what a topper does, so ask your fitter to show you one.</p>
+              ) : (
+                <p className="small">YouCam&rsquo;s hair extension try-on adds clip-in length. Length can draw the eye away from thinner hair on top, and clip-ins can be removed at night.</p>
+              )}
             </>
           ) : (
             <p className="small">Pick a wig to see it on the photo.</p>
@@ -224,14 +242,26 @@ export function TryStep({ ctx }: { ctx: Ctx }) {
         </div>
       </div>
 
-      {(session.mode === "live" || session.renders["thin:volume"]) && (
+      {(thinOpts.length > 0 || (session.mode === "live" && session.fit === "Men")) && (
         <div className={s.thin}>
           <h2 className="h-sub">Thinning, not lost?</h2>
-          <p className="small">Toppers and clip-ins can be enough while hair is thinning. Preview them on the kept photo.</p>
-          <div className={s.chips}>
-            <button aria-pressed={sel === "thin:volume"} disabled={!!busy || (!ready("thin:volume") && !ctx.units.live)} onClick={() => tryOn("thin:volume", "hairVol", { template: VOLUME[2] }, [session.kept!])}>More volume{ready("thin:volume") ? "" : session.mode === "demo" ? " · live" : " · 2 units"}</button>
-            <button aria-pressed={sel === "thin:length"} disabled={!!busy || (!ready("thin:length") && !ctx.units.live)} onClick={() => tryOn("thin:length", "hairExt", { template: EXTENSION[1] }, [session.kept!])}>More length{ready("thin:length") ? "" : session.mode === "demo" ? " · live" : " · 1 unit"}</button>
-          </div>
+          {thinOpts.length > 0 ? (
+            <>
+              <p className="small">{ctx.persona?.thinPhoto ? `Volume and clip-ins on ${session.name}'s photo of thinning hair.` : session.situation === "alopecia" ? "While patches are small, a topper or clip-ins may be enough. Previewed on the kept photo." : "Volume and clip-ins can be enough while hair is thinning. Previewed on the kept photo."}</p>
+              <div className={s.chips}>
+                {thinOpts.map((o) => {
+                  const key = `thin:${o.t}`;
+                  return (
+                    <button key={key} aria-pressed={sel === key} disabled={!!busy || (!ready(key) && !ctx.units.live)} onClick={() => { document.getElementById("try-mirror")?.scrollIntoView({ behavior: "smooth", block: "center" }); tryOn(key, o.kind, { template: o.t }, [thinPhoto!]); }}>
+                      {o.label}{ready(key) ? "" : ` · ${o.units} unit${o.units > 1 ? "s" : ""}`}
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          ) : (
+            <p className="small">YouCam&rsquo;s volume and clip-in templates are all styled for women today, so we don&rsquo;t offer them on men&rsquo;s photos. A fitter can show you men&rsquo;s hair systems.</p>
+          )}
         </div>
       )}
 

@@ -5,7 +5,9 @@
   "by": "Štefan Štefančík",
   "kind": "hair",
   "fit": "Women",
-  "note": "Long straight brown hair, outdoor light",
+  "note": "Long straight brown hair, sunset backlight",
+  "eye": "brown",
+  "colourNote": "Brown to the eye, so the measured off black is a miss in strong backlight.",
   "url": "https://unsplash.com/photos/QXevDflbl8A",
   "src": "/real/QXevDflbl8A/src.jpg",
   "images": {
@@ -66,6 +68,8 @@
   "kind": "hair",
   "fit": "Women",
   "note": "Long curly hair",
+  "eye": "dark brown",
+  "labelOk": false,
   "url": "https://unsplash.com/photos/qXzOsNZP7mA",
   "src": "/real/qXzOsNZP7mA/src.jpg",
   "images": {
@@ -128,6 +132,7 @@
   "kind": "hair",
   "fit": "Women",
   "note": "Long grey hair, smiling",
+  "eye": "grey",
   "url": "https://unsplash.com/photos/7jZiSQ_Jyqg",
   "src": "/real/7jZiSQ_Jyqg/src.jpg",
   "images": {
@@ -188,6 +193,8 @@
   "kind": "hair",
   "fit": "Men",
   "note": "Short dark hair",
+  "eye": "black",
+  "labelOk": true,
   "url": "https://unsplash.com/photos/7YVZYZeITc8",
   "src": "/real/7YVZYZeITc8/src.jpg",
   "images": {
@@ -250,6 +257,8 @@
   "kind": "hair",
   "fit": "Women",
   "note": "Curly bob, warm light",
+  "eye": "very dark brown",
+  "labelOk": true,
   "url": "https://unsplash.com/photos/CGKYNN3uuVo",
   "src": "/real/CGKYNN3uuVo/src.jpg",
   "images": {

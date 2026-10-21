@@ -1,0 +1,5 @@
+.box { margin-top: 20px; padding: 20px 22px; border: 1px solid currentColor; border-radius: var(--radius, 14px); display: grid; gap: 14px; max-width: 62ch; }
+.box ul { margin: 0; padding-left: 20px; display: grid; gap: 8px; font-size: 15px; opacity: .88; }
+.check { display: flex; gap: 10px; align-items: flex-start; font-size: 15px; cursor: pointer; }
+.check input { margin-top: 3px; width: 18px; height: 18px; flex: none; accent-color: var(--brass); }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }

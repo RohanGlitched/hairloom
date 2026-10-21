@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BOUTIQUE, LENGTH_LABEL, WIGS, inr } from "@/lib/catalogue";
 import { describe } from "@/lib/demo";
 import { demoBrief } from "@/lib/brief";
@@ -8,6 +8,7 @@ import { capSize } from "@/lib/match";
 import { wigShade } from "@/lib/colours";
 import { nearestShades } from "@/lib/color";
 import { prepare, runTask } from "@/lib/client";
+import { Consent, hasConsent } from "@/components/Consent";
 import { unseal, type SharePayload } from "@/lib/seal";
 import type { Readings } from "@/lib/demo";
 import s from "./fitter.module.css";
@@ -165,11 +166,17 @@ function AutoTag() {
   const [out, setOut] = useState<{ length?: string; shade?: string; hex?: string; dE?: number } | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  // The studio's consent, before the photo is sent to YouCam. A ref, so the picker opens in the same click.
+  const agreed = useRef(false);
+  const [asking, setAsking] = useState(false);
+  const picker = useRef<HTMLInputElement>(null);
+  useEffect(() => { hasConsent().then((v) => { agreed.current = v; }); }, []);
 
   async function tag(file?: File) {
     if (!file) return;
     setErr(null); setOut(null);
-    const url = await prepare(file, 1024);
+    let url: string;
+    try { url = await prepare(file, 1024); } catch { return setErr("This photo couldn't be read. Try a JPEG or PNG."); }
     setImg(url);
     setBusy(true);
     const { measureHair } = await import("@/lib/hairColor");
@@ -189,10 +196,18 @@ function AutoTag() {
           <p className="lede" style={{ marginTop: 12 }}>
             Upload a photo of a wig on a model. YouCam&rsquo;s hair-length detection reads the length (2 units) and the hair mask in your browser measures the shade code, so stock is described the same way as each client&rsquo;s passport.
           </p>
-          <label className="btn btn-ivory" style={{ marginTop: 20, position: "relative" }}>
+          <label className="btn btn-ivory" style={{ marginTop: 20, position: "relative" }} onClick={(e) => { if (!agreed.current && !busy) { e.preventDefault(); setAsking(true); } }}>
             {busy ? "Reading…" : "Upload a wig photo"}
-            <input type="file" accept="image/*" style={{ position: "absolute", opacity: 0, width: 1, height: 1 }} onChange={(e) => tag(e.target.files?.[0])} disabled={busy} />
+            <input ref={picker} type="file" accept="image/*" style={{ position: "absolute", opacity: 0, width: 1, height: 1 }} onChange={(e) => { void tag(e.target.files?.[0]); e.target.value = ""; }} disabled={busy} />
           </label>
+          {asking && (
+            <Consent
+              agree="I’m 18 or over, and I have the right to upload this photo and the permission of anyone in it."
+              button="btn-ivory"
+              onCancel={() => setAsking(false)}
+              onAgree={() => { agreed.current = true; setAsking(false); picker.current?.click(); }}
+            />
+          )}
           {err && <p className={s.err} role="alert">{err}</p>}
         </div>
         <div className={s.tagOut}>
@@ -220,7 +235,7 @@ function Assistant() {
           <p className="kicker">For your AI assistant</p>
           <h2 className="h-sec">Ask Claude what to pull before the client arrives.</h2>
           <p className="lede" style={{ marginTop: 12 }}>
-            Hairloom runs an MCP server. Add it to Claude or another assistant that supports remote MCP servers, and it can rank your stock against a client&rsquo;s passport, give the pull list in their shade, plan dates around treatment and cost a fitting. Pair it with YouCam&rsquo;s own hosted MCP servers for live try-ons.
+            Hairloom runs an MCP server. Add it to Claude or another assistant that supports remote MCP servers, and it can rank your stock (or our demo boutique&rsquo;s) against a client&rsquo;s passport, give the pull list in their shade, plan dates around treatment and cost a fitting. Pair it with YouCam&rsquo;s own hosted MCP servers for live try-ons.
           </p>
           <div className={s.mcpUrl}>
             <code>{url}</code>
@@ -229,6 +244,7 @@ function Assistant() {
           <p className="small" style={{ marginTop: 10 }}>Tools: match_wigs, shade_for_colour, list_stock, show_on_demo_person, fitting_plan, fitting_cost. No client photos ever pass through it.</p>
         </div>
         <div className={s.chat} aria-label="Example conversation">
+          <p className={s.chatLabel}>An example conversation, using the live tools</p>
           <p className={s.me}>My 2 pm client is 1 to 2A, above chest, colour #342820, head 55.5 cm. What should I pull?</p>
           <p className={s.tool}>match_wigs</p>
           <div className={s.bot}>

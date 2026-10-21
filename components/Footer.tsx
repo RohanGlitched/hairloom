@@ -9,11 +9,6 @@ const COLS = [
   { title: "Runs on", links: [["YouCam API", "https://yce.perfectcorp.com/ai-api"], ["MediaPipe (Apache 2.0)", "https://ai.google.dev/edge/mediapipe/solutions/vision/image_segmenter"], ["Next.js on Vercel", "https://nextjs.org"]] },
 ] as const;
 
-const CHANGES = [
-  ["Oct 22", "Judge-round fixes: Ravi, cap size, thinning, retailer page and widget, signed task handles, tests"],
-  ["Oct 21", "Hair passport, fitting room and demo boutique"],
-];
-
 export function Footer() {
   return (
     <footer className={s.foot}>
@@ -36,10 +31,6 @@ export function Footer() {
         ))}
       </div></div>
       <div className="wrap"><div className={s.mid}>
-        <div className={s.log}>
-          <h2>Changelog</h2>
-          <ul>{CHANGES.map(([d, t]) => <li key={d + t}><time>{d}</time> {t}</li>)}</ul>
-        </div>
         <p className={s.care}>
           Hairloom helps with appearance, not medical care. It never diagnoses anything. For questions about treatment, hair loss or your scalp, talk to your care team.
         </p>

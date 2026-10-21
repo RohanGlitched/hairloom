@@ -4,7 +4,7 @@ import { Mirror } from "@/components/Mirror";
 import { Passport } from "@/components/Passport";
 import { Reveal } from "@/components/Reveal";
 import { PERSONAS, persona } from "@/lib/demo";
-import { TOTALS, byApi } from "@/lib/evidence";
+import { API_COUNT_WORD, TOTALS, byApi } from "@/lib/evidence";
 import { BOUTIQUE, WIGS } from "@/lib/catalogue";
 import { measured } from "@/lib/colours";
 import { demoBrief } from "@/lib/brief";
@@ -54,12 +54,14 @@ const APIS = [
   ["Face Attribute & Ratio Analyzer", "Face shape and brow shape, thickness and colour"],
   ["Makeup Virtual Try-On", "Brows rebuilt in your own shape and shade"],
   ["Hair Color Virtual Try-On", "Stock shades on the wig you like"],
+  ["Hair Volume Virtual Try-On", "A topper's worth of volume, for thinning rather than lost hair"],
+  ["Hair Extension Virtual Try-On", "Clip-in length on your kept photo"],
   ["AI Image Generator", "Headwear that keeps your face; demo people and boutique stock"],
-  ["AI Skin Analysis", "Optional weekly skin check-ins in the journal"],
+  ["AI Skin Analysis", "Optional skin check-ins in the journal, once per treatment cycle"],
 ];
 
 export default function Home() {
-  const apis = byApi();
+  const apis = byApi().filter((a) => a.group === "studio");
   const brief = demoBrief();
   return (
     <>
@@ -161,7 +163,7 @@ export default function Home() {
               Charities advise keeping photos and a lock of hair. Hairloom keeps the photos and reads them: curl pattern, frizz, length, face shape and brows from YouCam, and colour as a common wig shade code.
             </p>
             <ul className={s.ticks}>
-              <li>Three angles, captured with YouCam&rsquo;s guided camera, which checks face angle and light before each shot.</li>
+              <li>Three angles, from YouCam&rsquo;s guided camera, which shows face position, facing and light as you shoot, or from photos you upload.</li>
               <li>Head size and parting, measured at home with a soft tape, so the fitter can have the right cap ready.</li>
               <li>Colour measured from the hair pixels on your device and matched to common wig shade codes.</li>
               <li>Stays on your device until you choose to share it.</li>
@@ -232,14 +234,14 @@ export default function Home() {
               <h2 id="ev-title" className="h-sec">What we measured, including what failed.</h2>
             </div>
             <p className="lede">
-              {TOTALS.runs} YouCam tasks run while building Hairloom, {TOTALS.ok} succeeded. Failures taught us the rules the studio now follows, like the three-photo order hair-type detection expects.
+              {TOTALS.runs} YouCam tasks run while building Hairloom, {TOTALS.ok} succeeded, {TOTALS.real.runs} of them on real photographs. Failures taught us the rules the studio now follows, like the three-photo order hair-type detection expects.
             </p>
           </div>
           <div className={s.evTable} role="table" aria-label="YouCam tasks by API">
             <div role="row" className={s.evHead}><span role="columnheader">API</span><span role="columnheader">Runs</span><span role="columnheader">Succeeded</span><span role="columnheader">Median time</span></div>
             {apis.map((a) => (
               <div role="row" key={a.api}>
-                <span role="cell">{a.api}</span>
+                <span role="cell">{a.api}{a.scope ? <span style={{ color: "var(--ink-soft)", fontSize: 13 }}>, {a.scope}</span> : null}</span>
                 <span role="cell" className="num">{a.runs}</span>
                 <span role="cell" className="num">{a.ok}</span>
                 <span role="cell" className="num">{a.ok ? `${a.medianS.toFixed(1)} s` : "—"}</span>
@@ -267,7 +269,7 @@ export default function Home() {
       <section className="deep sec" aria-labelledby="api-title">
         <div className="wrap">
           <p className="kicker">Built on the YouCam API</p>
-          <h2 id="api-title" className="h-sec">Nine YouCam APIs, each doing one job.</h2>
+          <h2 id="api-title" className="h-sec">{API_COUNT_WORD} YouCam APIs, each doing one job.</h2>
           <ul className={s.apis}>
             {APIS.map(([n, d]) => <li key={n}><b>{n}</b><span>{d}</span></li>)}
           </ul>

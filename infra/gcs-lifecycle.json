@@ -1,0 +1,7 @@
+{
+  "rule": [
+    { "action": { "type": "Delete" }, "condition": { "age": 60, "matchesPrefix": ["shares/"] } },
+    { "action": { "type": "Delete" }, "condition": { "age": 2, "matchesPrefix": ["ended/"] } },
+    { "action": { "type": "Delete" }, "condition": { "age": 30, "matchesPrefix": ["budget/"] } }
+  ]
+}

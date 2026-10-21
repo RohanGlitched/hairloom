@@ -28,7 +28,9 @@ export type Persona = {
   brows: string | null;
   withHair: Record<string, string>;
   shades: Record<string, string>; // "wig:code" -> render
+  /** Template id -> render; on `thinPhoto` when the person has one, else on the kept photo. */
   thinning: Record<string, string>;
+  thinPhoto?: string | null;
   skin: SkinCheck[];
   kept: string;
   turns: (string | null)[];
@@ -48,7 +50,8 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 export function describe(r: Readings) {
   const brow = r.face?.eyebrow;
   return {
-    curl: r.type ? { label: r.type.term, raw: r.type.mapping } : null,
+    // "Kinky" is YouCam's word for type 4 hair; say what it looks like instead.
+    curl: r.type ? { label: r.type.term.replace(/kinky soft to coily/i, "Soft to tight coils").replace(/kinky/gi, "Tightly coiled"), raw: r.type.mapping } : null,
     frizz: r.frizz ? { label: r.frizz.term, raw: String(r.frizz.mapping) } : null,
     length: r.length ? { label: cap(r.length.term), raw: r.length.term } : null,
     face: r.face?.faceshape ? { label: r.face.faceshape, raw: r.face.faceshape } : null,

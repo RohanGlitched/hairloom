@@ -7,7 +7,7 @@ import { describe, type Cap, type Persona } from "@/lib/demo";
 import { capSize } from "@/lib/match";
 import s from "./Passport.module.css";
 
-export type PassportSubject = Pick<Persona, "name" | "kept" | "turns" | "readings"> & { cap?: Cap | null };
+export type PassportSubject = Pick<Persona, "name" | "kept" | "turns" | "readings"> & { cap?: Cap | null; situation?: Persona["situation"] | "other" };
 
 const PARTING: Record<string, string> = { left: "Left", centre: "Centre", right: "Right", none: "No parting" };
 
@@ -58,7 +58,7 @@ export function Passport({ p, lab: given, number, date = "21 Oct 2026" }: { p: P
               <img key={i} src={t!} alt={`${p.name}, turned ${i === 0 ? "one way" : "the other way"}`} />
             ))}
           </div>
-          <p className={s.stamp}>Kept before treatment</p>
+          <p className={s.stamp}>{p.situation === "alopecia" ? "Kept while it covered the patches" : p.situation === "chemo" ? "Kept before treatment" : "Kept before hair loss"}</p>
         </div>
         <div>
           <dl className={s.rows}>

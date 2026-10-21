@@ -7,6 +7,7 @@ test("YouCam length terms map onto our five lengths", () => {
   assert.equal(lengthFromTerm("above chest"), "shoulder");
   assert.equal(lengthFromTerm("short hair"), "chin");
   assert.equal(lengthFromTerm("above the ear"), "ear");
+  assert.equal(lengthFromTerm("long hair"), "chest");
   assert.equal(lengthFromTerm("mid-back"), "midback");
   assert.equal(lengthFromTerm(undefined), null);
 });
