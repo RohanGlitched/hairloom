@@ -97,7 +97,7 @@ The server never sees client photos. For live try-ons, pair it with YouCam's hos
 
 - **Photos and passport** live only in the browser (IndexedDB). There are no accounts and no photo copy on our server.
 - **Colour** is measured on the device.
-- **YouCam tasks:** photos pass through our server's memory to YouCam and are written nowhere on our side. Every task's result is downloaded by our server, then the browser confirms receipt and the task is deleted with `task/delete`, which removes the input photo too. A tab closed mid-task leaves the task at YouCam until it expires.
+- **YouCam tasks:** photos pass through our server's memory to YouCam and are written nowhere on our side. Every task's result is downloaded by our server, then the browser confirms receipt and the task is deleted with `task/delete`, which removes the input photo too. If the tab closes mid-task, the page sends the delete as it closes, and a daily sweep deletes anything left over.
 - **Fitter links** are encrypted with AES-GCM in the browser. The server stores only ciphertext, in a private GCS bucket reached through keyless workload identity federation. Shares are deleted after 60 days by a bucket lifecycle rule. The key lives in the URL fragment, which never reaches a server.
 - **What the server does keep:** a per-day count of YouCam units used (one number per date, in the same bucket), and in memory only, hourly unit and link-creation tallies per IP address. No photos, no readable health data, no analytics or cookies. See [/privacy](https://hairloom-studio.vercel.app/privacy).
 

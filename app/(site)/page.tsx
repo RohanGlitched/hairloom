@@ -190,7 +190,7 @@ export default function Home() {
             </div>
           </div>
           <div className={s.brief}>
-            <p className={s.briefHead}><span>Fitting brief</span><span>{brief.name} · Wed 4 Nov, 11:00</span></p>
+            <p className={s.briefHead}><span>Fitting brief</span><span>{brief.name} · Wed 28 Oct, 11:00</span></p>
             <div className={s.briefRow}>
               {brief.looks.slice(0, 3).map((l) => (
                 // eslint-disable-next-line @next/next/no-img-element

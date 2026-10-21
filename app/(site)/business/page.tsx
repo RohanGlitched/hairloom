@@ -150,7 +150,7 @@ export default function Business() {
           </div>
           <div style={{ marginTop: 28 }}><a className="btn btn-ink" href={PILOT_ISSUE} target="_blank" rel="noreferrer">Ask for a pilot</a></div>
           <p className="small" style={{ marginTop: 20 }}>
-            Natural partners already exist: the Tata Memorial Centre and Cherian Foundation give donated-hair wigs to patients, and Cope with Cancer in Mumbai makes free wigs for women on chemotherapy. A passport helps them match a donated wig to the person.
+            Organisations already doing this work include the Tata Memorial Centre with the Cherian Foundation, which give donated-hair wigs to patients, and Cope with Cancer in Mumbai, which makes free wigs for women on chemotherapy. A passport helps them match a donated wig to the person. We haven&rsquo;t contacted them yet.
           </p>
         </div>
       </section>
@@ -159,7 +159,7 @@ export default function Business() {
         <div className="wrap">
           <h2 className="h-sec">Health data, handled like health data</h2>
           <p className="lede" style={{ marginTop: 12 }}>
-            Using Hairloom can reveal a cancer diagnosis, which India&rsquo;s Digital Personal Data Protection Act and the GDPR treat with care. So there are no accounts, photos stay on the device, YouCam tasks are deleted after each result, and fitter links are encrypted end to end. A hospital deployment would add a consent record and a data-processing agreement.
+            Using Hairloom can reveal a cancer diagnosis, which India&rsquo;s Digital Personal Data Protection Act and the GDPR treat with care. So there are no accounts, photos are kept on the device and sent to YouCam only to process them, YouCam tasks are deleted after each result, and fitter links are encrypted end to end. A hospital deployment would add a consent record and a data-processing agreement.
           </p>
           <div className="small" style={{ marginTop: 18 }}><Link href="/privacy">Read the privacy page</Link></div>
         </div>
