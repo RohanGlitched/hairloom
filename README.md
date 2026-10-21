@@ -56,6 +56,21 @@ Or choose *Use my own photos*. YouCam's JS Camera Kit guides you through the thr
 - **Hair type and frizz need three same-size photos in a fixed order.** The order is front, then face towards the right of the picture, then towards the left. Anything else returns `error_face_angle_invalid` or `error_mismatch_image_size`.
 - **Hat try-on restyles the whole outfit.** On a bald head it once added hair under a beanie. Headwear uses image-to-image with an instruction to keep the face instead.
 
+## For a fitter's AI assistant (MCP)
+
+Hairloom is also an MCP server (Streamable HTTP) at `https://hairloom-studio.vercel.app/api/mcp`. Add it to Claude or another assistant that supports remote MCP servers.
+
+| Tool | What it does |
+|---|---|
+| `match_wigs` | Ranks stock against a client's passport and gives a pull list in the client's shade, with a cap note. |
+| `shade_for_colour` | Turns a hair colour hex into common wig shade codes, using CIEDE2000. |
+| `list_stock` | Browses the boutique's wigs, with shades measured from the product photos. |
+| `show_on_demo_person` | Returns a precomputed YouCam try-on of a wig on a demo person. |
+| `fitting_plan` | Gives the dates to plan around treatment, from ACS, CRUK and Macmillan guidance. |
+| `fitting_cost` | Gives the YouCam units and dollars for a fitting. |
+
+The server never sees client photos. For live try-ons, pair it with YouCam's hosted MCP servers (`/mcp/fashion`, `/mcp/beauty`). `node scripts/mcp-check.mjs <url>` runs a smoke test.
+
 ## For retailers and wig banks
 
 [The business page](https://hairloom-studio.vercel.app/business) covers who pays and what a fitting costs.

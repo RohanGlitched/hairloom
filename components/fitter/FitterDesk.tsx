@@ -57,6 +57,7 @@ export function FitterDesk() {
       {brief && <Brief b={brief} onClose={() => { setBrief(null); history.replaceState(null, "", "/fitter"); }} />}
 
       <Stock />
+      <Assistant />
       <AutoTag />
     </>
   );
@@ -203,6 +204,45 @@ function AutoTag() {
               <dt>Shade</dt><dd>{out.shade ? <><i style={{ background: out.hex }} />{out.shade} <small className="num">ΔE {out.dE?.toFixed(1)}</small></> : "Not enough hair visible"}</dd>
             </dl>
           )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Assistant() {
+  const [copied, setCopied] = useState(false);
+  const url = typeof window === "undefined" ? "https://hairloom-studio.vercel.app/api/mcp" : `${window.location.origin}/api/mcp`;
+  return (
+    <section id="assistant" className="paper sec" data-noprint>
+      <div className={`wrap ${s.tagWrap}`}>
+        <div>
+          <p className="kicker">For your AI assistant</p>
+          <h2 className="h-sec">Ask Claude what to pull before the client arrives.</h2>
+          <p className="lede" style={{ marginTop: 12 }}>
+            Hairloom runs an MCP server. Add it to Claude or another assistant that supports remote MCP servers, and it can rank your stock against a client&rsquo;s passport, give the pull list in their shade, plan dates around treatment and cost a fitting. Pair it with YouCam&rsquo;s own hosted MCP servers for live try-ons.
+          </p>
+          <div className={s.mcpUrl}>
+            <code>{url}</code>
+            <button className="btn btn-ink btn-sm" onClick={async () => { await navigator.clipboard.writeText(url).catch(() => undefined); setCopied(true); }}>{copied ? "Copied" : "Copy"}</button>
+          </div>
+          <p className="small" style={{ marginTop: 10 }}>Tools: match_wigs, shade_for_colour, list_stock, show_on_demo_person, fitting_plan, fitting_cost. No client photos ever pass through it.</p>
+        </div>
+        <div className={s.chat} aria-label="Example conversation">
+          <p className={s.me}>My 2 pm client is 1 to 2A, above chest, colour #342820, head 55.5 cm. What should I pull?</p>
+          <p className={s.tool}>match_wigs</p>
+          <div className={s.bot}>
+            <p>Her nearest shade is <b>4, dark brown</b>, with an <b>average cap</b>. Closest to her own hair:</p>
+            <ol><li>Asha: same length and texture, lace front, ₹14,900</li><li>Nora: one step shorter, classic cap, ₹8,900</li><li>Tara: one step longer, hand-tied, ₹44,900</li></ol>
+            <p>Pull all three in shade 4 and one shade either side, and an adjustable cap: heads can be up to a size smaller after hair loss.</p>
+          </div>
+          <p className={s.me}>Show me Asha on someone after hair loss.</p>
+          <p className={s.tool}>show_on_demo_person</p>
+          <div className={s.bot}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/demo/anjali/wig_asha.jpg" alt="Asha on Anjali at week 4" />
+            <p>Asha on Anjali, a demo person, at week 4. Colour difference from her own hair: 1.6, hard to tell apart.</p>
+          </div>
         </div>
       </div>
     </section>

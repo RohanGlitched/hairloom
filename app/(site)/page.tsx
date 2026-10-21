@@ -179,11 +179,11 @@ export default function Home() {
             <p className="kicker">For wig fitters</p>
             <h2 id="fitter-title" className="h-sec">The fitting starts before the client walks in.</h2>
             <p className="lede">
-              A client sends a link. The fitter sees the passport, the wigs they liked on their own face, their shade code and a note that heads can shrink by up to a size during treatment, so an adjustable cap matters. No account, no app, nothing to install.
+              A client sends a link. The fitter sees the passport, the wigs they liked on their own face, their shade code and a note that heads can shrink by up to a size during treatment. A fitter&rsquo;s AI assistant can do the same through Hairloom&rsquo;s MCP server: rank stock, give the pull list and plan dates.
             </p>
             <div className={s.ctas}>
               <Link href="/fitter" className="btn btn-ivory">Open the fitter desk</Link>
-              <Link href="/fitter#stock" className="btn btn-ghost">See the demo stock</Link>
+              <Link href="/fitter#assistant" className="btn btn-ghost">Ask your AI assistant</Link>
             </div>
           </div>
           <div className={s.brief}>
