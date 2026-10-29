@@ -26,7 +26,7 @@ test("CSV with quotes, caps split on |, prices with symbols; bad rows are report
   assert.equal(errors.length, 2, "an http link and an unknown length are both refused");
 });
 
-test("stock is ranked against the passport, with a hold note in the client's shade and cap", () => {
+test("stock is ranked against the kept-hair record, with a hold note in the client's shade and cap", () => {
   const { items } = parseStock(JSON.stringify([
     { sku: "A", name: "Close", length: "shoulder", texture: "straight", shade: "4", caps: ["Average"] },
     { sku: "B", name: "Far", length: "ear", texture: "coily", shade: "613", caps: ["Petite"] },

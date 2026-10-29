@@ -179,7 +179,7 @@ npx playwright install chromium   # once, for the measuring scripts
 npm run dev                       # leave it running (port 3141), then in another terminal:
 npm run measure                   # hair colour and grey share of every demo image -> data/colours.json
 npm run measure:identity          # face keypoint shift on the headwear renders -> data/identity.json
-npm test                          # 51 tests, including every unit cost against data/feature-costs.json
+npm test                          # 55 tests, including every unit cost against data/feature-costs.json
 ```
 
 `npm run measure` keeps the published colour values and prints the largest drift it finds (0.00 on our machine). The run ledger (`npm run evidence:runs`) is rebuilt from the lab's raw task outputs, which aren't in this repository because they include signed result URLs; `data/lab-runs.json` is its committed output. `node --env-file=<your env file> --import tsx scripts/check-costs.mjs` re-reads YouCam's price list with your own key (no units).

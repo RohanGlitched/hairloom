@@ -22,7 +22,7 @@ const SITE = process.env.PUBLIC_ORIGIN ?? "https://hairloom-studio.vercel.app";
 
 export const SERVER_INSTRUCTIONS = `Hairloom helps wig fitters prepare for clients facing hair loss (chemotherapy, alopecia, thinning).
 A client's kept-hair record holds curl pattern (YouCam hair type, e.g. "1 to 2A"), length (e.g. "above chest"), hair colour (hex, measured from the hair pixels), head size in cm and parting.
-Use match_wigs to rank stock against the hair a client kept and get a pull list in the client's shade (pass the boutique's own stock, or it uses the Hairloom demo boutique); shade_for_colour to turn a hex into common wig shade codes; list_stock to browse; show_on_demo_person for a free example render; fitting_plan for dates around treatment; fitting_cost for YouCam API cost.
+Use match_wigs to rank stock against the hair a client kept and get a pull list in the client's shade (pass the boutique's own stock, or it uses the Hairloom demo boutique); shade_for_colour to turn a hex into common wig shade codes; list_stock to browse; show_on_demo_person for a free example render; fitting_plan for dates around treatment; fitting_cost for YouCam API cost (itemise with record: full, lite or none, plus try-on counts, or give a scenario).
 A shop's own product photo can also be tried on a client's photo in the Hairloom studio (Try step, "Try a wig photo from any shop", 2 units); it needs a live studio session because this server never sees photos.
 For live try-ons on a client's own photo, use YouCam's hosted MCP servers (https://mcp-api-01.makeupar.com/mcp/fashion and /mcp/beauty) or the Hairloom studio, which stores photos only on the client's device and deletes each YouCam task after its result.
 Hairloom is about appearance, not medical care: never diagnose, and point clinical questions to the client's care team. Shade codes vary by brand; always confirm against real swatches.`;
@@ -231,7 +231,8 @@ function register(server: McpServer) {
       description: "Units and dollars for a Hairloom fitting at YouCam's published prices ($0.048 a unit on subscription, $0.055 pay as you go). Give a scenario (chemo, thinning, sponsored) or itemise the steps, not both.",
       inputSchema: z.object({
         scenario: z.enum(["chemo", "thinning", "sponsored"]).optional().describe("chemo: a full wig fitting (also alopecia); thinning: volume and clip-in previews; sponsored: what a hospital or wig bank pays per patient"),
-        passport: z.enum(["full", "lite", "none"]).optional(),
+        record: z.enum(["full", "lite", "none"]).optional().describe("The kept-hair record readings: full (hair type, frizz, length, face shape and brows), lite (hair only), none"),
+        passport: z.enum(["full", "lite", "none"]).optional(), // the old name for `record`, still accepted
         wig_tryons: z.number().int().min(0).max(50).optional(),
         recolours: z.number().int().min(0).max(50).optional(),
         headwear: z.number().int().min(0).max(20).optional(),
@@ -246,7 +247,7 @@ function register(server: McpServer) {
       annotations: { readOnlyHint: true },
     },
     async (args) => {
-      const { scenario, passport = "full", wig_tryons = 8, recolours = 3, headwear = 3, brows = 1, own_hair = 1, skin_checkins = 0, volume_previews = 0, clip_in_previews = 0, shop_photo_tryons = 0 } = args;
+      const { scenario, record, passport, wig_tryons = 8, recolours = 3, headwear = 3, brows = 1, own_hair = 1, skin_checkins = 0, volume_previews = 0, clip_in_previews = 0, shop_photo_tryons = 0 } = args;
       const price = (units: number) => `${units} units: $${usd(units, "sub")} on a subscription, $${usd(units, "payg")} pay as you go.`;
       const out = (units: number) => ({ units, usd_subscription: usd(units, "sub"), usd_pay_as_you_go: usd(units, "payg"), scenario: scenario ?? null });
       const f = FITTINGS.find((x) => x.id === scenario);
@@ -255,7 +256,8 @@ function register(server: McpServer) {
         return both(`${f.title}. ${price(unitsOf(f))} ${f.who}\n${f.steps.map(([k, n, label]) => `- ${label}: ${n} × ${KINDS[k].api}, ${n * KINDS[k].units} units`).join("\n")}${ignored.length ? `\n(Ignored ${ignored.join(", ")}: a scenario sets every step. Leave out the scenario to itemise.)` : ""}`, out(unitsOf(f)));
       }
       const lite = KINDS.hairType.units + KINDS.hairFrizz.units + KINDS.hairLength.units;
-      const pass = passport === "full" ? lite + KINDS.face.units : passport === "lite" ? lite : 0;
+      const rec = record ?? passport ?? "full";
+      const pass = rec === "full" ? lite + KINDS.face.units : rec === "lite" ? lite : 0;
       const units = pass + shop_photo_tryons * KINDS.shopPhoto.units + wig_tryons * KINDS.wig.units + recolours * KINDS.hairColor.units + headwear * KINDS.headwear.units + brows * KINDS.brows.units + own_hair * KINDS.ownHair.units + skin_checkins * KINDS.skin.units + volume_previews * KINDS.hairVol.units + clip_in_previews * KINDS.hairExt.units;
       return both(`${price(units)} (Record ${pass}, try-ons ${wig_tryons * KINDS.wig.units}, recolours ${recolours}, headwear ${headwear}, brows ${brows}, own hair ${own_hair * KINDS.ownHair.units}, skin ${skin_checkins * KINDS.skin.units}, volume ${volume_previews * KINDS.hairVol.units}, clip-ins ${clip_in_previews * KINDS.hairExt.units}${shop_photo_tryons ? `, shop photos ${shop_photo_tryons * KINDS.shopPhoto.units}` : ""}.)`, out(units));
     },

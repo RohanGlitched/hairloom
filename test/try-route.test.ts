@@ -174,7 +174,7 @@ test("an InvalidTaskId poll refunds the task", async () => {
   assert.equal(used(`budget_${today()}.json`), before, "refunded");
 });
 
-test("the passport uploads its three photos once for four readings", async () => {
+test("the kept-hair record uploads its three photos once for four readings", async () => {
   outcome = "success";
   calls.length = 0;
   const r = await post({ kind: "hairType", images: [photo, photo, photo], opt: { also: "hairFrizz,hairLength,face" } }, { "x-judge-code": "test-judge-code" });

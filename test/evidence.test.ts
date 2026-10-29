@@ -19,6 +19,13 @@ test("ledger totals add up", () => {
   assert.equal(TOTALS.demo.runs + TOTALS.real.runs + TOTALS.research.runs, TOTALS.runs);
 });
 
+test("shop-photo try-ons have their own Hairstyle row", () => {
+  const hs = byApi().filter((r) => r.api === "AI Hairstyle Virtual Try-On");
+  const shop = hs.find((r) => r.scope.includes("shop"));
+  assert.ok(shop && shop.runs === RUNS.filter((r) => /^r4\/shop_/.test(r.name)).length);
+  assert.ok(hs.some((r) => r.scope === "" && r.real && r.real.runs > 0));
+});
+
 test("real-photo failures are not hidden by the table", () => {
   const rows = byApi();
   const face = rows.filter((r) => r.api.startsWith("AI Face Attribute"));

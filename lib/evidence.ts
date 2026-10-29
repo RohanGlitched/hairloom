@@ -27,7 +27,9 @@ const median = (xs: number[]) => { const v = [...xs].sort((a, b) => a - b); retu
 
 /** Face and length behave very differently on generated and real photos, so they get a row for each. */
 const SPLIT = new Set(["AI Face Attribute & Ratio Analyzer", "AI Hair Length Detection"]);
-const scopeOf = (r: Run) => (!SPLIT.has(r.api) ? "" : [r.origin === "real-photo" ? "real photos" : "generated people", r.variant].filter(Boolean).join(", "));
+/** A shop's own product photo as the try-on reference (the shopPhoto kind) gets its own Hairstyle row. */
+export const isShopPhotoRun = (r: Run) => /^r4\/shop_/.test(r.name);
+const scopeOf = (r: Run) => (isShopPhotoRun(r) ? "a shop's product photo as the reference" : !SPLIT.has(r.api) ? "" : [r.origin === "real-photo" ? "real photos" : "generated people", r.variant].filter(Boolean).join(", "));
 
 export type Row = {
   api: string; scope: string; group: "studio" | "demo" | "rejected";
