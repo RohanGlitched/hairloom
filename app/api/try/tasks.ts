@@ -127,3 +127,26 @@ export async function sweep(now = Date.now(), budget = 45_000): Promise<{ pendin
   }
   return { pending: keys.length, settled, left };
 }
+
+const SWEEP_EVERY = 10 * 60_000;
+const MARK = "sweep/last.json";
+let checked = 0;
+
+/**
+ * A capped sweep, run after a studio request when the shared marker says the last one was more than
+ * 10 minutes ago, so a result nobody collected is deleted at YouCam within minutes while the studio is in
+ * use, not only by the daily cron. A compare-and-swap on the marker lets one instance win; each instance
+ * reads the marker at most once a minute.
+ */
+export async function maybeSweep(now = Date.now(), budget = 8_000): Promise<Awaited<ReturnType<typeof sweep>> | null> {
+  if (now - checked < 60_000) return null;
+  checked = now;
+  const cur = await store().readGen(MARK).catch(() => null);
+  const at = cur ? Number((JSON.parse(cur.text) as { at?: number }).at) || 0 : 0;
+  if (now - at < SWEEP_EVERY) return null;
+  if (!(await store().putIf(MARK, JSON.stringify({ at: now }), cur?.gen ?? "0").catch(() => false))) return null;
+  return sweep(now, budget);
+}
+
+/** For tests: forget this instance's last marker check. */
+export const resetSweepClock = () => { checked = 0; };

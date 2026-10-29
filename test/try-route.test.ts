@@ -207,3 +207,15 @@ test("the sweep route needs the cron secret", async () => {
   assert.equal(r.status, 200);
   assert.equal((await r.json()).ok, true);
 });
+
+test("a capped sweep runs at most every 10 minutes across instances, via a marker", async () => {
+  tasks.resetSweepClock();
+  const t = Date.now() + 3_600_000;
+  const first = await tasks.maybeSweep(t);
+  assert.ok(first, "the first request after 10 quiet minutes sweeps");
+  tasks.resetSweepClock();
+  assert.equal(await tasks.maybeSweep(t + 5 * 60_000), null, "five minutes later the marker says not yet");
+  assert.equal(await tasks.maybeSweep(t + 5.5 * 60_000), null, "and one instance reads the marker at most once a minute");
+  tasks.resetSweepClock();
+  assert.ok(await tasks.maybeSweep(t + 11 * 60_000), "after ten minutes it sweeps again");
+});

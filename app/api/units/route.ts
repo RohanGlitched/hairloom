@@ -1,4 +1,5 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse, after, type NextRequest } from "next/server";
+import { maybeSweep } from "../try/tasks";
 import { unitsLeft } from "@/lib/youcam";
 import { dayCap, dayLeft, floorOf, laneOf } from "@/lib/guard";
 
@@ -8,6 +9,8 @@ export const dynamic = "force-dynamic";
 // Live unit balance and today's remaining allowance for the studio's meter. Never exposes anything but numbers.
 export async function GET(req: NextRequest) {
   const lane = laneOf(req.headers.get("x-judge-code"));
+  // Someone opened the studio: a good moment to clean up results nobody collected (at most every 10 minutes).
+  try { after(() => maybeSweep().catch(() => undefined)); } catch { /* outside a request */ }
   try {
     const [units, left, floor] = await Promise.all([unitsLeft(), lane ? dayLeft(lane) : Promise.resolve(0), floorOf(lane ?? "public")]);
     return NextResponse.json({

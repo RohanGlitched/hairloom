@@ -5,7 +5,7 @@ import { YouCamError, createTask, unitsLeft, upload, type Call } from "@/lib/you
 import {
   dailyAllows, endOf, floorOf, handleSecret, held, hold, laneOf, markEnd, pollAllowed, readHandle, refundDay, reserve, signHandle, today, track, untrack, visitorAllowed,
 } from "@/lib/guard";
-import { addPending, finish, look, partsOf, settle, touch } from "./tasks";
+import { addPending, finish, look, maybeSweep, partsOf, settle, touch } from "./tasks";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -90,16 +90,17 @@ export async function POST(req: NextRequest) {
     charged = d.charged;
     if (!d.ok) return paused(lane);
 
-    // Each photo is uploaded once, however many readings use it.
-    const files: string[] = [];
-    for (const [i, p] of (photos as Photo[]).entries()) {
-      files.push(await upload(p.bytes, `hairloom-${i}.${p.type === "image/png" ? "png" : "jpg"}`, p.type, call));
-    }
-    if (kind.ref) {
-      const ref = await catalogue(kind.ref(opt), req);
-      if (!ref) return fail("bad_option", "That catalogue item couldn't be loaded.");
-      files.push(await upload(ref, "reference.jpg", "image/jpeg", call));
-    }
+    // A catalogue wig's photo is read first (cached per instance), so a missing one fails before anything
+    // reaches YouCam. It is still uploaded for every try-on: task/delete removes a task's input files (a
+    // deleted task's source photo is refused with a 403), so a file_id cached across try-ons would break
+    // once the first one is cleaned up. ref_file_url is documented, but only paired with src_file_url.
+    const ref = kind.ref ? await catalogue(kind.ref(opt), req) : null;
+    if (kind.ref && !ref) return fail("bad_option", "That catalogue item couldn't be loaded.");
+    // Each photo is uploaded once, however many readings use it, and all uploads run side by side.
+    const files = await Promise.all([
+      ...(photos as Photo[]).map((p, i) => upload(p.bytes, `hairloom-${i}.${p.type === "image/png" ? "png" : "jpg"}`, p.type, call)),
+      ...(ref ? [upload(ref, "reference.jpg", "image/jpeg", call)] : []),
+    ]);
     for (const k of batch) {
       try {
         ids.push(await createTask(KINDS[k].path, bodyIn(name, k, files, opt), call));
@@ -113,6 +114,7 @@ export async function POST(req: NextRequest) {
     const h = { kind: ran.join("+"), taskId: ids.join("~"), lane, day };
     await addPending(h);
     later(() => settle(h, t0 + 55_000));
+    later(() => maybeSweep());
     return NextResponse.json({ ok: true, handle: signHandle(h.kind, h.taskId, lane, day), units: ran.reduce((n, k) => n + KINDS[k].units, 0), api: kind.api });
   } catch (e) {
     const err = toErr(e);
@@ -147,6 +149,7 @@ export async function GET(req: NextRequest) {
   const h = readHandle(handle);
   const parts = h && partsOf(h);
   if (!h || !parts) return fail("bad_handle", "This task link isn't valid. Start the step again.", 403);
+  later(() => maybeSweep());
   const running = () => NextResponse.json({ ok: true, status: "running" });
   if (!pollAllowed(handle) || !visitorAllowed(visitor(req))) return running();
   touch(h.taskId);
