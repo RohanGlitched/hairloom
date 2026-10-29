@@ -20,7 +20,7 @@ export const FITTINGS: Fitting[] = [
   {
     id: "chemo",
     title: "Wig fitting",
-    who: "Chemotherapy or alopecia: a full passport, the shortlist on her face and the extras a fitter brief carries.",
+    who: "Chemotherapy or alopecia: a full kept-hair record, the shortlist on her face and the extras a fitter brief carries.",
     steps: [
       ["hairType", 1, "Curl pattern"],
       ["hairFrizz", 1, "Frizz"],
@@ -47,8 +47,8 @@ export const FITTINGS: Fitting[] = [
   },
   {
     id: "sponsored",
-    title: "Sponsored passport",
-    who: "What a hospital, wig bank or CSR sponsor pays per patient at diagnosis: the passport, own hair kept, two wigs tried.",
+    title: "Sponsored record",
+    who: "What a hospital, wig bank or CSR sponsor pays per patient at diagnosis: the kept-hair record, own hair kept, two wigs tried.",
     steps: [
       ["hairType", 1, "Curl pattern"],
       ["hairFrizz", 1, "Frizz"],

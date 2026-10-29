@@ -60,7 +60,7 @@ const APIS = [
   ["Hair Volume Virtual Try-On", "Fuller lengths for thinning hair; a fitter shows toppers for the crown"],
   ["Hair Extension Virtual Try-On", "Clip-in length on your kept photo"],
   ["AI Image Generator", "Headwear, with an instruction to keep your face; the demo people and boutique stock"],
-  ["AI Skin Analysis", "Optional skin check-ins in the journal, once per treatment cycle"],
+  ["AI Skin Analysis", "Check-ins each treatment cycle set the fitter brief's cap-lining note (cosmetic, not a diagnosis)"],
 ];
 
 // Demo dates are relative to today, so the page is rebuilt every hour.
@@ -85,6 +85,7 @@ export default function Home() {
     { big: "Your own hair", body: `back on your week-4 photo, from the photo you kept. Hairstyle Try-On worked on ${shaved.ok} of ${shaved.n} try-ons on ${shaved.heads} real shaved heads.`, href: "#fitting" },
     { big: "A sealed brief", body: "for your fitter: a pull list in your shade code and cap size, encrypted in your browser.", href: "/fitter#demo" },
     { big: "The shop's own stock", body: "ranked against the hair you kept, on the fitter desk or by a fitter's AI assistant over MCP.", href: "/fitter#your-stock" },
+    { big: "Regrowth, re-read", body: "after treatment, the same detections read the new growth against the hair you kept, and rank wigs for it.", href: "/journal#regrowth" },
     { big: "Beyond chemo", body: "alopecia, pattern thinning and men, with Hair Volume and Hair Extension try-ons.", href: "#beyond" },
     { big: `${API_COUNT} YouCam APIs`, body: `each doing one job, and every task we kept (${TOTALS.runs}) in a public evidence ledger, failures included.`, href: "/evidence" },
   ];
@@ -95,7 +96,8 @@ export default function Home() {
       <section className={`night ${s.hero}`} aria-labelledby="hero-title">
         <div className="wrap">
           <div className={s.heroText}>
-            <h1 id="hero-title" className="h-hero">Choose your wig while you still have your hair.</h1>
+            <h1 id="hero-title" className="h-hero">Your own hair, back at week 4.</h1>
+            <p className={s.heroSub}>Choose your wig while you still have your hair.</p>
             <p className="lede">
               Your own hair, back on your photo after hair loss. Every wig in the shop ranked against the hair you kept, and any of them tried on your own face. And one sealed brief, so your fitter has the right shade and cap ready before you arrive.
             </p>
@@ -151,7 +153,9 @@ export default function Home() {
           </div>
           <p className={s.wide}>
             About 65% of people having chemotherapy lose hair, and a dermatology review reports that fear of it leads some to refuse treatment.{" "}
-            <a className="src" href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6186204" target="_blank" rel="noreferrer">JAAD review, 2019</a>
+            <a className="src" href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6186204" target="_blank" rel="noreferrer">JAAD review, 2019</a>{" "}
+            In a survey of 1,478 women after chemotherapy for breast cancer, 84% wore a wig at first, and 47% still did a year after treatment.{" "}
+            <a className="src" href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6326423" target="_blank" rel="noreferrer">PLoS One, 2019</a>
           </p>
           <h3 id="beyond" className="h-sub" style={{ marginTop: 56 }}>Not only chemotherapy</h3>
           <div className={s.beyond}>

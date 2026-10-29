@@ -226,7 +226,7 @@ function AutoTag() {
           <p className="kicker">Stock onboarding</p>
           <h2 id="tag-title" className="h-sec">Tag a wig from its photo.</h2>
           <p className="lede" style={{ marginTop: 12 }}>
-            Upload a photo of a wig on a model. YouCam&rsquo;s hair-length detection reads the length (2 units) and the hair mask in your browser measures the shade code, so stock is described the same way as each client&rsquo;s passport.
+            Upload a photo of a wig on a model. YouCam&rsquo;s hair-length detection reads the length (2 units) and the hair mask in your browser measures the shade code, so stock is described the same way as each client&rsquo;s kept-hair record.
           </p>
           <label className="btn btn-ivory" style={{ marginTop: 20, position: "relative" }} onClick={(e) => { if (!agreed.current && !busy) { e.preventDefault(); setAsking(true); } }}>
             {busy ? "Reading…" : "Upload a wig photo"}

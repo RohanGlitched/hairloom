@@ -21,5 +21,5 @@ signed URLs; `scripts/export-demo.mjs` copies images into `public/demo` and `dat
 | `round2.mjs` | Oct 30: Anjali's regrowth photos and the Hair Type + Hair Length re-read (`data/regrowth.json`, `public/demo/anjali/regrow*.jpg`); Nia's patch photo and the Zuri try-on on it (`public/demo/nia/patchy*.jpg`); two crown photos for density (rejected). | `r2/` |
 | `round3.mjs` | Oct 30: Margaret's light shades at colour intensity 100 and 90; two 45° selfies for density (rejected). | `r3/` |
 | `round4.mts` | Oct 30: Margaret's light shades with the colour lifted by the measured shortfall (`lib/kinds.ts` `compensated`), now the demo's renders. | `r4/margaret_shade_*` |
-| `shoptest.cjs` | Oct 30: one live shop-photo try-on through the deployed studio route (kind `shopPhoto`, 2 units), with the demo boutique's Rosa photo as the reference on Anjali's week-4 photo. | `r4/shop_rosa` |
+| `shoptest.cjs` | Oct 30: live shop-photo try-ons through the deployed studio route (kind `shopPhoto`, 2 units each), with the demo boutique's Rosa photo as the reference on Anjali's week-4 photo; the second run's result is `public/demo/anjali/shop_rosa.jpg`. | `r4/shop_rosa`, `r4/shop_rosa2` |
 | `realtest.mjs` | The nine Unsplash real-photo tests (results only are published, `data/real.json`). | `real/` |

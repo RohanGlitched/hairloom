@@ -7,6 +7,9 @@ const fs = require("fs");
 const path = require("path");
 const SITE = "https://hairloom-studio.vercel.app";
 const OUT = path.join(__dirname, "out", "r4");
+// node lab/shoptest.cjs [label] [reference photo]; the Oct 30 runs: shop_rosa (round 4, image not kept) and shop_rosa2 (round 5).
+const LABEL = process.argv[2] ?? "shop_rosa2";
+const REF = process.argv[3] ?? path.join(__dirname, "..", "hairloom", "public", "catalogue", "rosa.jpg");
 fs.mkdirSync(OUT, { recursive: true });
 (async () => {
   const demo = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "hairloom", "data", "demo.json"), "utf8")).personas.find((p) => p.id === "anjali");
@@ -34,13 +37,14 @@ fs.mkdirSync(OUT, { recursive: true });
   }, [demo]);
   await page.goto(SITE + "/studio?step=try", { waitUntil: "load" });
   await page.getByText("Try on · 2 units").first().waitFor({ timeout: 30000 });
-  await page.locator('label:has-text("Try a wig photo from any shop") input[type=file]').setInputFiles(path.join(__dirname, "..", "hairloom", "public", "catalogue", "rosa.jpg"));
+  await page.locator('label:has-text("Try a wig photo from any shop") input[type=file]').setInputFiles(REF);
   await page.getByText(/A shop.s wig photo/).first().waitFor({ timeout: 240000 }).catch(() => undefined);
   await page.waitForTimeout(3000);
   const ms = Date.now() - t0;
-  const src = await page.evaluate(() => [...document.querySelectorAll("img")].map((i) => i.src).find((s) => s.startsWith("data:image") && s.length > 50000) ?? null);
-  // (The first version also saved the largest page image here, which turned out to be the kept photo, not the result; it was deleted.)
-  fs.writeFileSync(path.join(OUT, "shop_rosa.json"), JSON.stringify({ via: "deployed /api/try, kind shopPhoto", data: { task_status: status ?? "unknown", error }, ms }, null, 2));
+  // The result as the studio stored it (session.renders["shop:1"]); the first run's capture grabbed the kept photo and was deleted.
+  const src = await page.evaluate(() => new Promise((res) => { const r = indexedDB.open("hairloom", 1); r.onsuccess = () => { const q = r.result.transaction("kv").objectStore("kv").get("session"); q.onsuccess = () => res(q.result?.renders?.["shop:1"]?.src ?? null); q.onerror = () => res(null); }; r.onerror = () => res(null); }));
+  if (src) fs.writeFileSync(path.join(OUT, `${LABEL}.jpg`), Buffer.from(src.split(",")[1], "base64"));
+  fs.writeFileSync(path.join(OUT, `${LABEL}.json`), JSON.stringify({ via: "deployed /api/try, kind shopPhoto", data: { task_status: status ?? "unknown", error }, ms }, null, 2));
   console.log("posts", posts, "status", status, "error", error, "ms", ms, "image", !!src);
   await b.close();
 })();

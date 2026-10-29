@@ -99,6 +99,7 @@ export default function Evidence() {
     const t = hexToLab(SHADES.find((x) => x.code === code)!.hex), a = measured(`margaret/shade_june_${code}_i70`), b = measured(`margaret/shade_june_${code}_i100`), c = measured(`margaret/shade_june_${code}_lift`);
     return a && b && c ? { code, i70: deltaE00(a, t), i100: deltaE00(b, t), lift: deltaE00(c, t) } : null;
   }).filter((r): r is NonNullable<typeof r> => !!r);
+  const shopRuns = RUNS.filter((r) => /^r4\/shop_/.test(r.name));
   const heads = (identity.rows as { key: string; kind: string; ok: boolean; shift?: number; widthRatio?: number }[]).filter((r) => r.kind === "headwear" && r.ok);
   const worst = [...heads].sort((a, b) => b.shift! - a.shift!).slice(0, 2);
 
@@ -230,6 +231,20 @@ export default function Evidence() {
             Headwear is made with the Image Generator and an instruction to keep the face, so we checked it. MediaPipe&rsquo;s face detector found the eyes, nose and mouth in each of the {heads.length} prepared headwear renders and in the photo it started from. The points moved a median {med(heads.map((r) => r.shift!)).toFixed(3)} eye-widths and at most {worst[0]?.shift?.toFixed(3)} ({worst.map((r) => { const [who, h] = r.key.split("/head_"); return `${who[0].toUpperCase() + who.slice(1)}, ${h === "cap" ? "sleep cap" : h}`; }).join("; ")}), and the face kept {Math.round(Math.min(...heads.map((r) => r.widthRatio!)) * 100)}–{Math.round(Math.max(...heads.map((r) => r.widthRatio!)) * 100)}% of its width. That shows the pose and framing hold. It is not a face-recognition match, so drag the mirror to compare.
           </p>
 
+          <h3 id="shop" className="h-sub" style={{ marginTop: 40 }}>A shop&rsquo;s own wig photo</h3>
+          <p className="lede" style={{ marginTop: 12 }}>
+            The Try step can take any shop&rsquo;s product photo as the reference (the whitelisted <code>shopPhoto</code> kind: JPEG only, size-capped, reserved, signed and deleted like every task). We ran it {shopRuns.length} times through the deployed studio, with the demo boutique&rsquo;s Rosa photo on Anjali&rsquo;s week-4 photo: {shopRuns.filter((r) => r.ok).length} of {shopRuns.length} succeeded (ledger rows {shopRuns.map((r) => r.name).join(", ")}). The first run&rsquo;s image wasn&rsquo;t kept; the second is below. A face-less mannequin photo hasn&rsquo;t been tried.
+          </p>
+          <div className={s.patches}>
+            {[["/demo/anjali/week4.jpg", "Her week-4 photo"], ["/catalogue/rosa.jpg", "The shop's product photo"], ["/demo/anjali/shop_rosa.jpg", "Tried on her face (2 units)"]].map(([src, cap]) => (
+              <figure key={src}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={src} alt={cap} loading="lazy" />
+                <figcaption>{cap}</figcaption>
+              </figure>
+            ))}
+          </div>
+
           <h3 id="patches" className="h-sub" style={{ marginTop: 40 }}>Bare patches</h3>
           <div className={s.patches}>
             {[["/demo/nia/patchy.jpg", "Generated patches (Oct 30)"], ["/demo/nia/patchy_wig_zuri.jpg", "Hairstyle Try-On: Zuri covers them"], ["/demo/nia/patchy_oct21.jpg", "Earlier patch photo (Oct 21)"], ["/demo/nia/patchy_oct21_volume.jpg", "Hair Volume: patches still show"]].map(([src, cap]) => (
@@ -280,7 +295,7 @@ export default function Evidence() {
             {SOURCES.map(([t, u]) => <li key={u}><a href={u} target="_blank" rel="noreferrer">{t}</a></li>)}
           </ol>
           <p className="small" style={{ marginTop: 20 }}>Wig shade codes are a loose convention that varies by brand; our hex values approximate typical swatches.</p>
-          <p className="small" style={{ marginTop: 10 }}>Judged build: tag <a href="https://github.com/RohanGlitched/hairloom/tree/v1.2-submission">v1.2-submission</a>. Main is frozen from Nov 2 to Nov 20 except to keep the demo running.</p>
+          <p className="small" style={{ marginTop: 10 }}>Judged build: tag <a href="https://github.com/RohanGlitched/hairloom/tree/v1.3-submission">v1.3-submission</a>. Main is frozen from Nov 2 to Nov 20 except to keep the demo running.</p>
           <p className="small" style={{ marginTop: 10 }}>The real-photo tests use Unsplash photos, under the Unsplash License and credited to each photographer. They are not covered by the code&rsquo;s MIT licence. MediaPipe models are Apache 2.0. See the NOTICE file in the repository.</p>
         </div>
       </section>

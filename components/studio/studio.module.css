@@ -206,3 +206,6 @@
 
 .shopBtn { position: relative; justify-self: start; }
 .shopBtn[aria-disabled="true"] { opacity: .5; }
+
+.shopRef { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 12px; align-items: center; }
+.shopRef img { width: 64px; aspect-ratio: 3 / 4; object-fit: cover; object-position: 50% 15%; border-radius: 32px 32px 4px 4px; border: 1px solid var(--brass-lo); }

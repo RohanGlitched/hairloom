@@ -30,6 +30,12 @@ export function TryStep({ ctx }: { ctx: Ctx }) {
   const [keptGrey, setKeptGrey] = useState<{ grey: number; base: Lab | null } | null>(null);
   const [nowLab, setNowLab] = useState<Lab | null>(null);
   const [listings, setListings] = useState<StockItem[]>([]);
+  // From a shop's widget (/studio?step=try#shop): bring the shop-photo button into view and focus it.
+  useEffect(() => {
+    if (window.location.hash !== "#shop") return;
+    const t = setTimeout(() => { const el = document.getElementById("shop"); el?.scrollIntoView({ block: "center" }); el?.querySelector("input")?.focus(); }, 600);
+    return () => clearTimeout(t);
+  }, []);
   useEffect(() => { void loadPublicListings().then(setListings); }, []);
 
 
@@ -240,13 +246,20 @@ export function TryStep({ ctx }: { ctx: Ctx }) {
               {dE != null && (
                 <details className={s.more}>
                   <summary>About this match</summary>
-                  <p>Colour difference from the kept hair: ΔE00 {dE.toFixed(1)} (under 3 is hard to tell apart). Measured from the hair pixels in both photos. The ranking adds length and texture against the passport.</p>
+                  <p>Colour difference from the kept hair: ΔE00 {dE.toFixed(1)} (under 3 is hard to tell apart). Measured from the hair pixels in both photos. The ranking adds length and texture against the kept-hair record.</p>
                 </details>
               )}
             </>
           ) : sel?.startsWith("shop:") ? (
             <>
               <h2 className="h-sub">A shop&rsquo;s wig photo</h2>
+              {sel === "shop:rosa" && (
+                <div className={s.shopRef}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/catalogue/thumb/rosa.jpg" alt="The shop's product photo used as the reference" />
+                  <span className="small">The shop&rsquo;s product photo (our demo boutique&rsquo;s Rosa) was the reference. This one ran live on Oct 30 through the studio, 2 units, and is shown here prepared.</span>
+                </div>
+              )}
               <p className="small">YouCam&rsquo;s hairstyle try-on with the shop&rsquo;s photo as the reference, placed on the {baseLabel.toLowerCase()} photo. Check the shade and cap with the shop before buying.</p>
             </>
           ) : sel === "own" ? (
@@ -275,11 +288,14 @@ export function TryStep({ ctx }: { ctx: Ctx }) {
               </button>
             )}
           </div>
-          <label className={`btn btn-ghost btn-sm ${s.shopBtn}`} aria-disabled={!!busy || !ctx.units.live}>
+          {ready("shop:rosa") && sel !== "shop:rosa" && (
+            <button className="btn btn-ghost btn-sm" style={{ justifySelf: "start" }} onClick={() => { picked.current = true; setSel("shop:rosa"); if (window.innerWidth < 900) document.getElementById("try-mirror")?.scrollIntoView({ behavior: "smooth", block: "start" }); }}>See a shop&rsquo;s own photo tried on (prepared)</button>
+          )}
+          <label id="shop" className={`btn btn-ghost btn-sm ${s.shopBtn}`} aria-disabled={!!busy || !ctx.units.live}>
             Try a wig photo from any shop · 2 units
             <input type="file" accept="image/*" className={s.file} disabled={!!busy || !ctx.units.live} onChange={(e) => { void shopPhoto(e.target.files?.[0]); e.target.value = ""; }} />
           </label>
-          <p className="small">A product photo of the wig on a model or mannequin, facing the camera. Use a photo you have the right to use; it goes to YouCam for this one try-on and is deleted after.</p>
+          <p className="small">A product photo of the wig on a model, facing the camera (a mannequin head hasn&rsquo;t been tested). Use a photo you have the right to use; it goes to YouCam for this one try-on and is deleted after.</p>
           <p className={s.cant}>A try-on shows style and colour. It can&rsquo;t show cap fit, weight or how the lace looks close up, so try real wigs with your fitter before buying.</p>
         </div>
       </div>

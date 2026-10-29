@@ -80,6 +80,6 @@ export async function unseal(id: string, keyB64: string): Promise<SharePayload> 
     throw new Error("This link's key doesn't match. Copy the whole link, including everything after #.");
   }
   const parsed = PayloadSchema.safeParse(raw);
-  if (!parsed.success) throw new Error("This link opened, but its contents aren't a Hairloom passport.");
+  if (!parsed.success) throw new Error("This link opened, but its contents aren't a Hairloom brief.");
   return parsed.data as SharePayload;
 }

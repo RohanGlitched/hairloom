@@ -49,6 +49,8 @@ function demoSession(p: Persona): Session {
   for (const [k, src] of Object.entries(p.thinning ?? {})) renders[`thin:${k}`] = pre(src, k.startsWith("female_") ? "AI Hair Volume Virtual Try-On" : "AI Hair Extension Virtual Try-On");
   if (p.brows) renders["brows:demo"] = pre(p.brows, "AI Makeup Virtual Try-On");
   renders.own = pre(p.own, "AI Hairstyle Virtual Try-On");
+  // A shop's own product photo (the demo boutique's Rosa), tried on Anjali live on Oct 30 through the studio's route.
+  if (p.id === "anjali") renders["shop:rosa"] = pre("/demo/anjali/shop_rosa.jpg", "AI Hairstyle Virtual Try-On");
   return {
     ...emptySession("demo", p.name), personaId: p.id, kept: p.kept, turns: p.turns.filter(Boolean) as string[], readings: p.readings,
     keptAt: demoDates().keptAt, today: p.week4, base: "today", later: p.later, situation: p.situation, fit: p.fit, cap: p.cap, renders,

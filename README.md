@@ -26,7 +26,7 @@ What it does that a wig catalogue can't:
 - **Beyond chemotherapy**: alopecia areata, pattern thinning and men, through Hair Volume and Hair Extension try-ons.
 - **11 YouCam APIs**, each doing one job, with every task we kept in a public evidence ledger, failures included.
 
-About 65% of people having chemotherapy lose hair. Hair usually starts to fall out two to three weeks after the first cycle, and cancer charities advise matching a wig *before* that happens. Most wig shops take returns only if the wig hasn't been worn, and some take none. That makes wigs the retail category where trying on before buying matters most, and where it is hardest to do. The American Cancer Society suggests photographing your hairstyle and saving a lock of hair before treatment to match a wig ([ACS](https://www.cancer.org/cancer/managing-cancer/side-effects/hair-skin-nails/hair-loss/choosing-and-wearing-wig.html)), Breastcancer.org suggests bringing pictures of the style you want ([Breastcancer.org](https://www.breastcancer.org/treatment-side-effects/hair-loss/wigs)), and Macmillan says choosing before your hair falls out lets you match its style and colour ([Macmillan](https://www.macmillan.org.uk/cancer-information-and-support/impacts-of-cancer/hair-loss/wigs-for-cancer-treatment)). Hairloom keeps those photos and reads them. Sources are listed on the [evidence page](https://hairloom-studio.vercel.app/evidence#sources).
+About 65% of people having chemotherapy lose hair. In a survey of 1,478 women after chemotherapy for breast cancer, 84% wore a wig at first and 47% still did a year after treatment ([PLoS One, 2019](https://pmc.ncbi.nlm.nih.gov/articles/PMC6326423)). Hair usually starts to fall out two to three weeks after the first cycle, and cancer charities advise matching a wig *before* that happens. Most wig shops take returns only if the wig hasn't been worn, and some take none. That makes wigs the retail category where trying on before buying matters most, and where it is hardest to do. The American Cancer Society suggests photographing your hairstyle and saving a lock of hair before treatment to match a wig ([ACS](https://www.cancer.org/cancer/managing-cancer/side-effects/hair-skin-nails/hair-loss/choosing-and-wearing-wig.html)), Breastcancer.org suggests bringing pictures of the style you want ([Breastcancer.org](https://www.breastcancer.org/treatment-side-effects/hair-loss/wigs)), and Macmillan says choosing before your hair falls out lets you match its style and colour ([Macmillan](https://www.macmillan.org.uk/cancer-information-and-support/impacts-of-cancer/hair-loss/wigs-for-cancer-treatment)). Hairloom keeps those photos and reads them. Sources are listed on the [evidence page](https://hairloom-studio.vercel.app/evidence#sources).
 
 ## Try it in a minute
 
@@ -161,7 +161,7 @@ npm run dev                                   # http://localhost:3141
 - `scripts/export-demo.mjs` refreshes demo data from the lab runs, `scripts/export-real.mjs` the real-photo tests, and `scripts/export-runs.mjs` the evidence ledger (`data/lab-runs.json`).
 - `scripts/measure.cjs` re-measures demo hair colours in a real browser.
 - `scripts/e2e.cjs <url>` runs the end-to-end check (1 unit).
-- `scripts/check-costs.mjs` compares the units in `lib/kinds.ts` with YouCam's feature-cost list (a read; it checks the balance didn't move) and writes `data/feature-costs.json` for the evidence page. Run it with `node --env-file=<your env file> --import tsx scripts/check-costs.mjs`.
+- `scripts/check-costs.mjs` ([per-kind comparison](https://github.com/RohanGlitched/hairloom/blob/v1.3-submission/scripts/check-costs.mjs#L46)) compares the units in `lib/kinds.ts` with YouCam's feature-cost list (a read; it checks the balance didn't move) and writes `data/feature-costs.json` for the evidence page. Run it with `node --env-file=<your env file> --import tsx scripts/check-costs.mjs`.
 - `npm test` runs:
   - CIEDE2000 against the Sharma reference pairs;
   - the whitelist and option validation;
@@ -196,7 +196,7 @@ npm test                          # 51 tests, including every unit cost against 
 
 ## Built during the submission period
 
-Judged build: tag [`v1.2-submission`](https://github.com/RohanGlitched/hairloom/tree/v1.2-submission). Main is frozen from Nov 2 to Nov 20 except to keep the demo running.
+Judged build: tag [`v1.3-submission`](https://github.com/RohanGlitched/hairloom/tree/v1.3-submission). Main is frozen from Nov 2 to Nov 20 except to keep the demo running.
 
 
 Hairloom was built from Oct 21, 2026, inside the hackathon's submission period. The public history starts with a handful of commits on Oct 21 because the repository was recreated that night: an earlier history contained the nine Unsplash test portraits, and we rewrote it so those third-party photos are not redistributed. The evidence ledger (`data/lab-runs.json`, built by `scripts/export-runs.mjs` from the lab outputs) was first built on 2026-10-21 and rebuilt on 2026-10-30 to add that day's two rounds of lab runs, the lab scripts that made the demo are in `lab/`, and the commits since then show each round of fixes.

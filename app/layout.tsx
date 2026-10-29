@@ -7,9 +7,9 @@ const albert = Albert_Sans({ subsets: ["latin"], weight: ["400", "500", "600"], 
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.PUBLIC_ORIGIN ?? "https://hairloom-studio.vercel.app"),
-  title: { default: "Hairloom: choose your wig while you still have your hair", template: "%s · Hairloom" },
+  title: { default: "Hairloom: your own hair, back at week 4", template: "%s · Hairloom" },
   description:
-    "Hairloom keeps a record of your hair before treatment, then puts that hair, any wig, a headscarf or your brows back on your own photo. Built on the YouCam API.",
+    "Your own hair, back at week 4: Hairloom keeps a record of your hair before treatment, then puts that hair, any wig, a headscarf or your brows back on your own photo, and sends your fitter one sealed brief. Choose your wig while you still have your hair. Built on the YouCam API.",
 };
 
 export const viewport: Viewport = { themeColor: "#24192a", width: "device-width", initialScale: 1 };
