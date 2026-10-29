@@ -1,5 +1,5 @@
 // Full-page screenshots for design review: node scripts/shots.cjs [base] [paths...]
-const { chromium } = require("I:/Programs/ListofHackathon/hackathons/01-arbitrum-open-house/submission/video/node_modules/playwright");
+const { chromium } = require("playwright");
 const path = require("path");
 const fs = require("fs");
 

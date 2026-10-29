@@ -13,6 +13,7 @@ import { Consent, hasConsent } from "@/components/Consent";
 import { unseal, type SharePayload } from "@/lib/seal";
 import { PERSONAS, type Readings } from "@/lib/demo";
 import { demoSku } from "@/lib/stock";
+import { liningNote } from "@/lib/skinNote";
 import { CopyButton, YourStock } from "./YourStock";
 import { Desk } from "./Desk";
 import s from "./fitter.module.css";
@@ -68,7 +69,7 @@ export function FitterDesk() {
 
       {brief && <Brief b={brief} onClose={() => { setBrief(null); history.replaceState(null, "", "/fitter"); }} />}
 
-      <YourStock client={brief ?? demoBrief()} fit={PERSONAS.find((p) => p.id === (brief ? demoId : "anjali"))?.fit} />
+      <YourStock client={brief ?? demoBrief()} fit={PERSONAS.find((p) => p.id === (brief ? demoId : "anjali"))?.fit} renders={PERSONAS.find((p) => p.id === (brief ? demoId : "anjali"))?.wigs} />
       <Stock />
       <Assistant brief={brief ?? demoBrief()} situation={PERSONAS.find((p) => p.id === (brief ? demoId : "anjali"))?.situation ?? "chemo"} person={brief ? demoId ?? undefined : "anjali"} fit={PERSONAS.find((p) => p.id === (brief ? demoId : "anjali"))?.fit} />
       <AutoTag />
@@ -130,7 +131,7 @@ function Brief({ b, onClose }: { b: SharePayload; onClose: () => void }) {
               })}
               <li>Have an adjustable cap ready{b.cap?.cm ? ` around ${capSize(b.cap.cm)!.toLowerCase()}` : ""}: heads can be up to a size smaller after hair loss (American Cancer Society). Re-measure at the fitting.</li>
               {d.frizz && /frizz/i.test(d.frizz.label) && <li>Their own hair had some frizz; a slightly textured fibre will look more like them.</li>}
-              <li>Offer a soft liner or sleep cap if the scalp is sensitive.</li>
+              {liningNote(b.skin) ? <li><b>Skin:</b> {liningNote(b.skin)}</li> : <li>Offer a soft liner or sleep cap if the scalp is sensitive.</li>}
             </ul>
             <div className={s.actions}>
               <button className="btn btn-ink btn-sm" onClick={() => window.print()}>Print brief</button>
@@ -138,6 +139,13 @@ function Brief({ b, onClose }: { b: SharePayload; onClose: () => void }) {
             </div>
           </div>
         </div>
+        {b.listings && b.listings.length > 0 && (
+          <div className={s.listed}>
+            <h3 className="h-sub">Real listings near the shortlist</h3>
+            <p className="small">Public product pages, metadata only, no partnership. The try-ons below are demo-boutique wigs, not these products.</p>
+            <ul>{b.listings.map((l) => <li key={l.url}><span>Like {l.like}: <b>{l.name}</b> · {l.retailer}{l.price ? ` · ${l.price}` : ""}</span><a href={l.url} target="_blank" rel="noopener noreferrer">View at retailer</a></li>)}</ul>
+          </div>
+        )}
         <h2 className="h-sec" style={{ marginTop: 48 }}>Their shortlist, on their own face</h2>
         <div className={s.looks}>
           {b.looks.map((l) => (

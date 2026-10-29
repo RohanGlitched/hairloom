@@ -8,6 +8,7 @@ import { persona } from "@/lib/demo";
 import { demoDates } from "@/lib/dates";
 import { Consent, hasConsent } from "@/components/Consent";
 import { Regrowth } from "./Regrowth";
+import { liningNote, trendOf } from "@/lib/skinNote";
 import s from "./journal.module.css";
 
 type Milestone = { day: number; title: string; body: string; action?: { href: string; label: string }; src?: { label: string; url: string } };
@@ -161,7 +162,7 @@ export function Journal() {
         <div className={`wrap ${s.skinWrap}`}>
           <div>
             <p className="kicker">Skin check-in</p>
-            <h2 id="skin-title" className="h-sec">{mode === "chemo" ? "Skin check-ins, once a cycle." : "Skin check-ins, when you want a record."}</h2>
+            <h2 id="skin-title" className="h-sec">{mode === "chemo" ? "Skin check‑ins, once a cycle." : "Skin check‑ins, when you want a record."}</h2>
             <p className="lede" style={{ marginTop: 12 }}>
               {mode === "chemo"
                 ? <>Treatment can leave skin drier or more sensitive. A selfie each treatment cycle gives you YouCam&rsquo;s scores for moisture, redness, texture and radiance, so you can show your care team what changed rather than describe it. It is not a diagnosis; anything that worries you is a question for them.</>
@@ -215,6 +216,7 @@ export function Journal() {
                     : `${checks.length} check-in${checks.length > 1 ? "s" : ""}, latest ${new Date(last.at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}.`}{" "}
                   Scores are YouCam&rsquo;s raw 1&ndash;100 scores, and higher is better for every concern.
                 </p>
+                {liningNote(trendOf(shown)) && <p className={s.cosmetic}><b>For the wig:</b> {liningNote(trendOf(shown))} Your fitter brief carries this note.</p>}
                 <p className={s.cosmetic}>
                   These are cosmetic scores read from a photo, not a medical assessment. Light, camera and make-up change them; ask your care team about anything that worries you.
                 </p>

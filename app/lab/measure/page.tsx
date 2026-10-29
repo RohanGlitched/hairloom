@@ -21,6 +21,10 @@ export default function Measure() {
         for (const [k, src] of Object.entries(p.shades ?? {})) jobs.push([`${p.id}/shade_${k.replace(":", "_")}`, src]);
         for (const [k, src] of Object.entries(p.thinning ?? {})) jobs.push([`${p.id}/thin_${k}`, src]);
       }
+      // Oct 30: Margaret's light shades re-run at stronger colour intensity.
+      // The demo now shows the intensity-100 renders; the Oct 21 intensity-70 ones are kept for the evidence page.
+      for (const c of ["14", "16", "24"]) jobs.push([`margaret/shade_june_${c}_i70`, `/demo/margaret/shade_june_${c}.jpg`], [`margaret/shade_june_${c}_i100`, `/demo/margaret/shade_june_${c}_i100.jpg`]);
+      jobs.push(["margaret/shade_june_24_i90", "/demo/margaret/shade_june_24_i90.jpg"]);
       // Real photographs are not published; their measurements are kept from earlier runs (see measure.cjs).
       for (const [k, src] of jobs) {
         const r = await measureHair(src).catch(() => null);

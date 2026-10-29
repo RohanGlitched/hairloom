@@ -1,5 +1,5 @@
 // Walks the studio with a demo person and screenshots each step: node scripts/studio-shots.cjs [base] [persona] [width]
-const { chromium } = require("I:/Programs/ListofHackathon/hackathons/01-arbitrum-open-house/submission/video/node_modules/playwright");
+const { chromium } = require("playwright");
 const path = require("path");
 (async () => {
   const [base = "http://localhost:3141", who = "anjali", w = "1440"] = process.argv.slice(2);

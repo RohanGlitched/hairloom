@@ -1,7 +1,7 @@
 // End-to-end check on a running site: demo studio flow, one live shade change (1 unit),
 // a sealed fitter link, and opening that link as the fitter.
 // node scripts/e2e.cjs https://hairloom-studio.vercel.app
-const { chromium } = require("I:/Programs/ListofHackathon/hackathons/01-arbitrum-open-house/submission/video/node_modules/playwright");
+const { chromium } = require("playwright");
 const path = require("path");
 (async () => {
   const base = process.argv[2] ?? "http://localhost:3141";

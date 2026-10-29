@@ -155,3 +155,19 @@ export function priceOf(it: Pick<StockItem, "price_inr" | "price" | "currency">)
   const cur = it.currency ?? "INR";
   return new Intl.NumberFormat(cur === "INR" ? "en-IN" : "en-GB", { style: "currency", currency: cur, minimumFractionDigits: Number.isInteger(it.price) ? 0 : 2 }).format(it.price);
 }
+
+/** Real public listings closest to a wig (length, texture and shade), for "Real listings near this". */
+export function nearestListings(wig: Pick<Wig, "length" | "texture" | "code">, listings: StockItem[], n = 2) {
+  const lab = shadeLab(wig.code);
+  return listings
+    .map((item) => { const l = shadeLab(item.shade); return { item, score: closeness(item as Pick<Wig, "length" | "texture">, { length: wig.length, texture: wig.texture }, lab && l ? deltaE00(lab, l) : null) }; })
+    .sort((a, b) => b.score - a.score)
+    .slice(0, n);
+}
+
+/** The public-listings example, loaded once per page. */
+let publicListings: Promise<StockItem[]> | null = null;
+export function loadPublicListings(): Promise<StockItem[]> {
+  publicListings ??= fetch("/stock.public-listings.json").then((r) => r.text()).then((t) => parseStock(t).items).catch(() => []);
+  return publicListings;
+}

@@ -1,6 +1,13 @@
 // The whitelist of YouCam tasks the studio can run. The client names a kind; the server
 // builds the request body here, so no arbitrary feature or prompt can be sent through us.
 import { HEADWEAR, WIGS } from "./catalogue";
+import { hexToLab } from "./color";
+
+/**
+ * Colour intensity for Hair Color Try-On. At 70, light shades landed far from the asked colour (Margaret's
+ * blondes, ΔE00 12-19); at 100 they came closer (8-12), so shades lighter than L* 55 are asked at full strength.
+ */
+export const colourIntensity = (hex: string) => (hexToLab(hex)[0] > 55 ? 100 : 70);
 
 export type KindName =
   | "hairType" | "hairFrizz" | "hairLength" | "face"
@@ -65,7 +72,7 @@ export const KINDS: Record<KindName, Kind> = {
     body: ({ files, opt }) => {
       const hex = typeof opt.hex === "string" ? opt.hex : "";
       if (!/^#[0-9a-fA-F]{6}$/.test(hex)) throw new Error("bad colour");
-      return { src_file_id: files[0], pattern: { name: "full" }, palettes: [{ color: hex, color_intensity: 70, shine_intensity: 40 }] };
+      return { src_file_id: files[0], pattern: { name: "full" }, palettes: [{ color: hex, color_intensity: colourIntensity(hex), shine_intensity: 40 }] };
     },
   },
   headwear: {

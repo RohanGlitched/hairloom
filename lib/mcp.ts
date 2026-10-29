@@ -10,6 +10,7 @@ import { KINDS } from "./kinds";
 import { FITTINGS, unitsOf, usd } from "./pricing";
 import { band, capSize, closeness, lengthFromTerm, lengthStep, orLonger, textureFromType, textureStep } from "./match";
 import { CAPS, demoSku, shadeLab } from "./stock";
+import { liningNote } from "./skinNote";
 
 /**
  * Hairloom for a wig fitter's AI assistant: an MCP server (Streamable HTTP at /api/mcp). It answers the
@@ -189,10 +190,15 @@ function register(server: McpServer) {
     {
       title: "Dates to plan around treatment",
       description: "General timings from cancer charities (ACS, CRUK, Macmillan) for when to keep a passport, choose a wig, re-measure and expect regrowth; or, for alopecia, a monthly photo plan from a start date. Not medical advice.",
-      inputSchema: z.object({ first_treatment: isoDate.describe("Chemotherapy: the first treatment. Alopecia: the day to start."), last_treatment: isoDate.optional(), situation: z.enum(["chemo", "alopecia"]).optional() }),
+      inputSchema: z.object({
+        first_treatment: isoDate.describe("Chemotherapy: the first treatment. Alopecia: the day to start."), last_treatment: isoDate.optional(), situation: z.enum(["chemo", "alopecia"]).optional(),
+        skin_redness: z.tuple([z.number().min(0).max(100), z.number().min(0).max(100)]).optional().describe("First and latest YouCam redness score from the client's skin check-ins (higher is better)"),
+        skin_moisture: z.tuple([z.number().min(0).max(100), z.number().min(0).max(100)]).optional().describe("First and latest YouCam moisture score (higher is better)"),
+      }),
       annotations: { readOnlyHint: true },
     },
-    async ({ first_treatment, last_treatment, situation = "chemo" }) => {
+    async ({ first_treatment, last_treatment, situation = "chemo", skin_redness, skin_moisture }) => {
+      const lining = liningNote({ redness: skin_redness, moisture: skin_moisture });
       const s = new Date(first_treatment + "T09:00Z");
       const d = (base: Date, n: number) => new Date(base.getTime() + n * 86400000).toISOString().slice(0, 10);
       if (situation === "alopecia") {
@@ -210,6 +216,7 @@ function register(server: McpServer) {
         `${d(s, 21)}: re-measure the head and adjust the cap.`,
         `${d(s, 42)}: brows and lashes may thin; offer brow help.`,
       ];
+      if (lining) lines.push(`For the cap: ${lining}`);
       if (last_treatment) lines.push(`${d(new Date(last_treatment + "T09:00Z"), 90)}: regrowth usually starts within about 3–6 months of finishing, sometimes curlier or a different colour.`);
       lines.push("General guidance only; the client's care team knows their regimen.");
       return text(lines.join("\n"));

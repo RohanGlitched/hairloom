@@ -24,6 +24,10 @@ export type SharePayload = {
   note: string;
   appointment?: string;
   cap?: { cm: number | null; parting: "left" | "centre" | "right" | "none" | null };
+  /** Real public listings near the shortlisted wigs (metadata only, no partnership). */
+  listings?: { name: string; retailer: string; url: string; price: string | null; like: string }[];
+  /** First and latest cosmetic skin scores (redness, moisture), for the cap-lining note. */
+  skin?: { redness?: [number, number]; moisture?: [number, number] };
 };
 
 const hex = z.string().regex(/^#[0-9a-fA-F]{6}$/);
@@ -50,6 +54,8 @@ export const PayloadSchema = z.object({
   note: short(1200),
   appointment: short(40).optional(),
   cap: z.object({ cm: z.number().min(40).max(70).nullable(), parting: z.enum(["left", "centre", "right", "none"]).nullable() }).optional(),
+  listings: z.array(z.object({ name: short(80), retailer: short(60), url: z.string().max(300).regex(/^https:\/\/[^\s"'<>]+$/), price: short(20).nullable(), like: short(40) })).max(6).optional(),
+  skin: z.object({ redness: z.tuple([z.number().min(0).max(100), z.number().min(0).max(100)]).optional(), moisture: z.tuple([z.number().min(0).max(100), z.number().min(0).max(100)]).optional() }).optional(),
 });
 
 export async function seal(payload: SharePayload): Promise<{ id: string; key: string }> {

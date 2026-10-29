@@ -5,6 +5,9 @@ import { HEADWEAR, WIGS } from "./catalogue";
 import { closeness, lengthFromTerm, orLonger, textureFromType } from "./match";
 import { demoDates } from "./dates";
 import type { SharePayload } from "./seal";
+import { trendOf } from "./skinNote";
+import publicListings from "../public/stock.public-listings.json";
+import { nearestListings, priceOf, type StockItem } from "./stock";
 
 /** What each demo person writes to their fitter (demo people are generated; so are their notes). */
 export const NOTES: Record<string, string> = {
@@ -41,10 +44,17 @@ export function demoBrief(id = "anjali", now = Date.now()): SharePayload {
   const { keptAt, appointment } = demoDates(now);
   const g = greyOf(`${p.id}/kept`), blend = greyBlend(g?.grey, g?.base);
   const colour = lab && n ? { hex: labToHex(lab), code: n.code, name: n.name, dE: Math.round(n.dE * 10) / 10, ...(g ? { grey: g.grey } : {}), ...(blend ? { blend: blend.code } : {}), ...(g?.base ? { base: labToHex(g.base) } : {}) } : null;
-  const base = { v: 1 as const, name: `${p.name} (demo)`, keptAt, kept: p.kept, readings: p.readings, colour, note: NOTES[p.id] ?? "", appointment, cap: p.cap };
+  const skin = trendOf(p.skin ?? []) ?? undefined;
+  const listed = (publicListings as { stock: StockItem[] }).stock;
+  const base = { v: 1 as const, name: `${p.name} (demo)`, keptAt, kept: p.kept, readings: p.readings, colour, ...(skin ? { skin } : {}), note: NOTES[p.id] ?? "", appointment, cap: p.cap };
+  const near = (ids: string[]) => {
+    const out = ids.map((id) => WIGS.find((w) => w.id === id)).filter((w): w is (typeof WIGS)[number] => !!w && w.fit === "Women")
+      .flatMap((w) => nearestListings(w, listed, 1).map(({ item }) => ({ name: item.name, retailer: item.retailer ?? "", url: item.url!, price: priceOf(item), like: w.name })));
+    return out.filter((x, i, a) => a.findIndex((y) => y.url === x.url) === i);
+  };
   if (p.id === "anjali") {
     return {
-      ...base,
+      ...base, listings: near(["asha", "tara"]),
       looks: [
         { key: "hair:asha", label: "Asha", src: p.withHair.asha ?? p.wigs.asha, detail: "Sleek lob, centre parting · Lace front · Heat-friendly synthetic" },
         { key: "shade:asha:4", label: "Asha in shade 4", src: p.shades["asha:4"] ?? p.wigs.asha, detail: "Recoloured to her own shade" },
@@ -64,5 +74,5 @@ export function demoBrief(id = "anjali", now = Date.now()): SharePayload {
   }
   const head = HEADWEAR.find((h) => p.headwear[h.id] && h.fit === p.fit) ?? HEADWEAR.find((h) => p.headwear[h.id]);
   if (head) looks.push({ key: `head:${head.id}`, label: head.name, src: p.headwear[head.id], detail: head.note });
-  return { ...base, looks: looks.slice(0, 5) };
+  return { ...base, looks: looks.slice(0, 5), listings: near(looks.map((l) => l.key.split(":")[1])) };
 }

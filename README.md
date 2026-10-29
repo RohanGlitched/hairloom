@@ -59,8 +59,9 @@ Or choose *Use my own photos*. YouCam's JS Camera Kit guides you through the thr
 [Evidence](https://hairloom-studio.vercel.app/evidence) lists every YouCam task whose output we kept (257: 188 for the demo, 41 on real photographs, 28 early research), including the image generation that made the demo, with success counts, median times, the errors we hit and what they taught us. The studio's 12 task kinds call 11 distinct YouCam APIs (the wig and own-hair kinds share hair-transfer), and each has at least one successful run in the ledger. `node scripts/export-runs.mjs` rebuilds it from the lab outputs. Highlights:
 
 - **Hairstyle try-on works on a bald head.** On the four demo people's after-hair-loss photos, 64 of 64 wig try-ons and 4 of 4 own-hair restorations succeeded, and so did 8 of 8 wig try-ons on four real shaved heads (stock photos). On a generated photo with bare patches, a wig try-on covered them; a volume try-on didn't. The generator draws patches pink, so real patchy hair loss and tests on people with hair loss are next.
-- **Regrowth re-read.** On a generated photo of Anjali about a year after treatment, Hair Type read 3B to 3C (her kept hair: 1 to 2A) and Hair Length "short hair" (kept: "above chest"). The journal compares the two and ranks wigs for the new growth.
-- **Density detection** rejected all four angles we tried, including two generated crown photos tilted about 30° forward, so it isn't in the studio.
+- **Regrowth re-read.** Kept: type 1 to 2A, above chest. Now: 3B to 3C, short. The regrowth photos were generated asking for short, curlier regrowth (2–3 cm), so this shows the detections reading new growth, not a prediction of chemo curls. The journal compares the two and ranks wigs for the new growth.
+- **Density detection** rejected all six photos in the ledger, including crown photos tilted about 30° forward and front-facing selfies from 45° below and above, so it isn't in the studio.
+- **Light shades need full intensity.** Margaret's three blonde recolours landed a median ΔE00 17.1 from the asked shade at colour intensity 70, and 11.0 at 100, so shades lighter than L* 55 are now asked at 100.
 - **Real photos were stricter than generated ones.** Face Attribute rejected 5 of 5 real portraits at the default angle strictness and read 5 of 5 at `flexible`; hair length read 2 of 5.
 - **Hair colour comes back from YouCam as a named category.** A wig fitter needs a shade code, so Hairloom measures colour from the hair pixels: MediaPipe's hair segmenter running in the browser, then a trimmed CIELAB median and CIEDE2000 against 20 common wig shades. YouCam's label is kept beside it. On the generated demo people it said "Blonde" every time it answered, whatever the hair, so those matches are chance. On real photos it fit the hair on 2 of the 3 it labelled (by eye, no reference swatch yet).
 - **`task/delete` really deletes.** Afterwards the result URL returns 404 and the input file can't be reused (403).
@@ -168,6 +169,21 @@ npm run dev                                   # http://localhost:3141
   - share validation.
 - `lab/` holds the scripts that generated the demo with the YouCam API.
 
+## Reproduce the evidence numbers
+
+The colour, grey and face measurements run MediaPipe in a real browser, driven by Playwright. From a clone:
+
+```bash
+npm install
+npx playwright install chromium   # once, for the measuring scripts
+npm run dev                       # leave it running (port 3141), then in another terminal:
+npm run measure                   # hair colour and grey share of every demo image -> data/colours.json
+npm run measure:identity          # face keypoint shift on the headwear renders -> data/identity.json
+npm test                          # 51 tests, including every unit cost against data/feature-costs.json
+```
+
+`npm run measure` keeps the published colour values and prints the largest drift it finds (0.00 on our machine). The run ledger (`npm run evidence:runs`) is rebuilt from the lab's raw task outputs, which aren't in this repository because they include signed result URLs; `data/lab-runs.json` is its committed output. `node --env-file=<your env file> --import tsx scripts/check-costs.mjs` re-reads YouCam's price list with your own key (no units).
+
 ## Limits
 
 - Hairloom is about appearance, not medical care. It never diagnoses, and the journal's skin scores are YouCam's raw 1–100 scores, not clinical measurements.
@@ -180,7 +196,10 @@ npm run dev                                   # http://localhost:3141
 
 ## Built during the submission period
 
-Hairloom was built from Oct 21, 2026, inside the hackathon's submission period. The public history starts with a handful of commits on Oct 21 because the repository was recreated that night: an earlier history contained the nine Unsplash test portraits, and we rewrote it so those third-party photos are not redistributed. The evidence ledger (`data/lab-runs.json`, built by `scripts/export-runs.mjs` from the lab outputs) was first built on 2026-10-21 and rebuilt on 2026-10-30 to add that day's lab runs, the lab scripts that made the demo are in `lab/`, and the commits since then show each round of fixes.
+Judged build: tag [`v1.1-submission`](https://github.com/RohanGlitched/hairloom/tree/v1.1-submission). Main is frozen from Nov 2 to Nov 20 except to keep the demo running.
+
+
+Hairloom was built from Oct 21, 2026, inside the hackathon's submission period. The public history starts with a handful of commits on Oct 21 because the repository was recreated that night: an earlier history contained the nine Unsplash test portraits, and we rewrote it so those third-party photos are not redistributed. The evidence ledger (`data/lab-runs.json`, built by `scripts/export-runs.mjs` from the lab outputs) was first built on 2026-10-21 and rebuilt on 2026-10-30 to add that day's two rounds of lab runs, the lab scripts that made the demo are in `lab/`, and the commits since then show each round of fixes.
 
 ## License
 

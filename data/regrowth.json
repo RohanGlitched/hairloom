@@ -1,9 +1,20 @@
 {
  "anjali": {
-  "label": "About a year after treatment",
-  "note": "Generated with the YouCam Image Generator from her week-4 and kept photos (Oct 30); the readings are real YouCam output on those photos.",
+  "label": "About three months after treatment",
+  "note": "Generated with the YouCam Image Generator from her week-4 and kept photos (Oct 30), asking for short regrowth, 2–3 cm and curlier, so it shows the detections reading new growth, not a prediction of chemo curls. The readings are real YouCam output on those photos.",
   "photo": "/demo/anjali/regrow.jpg",
-  "turns": ["/demo/anjali/regrow_turn_a.jpg", "/demo/anjali/regrow_turn_b.jpg"],
-  "readings": { "type": { "mapping": "3B to 3C", "term": "Medium to Tight Curls" }, "length": { "term": "short hair" } }
+  "turns": [
+   "/demo/anjali/regrow_turn_a.jpg",
+   "/demo/anjali/regrow_turn_b.jpg"
+  ],
+  "readings": {
+   "type": {
+    "mapping": "3B to 3C",
+    "term": "Medium to Tight Curls"
+   },
+   "length": {
+    "term": "short hair"
+   }
+  }
  }
 }

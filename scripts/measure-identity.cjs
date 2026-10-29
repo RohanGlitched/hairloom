@@ -1,6 +1,6 @@
 // Writes data/identity.json: face keypoint shift between each headwear render and its source photo.
 // Needs the dev server: node scripts/measure-identity.cjs http://localhost:3141
-const { chromium } = require("I:/Programs/ListofHackathon/hackathons/01-arbitrum-open-house/submission/video/node_modules/playwright");
+const { chromium } = require("playwright");
 const fs = require("fs");
 const path = require("path");
 (async () => {

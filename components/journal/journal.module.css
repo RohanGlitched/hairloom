@@ -52,6 +52,7 @@
 
 @media (max-width: 900px) {
   .regWrap { grid-template-columns: 1fr; gap: 28px; }
+  .regPair { order: -1; max-width: 420px; }
   .planWrap, .skinWrap { grid-template-columns: 1fr; gap: 32px; }
   .planHead { position: static; }
   .scoreTabs { grid-template-columns: 1fr 1fr; }

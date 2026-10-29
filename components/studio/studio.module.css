@@ -28,7 +28,8 @@
 /* Start */
 .start { padding: 56px 0 96px; display: grid; gap: 36px; }
 .startHead { display: grid; gap: 12px; max-width: 760px; }
-.startGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+/* Four demo people and "Use my own photos" in one row; under 1080 px the own-photos card runs full width. */
+.startGrid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; }
 .startCard { display: grid; grid-template-rows: auto 1fr; gap: 14px; padding: 0; text-align: left; background: none; border: 0; cursor: pointer; }
 .startCard img, .startArch { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; object-position: 50% 18%; border-radius: 999px 999px 8px 8px; border: 3px solid var(--brass-lo); transition: border-color .15s; display: block; }
 .startCard:hover img, .startCard:hover .startArch { border-color: var(--brass); }
@@ -153,7 +154,11 @@
 .camMount { min-height: 300px; min-width: 280px; display: grid; place-items: center; }
 .camQ { font-size: 12px; color: var(--mist); }
 
-@media (max-width: 1080px) { .startGrid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 1080px) {
+  .startGrid { grid-template-columns: repeat(2, 1fr); }
+  .startLive { grid-column: 1 / -1; grid-template-columns: 120px minmax(0, 1fr); grid-template-rows: auto; align-items: center; }
+  .startLive .startArch { width: 120px; }
+}
 @media (max-width: 900px) {
   .shell { grid-template-columns: 1fr; gap: 24px; padding-top: 24px; }
   .side { position: static; }
@@ -189,3 +194,12 @@
   .shortlist { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 40%; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 10px; }
   .shortlist li { scroll-snap-align: start; }
 }
+
+/* Real listings near the chosen wig */
+.listings { border-top: 1px solid var(--line); padding-top: 12px; display: grid; gap: 8px; }
+.listings > p span { color: #a18f9d; }
+.listings ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.listings li { display: flex; flex-wrap: wrap; gap: 4px 12px; justify-content: space-between; font-size: 14px; color: var(--mist); }
+.listings b { color: var(--ivory); font-weight: 600; }
+.listings a { color: var(--brass-hi); font-size: 13px; }
+.listNote { font-size: 12px; color: #a18f9d; }

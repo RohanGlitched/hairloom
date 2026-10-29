@@ -8,6 +8,7 @@ import { prepare } from "@/lib/client";
 import { VOLUME, EXTENSION } from "@/lib/kinds";
 import { band, closeness, lengthFromTerm, lengthStep, orLonger, textureFromType, textureStep } from "@/lib/match";
 import { Reveal } from "@/components/Reveal";
+import { loadPublicListings, nearestListings, priceOf, type StockItem } from "@/lib/stock";
 import type { Ctx } from "./Studio";
 import { StepHead } from "./KeepStep";
 import s from "./studio.module.css";
@@ -28,6 +29,8 @@ export function TryStep({ ctx }: { ctx: Ctx }) {
   const [keptLab, setKeptLab] = useState<Lab | null>(null);
   const [keptGrey, setKeptGrey] = useState<{ grey: number; base: Lab | null } | null>(null);
   const [nowLab, setNowLab] = useState<Lab | null>(null);
+  const [listings, setListings] = useState<StockItem[]>([]);
+  useEffect(() => { void loadPublicListings().then(setListings); }, []);
 
 
   const keptLen = lengthFromTerm(session.readings?.length?.term);
@@ -207,6 +210,20 @@ export function TryStep({ ctx }: { ctx: Ctx }) {
                       );
                     })}
                   </div>
+                </div>
+              )}
+              {listings.length > 0 && wig.fit === "Women" && (
+                <div className={s.listings}>
+                  <p className="small">Real listings near {wig.name} <span>(public product pages, no partnership)</span></p>
+                  <ul>
+                    {nearestListings(wig, listings).map(({ item }) => (
+                      <li key={item.url}>
+                        <span><b>{item.name}</b> · {item.retailer} · shade {item.shade}{priceOf(item) ? ` · ${priceOf(item)}` : ""}</span>
+                        <a href={item.url} target="_blank" rel="noopener noreferrer">View at retailer</a>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className={s.listNote}>The try-on above is {wig.name} from our demo boutique, not these products.</p>
                 </div>
               )}
               {dE != null && (

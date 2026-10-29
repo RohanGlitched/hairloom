@@ -38,7 +38,7 @@ const STEPS = [
   {
     title: "Share",
     img: "/catalogue/thumb/asha.jpg",
-    body: "Send your passport and shortlist to your wig fitter in an encrypted link. They prepare the right wigs, shades and cap size before you arrive.",
+    body: "Send your kept-hair record and shortlist to your wig fitter in an encrypted link. They prepare the right wigs, shades and cap size before you arrive.",
     apis: "Fitter desk · end-to-end encrypted link",
   },
 ];
@@ -84,7 +84,7 @@ export default function Home() {
   const ONLY = [
     { big: "Your own hair", body: `back on your week-4 photo, from the photo you kept. Hairstyle Try-On worked on ${shaved.ok} of ${shaved.n} try-ons on ${shaved.heads} real shaved heads.`, href: "#fitting" },
     { big: "A sealed brief", body: "for your fitter: a pull list in your shade code and cap size, encrypted in your browser.", href: "/fitter#demo" },
-    { big: "The shop's own stock", body: "ranked against your passport, on the fitter desk or by a fitter's AI assistant over MCP.", href: "/fitter#your-stock" },
+    { big: "The shop's own stock", body: "ranked against the hair you kept, on the fitter desk or by a fitter's AI assistant over MCP.", href: "/fitter#your-stock" },
     { big: "Beyond chemo", body: "alopecia, pattern thinning and men, with Hair Volume and Hair Extension try-ons.", href: "#beyond" },
     { big: `${API_COUNT} YouCam APIs`, body: `each doing one job, and every task we kept (${TOTALS.runs}) in a public evidence ledger, failures included.`, href: "/evidence" },
   ];

@@ -71,3 +71,11 @@ test("every task kind's units match YouCam's feature-cost list (data/feature-cos
     assert.equal(row!.youcam, k.units, `${kind}: YouCam lists ${row!.youcam}, the whitelist charges ${k.units}`);
   }
 });
+
+test("light shades are recoloured at full intensity, darker ones at 70", async () => {
+  const { KINDS: K } = await import("../lib/kinds.ts");
+  const body = (hex: string) => (K.hairColor.body({ files: ["f"], opt: { hex } }) as { palettes: { color_intensity: number }[] }).palettes[0].color_intensity;
+  assert.equal(body("#cfae7b"), 100, "24, warm blonde");
+  assert.equal(body("#a08262"), 100, "14, dark blonde (L* 56)");
+  assert.equal(body("#3b2a20"), 70, "4, dark brown");
+});

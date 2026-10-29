@@ -1,12 +1,12 @@
 {
  "generated": "2026-10-29",
  "source": "lab/out and lab/real/out: one saved output file per finished YouCam task. Tasks whose output was not kept (early exploration, one-unit end-to-end checks) are not counted.",
- "runs": 257,
- "ok": 244,
+ "runs": 265,
+ "ok": 250,
  "origins": {
   "demo": {
-   "runs": 188,
-   "ok": 186
+   "runs": 196,
+   "ok": 192
   },
   "real-photo": {
    "runs": 41,
@@ -17,7 +17,7 @@
    "ok": 25
   }
  },
- "unitsEstimate": 504,
+ "unitsEstimate": 510,
  "tasks": [
   {
    "name": "ang_p1_down",
@@ -1695,6 +1695,70 @@
    "ok": true,
    "error": null,
    "ms": 13720
+  },
+  {
+   "name": "r3/margaret_shade_june_14_i100",
+   "api": "AI Hair Color Virtual Try-On",
+   "origin": "demo",
+   "ok": true,
+   "error": null,
+   "ms": 11314
+  },
+  {
+   "name": "r3/margaret_shade_june_16_i100",
+   "api": "AI Hair Color Virtual Try-On",
+   "origin": "demo",
+   "ok": true,
+   "error": null,
+   "ms": 10180
+  },
+  {
+   "name": "r3/margaret_shade_june_24_i100",
+   "api": "AI Hair Color Virtual Try-On",
+   "origin": "demo",
+   "ok": true,
+   "error": null,
+   "ms": 10653
+  },
+  {
+   "name": "r3/margaret_shade_june_24_i90",
+   "api": "AI Hair Color Virtual Try-On",
+   "origin": "demo",
+   "ok": true,
+   "error": null,
+   "ms": 10663
+  },
+  {
+   "name": "r3/nia_above45",
+   "api": "AI Image Generator (image to image)",
+   "origin": "demo",
+   "ok": true,
+   "error": null,
+   "ms": 10157
+  },
+  {
+   "name": "r3/nia_above45_density",
+   "api": "AI Hair Density Detection",
+   "origin": "demo",
+   "ok": false,
+   "error": "error_face_angle_invalid",
+   "ms": 11917
+  },
+  {
+   "name": "r3/nia_below45",
+   "api": "AI Image Generator (image to image)",
+   "origin": "demo",
+   "ok": true,
+   "error": null,
+   "ms": 15912
+  },
+  {
+   "name": "r3/nia_below45_density",
+   "api": "AI Hair Density Detection",
+   "origin": "demo",
+   "ok": false,
+   "error": "error_face_angle_invalid",
+   "ms": 7869
   },
   {
    "name": "skin_test",

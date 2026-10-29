@@ -71,7 +71,7 @@
 /* Your own stock */
 .ysHead { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 48px; align-items: end; }
 .ysGrid { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 40px; margin-top: 36px; align-items: start; }
-.ysForm { display: grid; gap: 12px; }
+.ysForm { display: grid; gap: 12px; position: sticky; top: 96px; }
 .ysForm textarea { font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--ivory); background: var(--night); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; resize: vertical; min-height: 180px; color-scheme: dark; }
 .ysForm textarea:focus { outline: 2px solid var(--brass); outline-offset: 1px; }
 .chipsRow { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -104,3 +104,12 @@
 @media (max-width: 980px) { .deskWrap > div:first-child { position: static; } }
 
 .ysNote { font-size: 13px; color: var(--mist); border-left: 2px solid var(--brass); padding: 2px 0 2px 10px; margin-bottom: 12px; }
+
+.listed { margin-top: 36px; display: grid; gap: 8px; border-top: 1px solid var(--rule); padding-top: 20px; }
+.listed ul { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 8px; }
+.listed li { display: flex; flex-wrap: wrap; gap: 4px 14px; justify-content: space-between; font-size: 15px; color: var(--ink-soft); border-bottom: 1px solid var(--rule); padding-bottom: 8px; }
+.listed b { color: var(--ink); font-weight: 600; }
+
+.ysWithThumb { grid-template-columns: 34px 60px minmax(0, 1fr) !important; }
+.ysThumb { width: 60px; aspect-ratio: 3 / 4; object-fit: cover; object-position: 50% 15%; border-radius: 30px 30px 4px 4px; border: 1px solid var(--brass-lo); }
+@media (max-width: 980px) { .ysForm { position: static; } }

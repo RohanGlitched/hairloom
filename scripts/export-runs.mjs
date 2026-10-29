@@ -83,6 +83,15 @@ function classify(rel) {
     if (/^(anjali_regrow_(front|turn_[ab])|nia_patchy|nia_crown|margaret_crown)$/.test(n)) return { api: API.i2i, origin: o };
     return null;
   }
+  // Oct 30 round 3 (lab/round3.mjs): Margaret's light shades at stronger intensity, two more density angles.
+  m = /^r3\/(.+)$/.exec(rel);
+  if (m) {
+    const n = m[1], o = "demo";
+    if (n.endsWith("_density")) return { api: API.density, origin: o };
+    if (n.startsWith("margaret_shade_")) return { api: API.colour, origin: o };
+    if (/^nia_(below|above)45$/.test(n)) return { api: API.i2i, origin: o };
+    return null;
+  }
   if (rel.startsWith("cat/")) return { api: API.t2i, origin: "demo" }; // the boutique's stock
   // Early research and the demo people's source photos: lab/out/<task>
   if (/^persona\d$/.test(rel)) return { api: API.t2i, origin: "demo" };

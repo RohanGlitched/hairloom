@@ -6,6 +6,9 @@ import { greyBlend, nearestShades, labToHex } from "@/lib/color";
 import { greyOf, measured } from "@/lib/colours";
 import { prepare } from "@/lib/client";
 import { seal, type SharePayload } from "@/lib/seal";
+import { get } from "@/lib/store";
+import { trendOf } from "@/lib/skinNote";
+import { loadPublicListings, nearestListings, priceOf } from "@/lib/stock";
 import type { Ctx } from "./Studio";
 import { StepHead } from "./KeepStep";
 import s from "./studio.module.css";
@@ -60,6 +63,14 @@ export function ShareStep({ ctx }: { ctx: Ctx }) {
         appointment: when || undefined,
         cap: session.cap ? { cm: session.cap.cm ?? null, parting: session.cap.parting ?? null } : undefined,
       };
+      // The journal's skin check-ins, if any, so the brief can suggest a softer cap lining.
+      const skin = session.mode === "demo" ? trendOf(ctx.persona?.skin ?? []) : trendOf((await get<{ scores: Record<string, number> }[]>("checkins")) ?? []);
+      if (skin) payload.skin = skin;
+      // Real public listings near each shortlisted wig, so the fitter can point to something buyable.
+      const all = await loadPublicListings();
+      const wigs = [...new Set(looks.map((k) => k.split(":")).filter(([kind]) => ["wig", "hair", "shade"].includes(kind)).map(([, id]) => id))].map((id) => WIGS.find((w) => w.id === id)).filter((w): w is (typeof WIGS)[number] => !!w && w.fit === "Women");
+      const near = wigs.flatMap((w) => nearestListings(w, all, 1).map(({ item }) => ({ name: item.name.slice(0, 80), retailer: (item.retailer ?? "").slice(0, 60), url: item.url!, price: priceOf(item), like: w.name })));
+      if (near.length) payload.listings = near.filter((x, i, a) => a.findIndex((y) => y.url === x.url) === i).slice(0, 6);
       const { id, key } = await seal(payload);
       setLink(`${window.location.origin}/fitter#s=${id}.${key}`);
       ctx.update((x) => ({ ...x, sharedAt: Date.now() }));

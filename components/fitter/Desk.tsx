@@ -44,7 +44,7 @@ export function Desk({ brief, situation, person, fit }: { brief: SharePayload; s
     const plan: Omit<Step, "status">[] = [
       { tool: "match_wigs", why: `Rank the shop's stock against ${first}'s passport`, args: { hair_length: r.length?.term, hair_type: r.type?.mapping, hair_hex: brief.colour?.hex, hair_grey_percent: grey, hair_base_hex: grey != null && grey >= 15 ? brief.colour?.base : undefined, head_cm: brief.cap?.cm ?? undefined, fit, top: 3 } },
       { tool: "shade_for_colour", why: "Turn the measured colour into shade codes", args: { hex: brief.colour?.hex, count: 3, grey_percent: grey, base_hex: grey != null && grey >= 15 ? brief.colour?.base : undefined } },
-      { tool: "fitting_plan", why: situation === "alopecia" ? "A monthly plan from today" : "Dates around treatment", args: { first_treatment: start, situation } },
+      { tool: "fitting_plan", why: situation === "alopecia" ? "A monthly plan from today" : "Dates around treatment", args: { first_treatment: start, situation, skin_redness: brief.skin?.redness, skin_moisture: brief.skin?.moisture } },
     ];
     let sid: string | null = null;
     try {

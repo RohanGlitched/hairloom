@@ -38,7 +38,8 @@ const EXAMPLES = [
 const who = (name: string) => name.replace(/\s*\(demo\)$/, "");
 
 /** "Load your stock": a boutique pastes its own catalogue and ranks it for this client, all in the browser. */
-export function YourStock({ client, fit: given }: { client: SharePayload; fit?: "Women" | "Men" }) {
+export function YourStock({ client, fit: given, renders }: { client: SharePayload; fit?: "Women" | "Men"; renders?: Record<string, string> }) {
+  const [all, setAll] = useState(false);
   const [text, setText] = useState("");
   const [fit, setFit] = useState<"All" | "Women" | "Men">(given ?? "All");
   useEffect(() => setFit(given ?? "All"), [given]);
@@ -114,9 +115,15 @@ export function YourStock({ client, fit: given }: { client: SharePayload; fit?: 
             {ranked && which === "public" && <p className={s.ysNote}>Real product pages from two retailers, read on Oct 30 for their listed length, texture, one shade code, cap size and price. No images, and no partnership: prices change, so check the retailer.</p>}
             {ranked ? (
               <ol className={s.ysList}>
-                {ranked.slice(0, 12).map((r, i) => (
-                  <li key={r.item.sku + i}>
+                {ranked.slice(0, all ? ranked.length : 5).map((r, i) => {
+                  // A demo boutique wig the client has already tried on shows its render as a thumbnail.
+                  const id = /^KC-([A-Z]+)-/.exec(r.item.sku)?.[1]?.toLowerCase();
+                  const thumb = id && renders?.[id];
+                  return (
+                  <li key={r.item.sku + i} className={thumb ? s.ysWithThumb : undefined}>
                     <span className={s.ysN}>{i + 1}</span>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    {thumb && <img className={s.ysThumb} src={thumb} alt={`${r.item.name} on ${who(client.name)}`} loading="lazy" />}
                     <div className={s.ysMain}>
                       <p className={s.ysName}><b>{r.item.name}</b> <span>{r.item.retailer ?? r.item.sku}</span> <em>{r.band}</em></p>
                       <p className="small">{r.length} · {r.texture} · pull in shade {r.pullShade}{r.item.shade !== c.code ? ` (stocked ${r.item.shade})` : ""} · cap {r.cap.note}{priceOf(r.item) ? ` · ${priceOf(r.item)}` : ""}</p>
@@ -126,9 +133,14 @@ export function YourStock({ client, fit: given }: { client: SharePayload; fit?: 
                       </div>
                     </div>
                   </li>
-                ))}
+                  );
+                })}
               </ol>
-            ) : (
+            ) : null}
+            {ranked && ranked.length > 5 && (
+              <button className="btn btn-ghost btn-sm" style={{ marginTop: 14 }} onClick={() => setAll(!all)}>{all ? "Show the top 5" : `Show all ${ranked.length}`}</button>
+            )}
+            {ranked ? null : (
               <div className={s.ysEmpty}>Your ranked stock appears here, closest to {who(client.name)}&rsquo;s own hair first{demo ? " (demo)" : ""}.</div>
             )}
           </div>
