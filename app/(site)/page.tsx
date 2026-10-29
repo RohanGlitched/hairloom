@@ -5,7 +5,8 @@ import { Mirror } from "@/components/Mirror";
 import { Passport } from "@/components/Passport";
 import { Reveal } from "@/components/Reveal";
 import { PERSONAS, persona } from "@/lib/demo";
-import { API_COUNT_WORD, TOTALS, byApi } from "@/lib/evidence";
+import { API_COUNT, API_COUNT_WORD, TOTALS, byApi } from "@/lib/evidence";
+import real from "@/data/real.json";
 import { BOUTIQUE, WIGS } from "@/lib/catalogue";
 import { greyOf, measured } from "@/lib/colours";
 import { demoBrief } from "@/lib/brief";
@@ -31,7 +32,7 @@ const STEPS = [
   {
     title: "Cover",
     img: anjali.headwear.turban,
-    body: "Turbans, silk scarves, beanies and sleep caps on your face for the days without a wig, and brows rebuilt in your own shape and colour for when they thin.",
+    body: "Turbans, silk scarves, beanies and sleep caps for the days without a wig, tried on with an instruction to keep your face (drag the mirror to compare), and brows rebuilt in your own shape and colour for when they thin.",
     apis: "Image Generator (image to image) · Makeup Virtual Try-On",
   },
   {
@@ -58,15 +59,35 @@ const APIS = [
   ["Hair Color Virtual Try-On", "Stock shades on the wig you like"],
   ["Hair Volume Virtual Try-On", "Fuller lengths for thinning hair; a fitter shows toppers for the crown"],
   ["Hair Extension Virtual Try-On", "Clip-in length on your kept photo"],
-  ["AI Image Generator", "Headwear that keeps your face; demo people and boutique stock"],
+  ["AI Image Generator", "Headwear, with an instruction to keep your face; the demo people and boutique stock"],
   ["AI Skin Analysis", "Optional skin check-ins in the journal, once per treatment cycle"],
 ];
 
 // Demo dates are relative to today, so the page is rebuilt every hour.
 export const revalidate = 3600;
 
+/** Real stock photos of shaved heads, and how many wig try-ons on them succeeded (data/real.json). */
+function shavedHeads() {
+  const runs = (real as { kind: string; runs: { name: string; ok: boolean }[] }[]).filter((p) => p.kind === "bald").flatMap((p) => p.runs.filter((r) => r.name.startsWith("wig_")));
+  return { ok: runs.filter((r) => r.ok).length, n: runs.length };
+}
+
+const BEYOND = [
+  { n: "~2%", t: "Alopecia areata", src: ["PMC", "https://pmc.ncbi.nlm.nih.gov/articles/4521674"], body: "lifetime incidence. Patches that come and go: a monthly photo plan and a topper-or-wig choice in the journal's alopecia mode.", links: [["Nia's studio", "/studio?p=nia"], ["Alopecia plan", "/journal"]] },
+  { n: "~40%", t: "Pattern thinning", src: ["DermNet", "https://dermnetnz.org/topics/female-pattern-hair-loss"], body: "of women show it by 50. Hair Volume and Hair Extension try-ons preview fuller hair and clip-in length on a photo of thinning hair.", links: [["Margaret's volume previews", "/studio?p=margaret&step=try"]] },
+  { n: "Men", t: "Men lose hair too", src: null, body: "Men's wigs ranked against their own short hair, a flat cap and a bandana, and a fitter brief with a large cap. YouCam's volume templates are for women, and the studio says so.", links: [["Ravi's studio", "/studio?p=ravi"]] },
+];
+
 export default function Home() {
   const apis = byApi().filter((a) => a.group === "studio");
+  const shaved = shavedHeads();
+  const ONLY = [
+    { big: "Your own hair", body: `back on your week-4 photo, from the photo you kept. Hairstyle Try-On worked on ${shaved.ok} of ${shaved.n} real shaved heads.`, href: "#fitting" },
+    { big: "A sealed brief", body: "for your fitter: a pull list in your shade code and cap size, encrypted in your browser.", href: "/fitter#demo" },
+    { big: "The shop's own stock", body: "ranked against your passport, on the fitter desk or by a fitter's AI assistant over MCP.", href: "/fitter#your-stock" },
+    { big: "Beyond chemo", body: "alopecia, pattern thinning and men, with Hair Volume and Hair Extension try-ons.", href: "#beyond" },
+    { big: `${API_COUNT} YouCam APIs`, body: `each doing one job, with ${TOTALS.runs} runs in a public evidence ledger, failures included.`, href: "/evidence" },
+  ];
   const brief = demoBrief();
   return (
     <>
@@ -76,7 +97,7 @@ export default function Home() {
           <div className={s.heroText}>
             <h1 id="hero-title" className="h-hero">Choose your wig while you still have your hair.</h1>
             <p className="lede">
-              Hairloom keeps a record of your hair before treatment. Later it puts that hair, any wig or a headscarf back on your own photo, so you can choose before it&rsquo;s gone and still choose after.
+              Your own hair, back on your photo after hair loss. Every wig in the shop on your face, ranked against the hair you kept. And one sealed brief, so your fitter has the right shade and cap ready before you arrive.
             </p>
             <div className={s.ctas}>
               <Link href="/studio" className="btn btn-ivory">Open the studio</Link>
@@ -99,6 +120,21 @@ export default function Home() {
         <div className={s.shelf} aria-hidden="true" />
       </section>
 
+      {/* What it does differently */}
+      <section className="deep" aria-labelledby="only-title" style={{ padding: "56px 0 60px" }}>
+        <div className="wrap">
+          <p id="only-title" className="kicker">What Hairloom does that a wig catalogue can&rsquo;t</p>
+          <ol className={s.only}>
+            {ONLY.map((o) => (
+              <li key={o.big}>
+                <Link href={o.href}><b>{o.big}</b></Link>
+                <span>{o.body}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
       {/* Why before */}
       <section className={`paper sec`} aria-labelledby="why-title">
         <div className="wrap">
@@ -117,6 +153,19 @@ export default function Home() {
             About 65% of people having chemotherapy lose hair, and a dermatology review reports that fear of it leads some to refuse treatment.{" "}
             <a className="src" href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6186204" target="_blank" rel="noreferrer">JAAD review, 2019</a>
           </p>
+          <h3 id="beyond" className="h-sub" style={{ marginTop: 56 }}>Not only chemotherapy</h3>
+          <div className={s.beyond}>
+            {BEYOND.map((b) => (
+              <div key={b.t}>
+                <p className={s.bigS}>{b.n}</p>
+                <p><b>{b.t}</b>{b.src ? ": " : ". "}{b.body}</p>
+                <p className="src">
+                  {b.links.map(([n, u], i) => <span key={u}>{i > 0 && " · "}<Link href={u}>{n}</Link></span>)}
+                  {b.src && <> · <a href={b.src[1]} target="_blank" rel="noreferrer">{b.src[0]}</a></>}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 

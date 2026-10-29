@@ -10,6 +10,17 @@
 .disclose { text-align: center; font-size: 13px; color: #a18f9d; margin: 28px auto 0; max-width: 60ch; padding-bottom: 26px; }
 .shelf { height: 12px; background: linear-gradient(#4b3647, #2c1f2e); max-width: 1000px; margin: 0 auto; border-radius: 3px 3px 0 0; }
 
+.only { list-style: none; padding: 0; margin: 18px 0 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 28px; }
+.only li { display: grid; gap: 8px; align-content: start; border-top: 1px solid var(--brass-lo); padding-top: 16px; }
+.only a { color: var(--ivory); text-decoration: none; }
+.only a:hover b { color: var(--brass-hi); }
+.only b { font: 400 22px/1.15 var(--serif); }
+.only span { font-size: 14px; color: var(--mist); }
+.beyond { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; margin-top: 24px; }
+.beyond > div { border-top: 1px solid var(--rule); padding-top: 18px; display: grid; gap: 8px; align-content: start; }
+.beyond b { font-weight: 600; }
+.bigS { font: 400 30px/1 var(--serif); color: var(--ink); }
+
 .facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; margin-top: 48px; }
 .fact { border-top: 1px solid var(--rule); padding-top: 20px; display: grid; gap: 10px; align-content: start; }
 .big { font: 400 40px/1 var(--serif); color: var(--ink); }
@@ -60,12 +71,14 @@
   .steps { grid-template-columns: 1fr 1fr; }
   .secHead, .passWrap, .split { grid-template-columns: 1fr; gap: 28px; }
   .apis { grid-template-columns: 1fr 1fr; }
+  .only { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 @media (max-width: 760px) {
   .hero { padding-top: 36px; }
   .mirrors { grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 36px; }
   .centre { grid-column: 1 / -1; order: -1; max-width: 300px; margin: 0 auto; }
-  .facts, .privacy { grid-template-columns: 1fr; gap: 28px; }
+  .facts, .privacy, .beyond { grid-template-columns: 1fr; gap: 28px; }
+  .only { grid-template-columns: 1fr 1fr; gap: 22px; }
   .steps { grid-template-columns: 1fr 1fr; gap: 22px; }
   .apis { grid-template-columns: 1fr; }
   .evTable > div { grid-template-columns: 1.8fr 0.6fr 0.8fr 0.8fr; gap: 8px; font-size: 14px; }

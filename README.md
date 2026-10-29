@@ -18,6 +18,14 @@
 
 **Hairloom** helps people facing hair loss choose a wig while they still have their hair, and keep choosing after. It keeps a *hair passport* before treatment: curl pattern, frizz, length, face shape and brows from the YouCam API, plus a wig shade code measured on the device. Later it puts that hair, any wig, a headscarf or rebuilt brows back on the person's own photo, even after hair loss. The shortlist goes to their wig fitter in an end-to-end sealed link.
 
+What it does that a wig catalogue can't:
+
+- **Your own hair, back on your week-4 photo**, from the photo you kept (Hairstyle Try-On worked on 8 of 8 real shaved heads).
+- **A sealed fitter brief** with a pull list in your shade code and cap size, encrypted in the browser.
+- **The shop's own stock, ranked against your passport**: paste a catalogue on the fitter desk, or ask through the MCP server.
+- **Beyond chemotherapy**: alopecia areata, pattern thinning and men, through Hair Volume and Hair Extension try-ons.
+- **11 YouCam APIs**, each doing one job, with every run in a public evidence ledger.
+
 About 65% of people having chemotherapy lose hair. Hair usually starts to fall out two to three weeks after the first cycle, and cancer charities advise matching a wig *before* that happens. Most wig shops take returns only if the wig hasn't been worn, and some take none. That makes wigs the retail category where trying on before buying matters most, and where it is hardest to do. Sources are listed on the [evidence page](https://hairloom-studio.vercel.app/evidence#sources).
 
 ## Try it in a minute
@@ -42,7 +50,7 @@ Or choose *Use my own photos*. YouCam's JS Camera Kit guides you through the thr
 | Hair Color Virtual Try-On | Recolours a chosen wig to the stock shades nearest the kept hair. |
 | Hair Volume Virtual Try-On | Previews fuller lengths and sides for thinning hair, on a photo of the thinning hair. It doesn't cover a thin crown, and the studio says so. |
 | Hair Extension Virtual Try-On | Shows clip-in length on the kept photo. |
-| AI Image Generator (image to image, text to image) | Headwear that keeps the face. It also generated the demo people and the fictional boutique's stock. |
+| AI Image Generator (image to image, text to image) | Headwear, with an instruction to keep the face (the mirror lets you drag back to compare). It also generated the demo people and the fictional boutique's stock. |
 | AI Skin Analysis v2.1 | Optional skin check-ins in the journal, once per treatment cycle, using raw scores and concern maps. |
 | JS Camera Kit (an SDK, not one of the 11 APIs) | Guided three-angle capture (`hairtype` mode). Built in, but not yet tested on a real phone. |
 
@@ -70,7 +78,11 @@ Hairloom is also an MCP server (Streamable HTTP) at `https://hairloom-studio.ver
 | `fitting_plan` | Gives the dates to plan around treatment, from ACS, CRUK and Macmillan guidance. |
 | `fitting_cost` | Gives the YouCam units and dollars for a fitting. |
 
-The server never sees client photos. For live try-ons, pair it with YouCam's hosted MCP servers (`/mcp/fashion`, `/mcp/beauty`). `node scripts/mcp-check.mjs <url>` runs a smoke test.
+The server never sees client photos. For live try-ons, pair it with YouCam's hosted MCP servers (`/mcp/fashion`, `/mcp/beauty`). `node scripts/mcp-check.mjs <url>` runs a smoke test. `match_wigs` takes a shop's own `stock` (with SKU, shade code, cap sizes and product URL) and returns hold notes; `match_wigs` and `shade_for_colour` take the passport's grey share and suggest a grey blend.
+
+On the [fitter desk](https://hairloom-studio.vercel.app/fitter#assistant), **Ask the fitter desk** walks the same tools in order (`match_wigs`, `shade_for_colour`, `fitting_plan`, `show_on_demo_person`) for the open brief and ends in a pull list. It is a fixed, rules-based plan, not a language model, so it costs no model calls and no YouCam units; each step is a real call to `/api/mcp`.
+
+**Your own stock:** paste a catalogue as CSV or JSON on the fitter desk ([template](https://hairloom-studio.vercel.app/stock.example.json): sku, name, length, texture, shade, caps, price_inr, fit, url). It is ranked in the browser with the studio's closeness score and gives a hold note per wig ("Please hold KC-ASHA-2 in shade 4, cap Average…") and a "View at retailer" link. Nothing is uploaded. The retailer widget takes `&shop=<https product page>` to show a "Reserve in shade …" handoff.
 
 ## For retailers and wig banks
 
@@ -97,7 +109,7 @@ The server never sees client photos. For live try-ons, pair it with YouCam's hos
 
 - **Photos and passport** live only in the browser (IndexedDB). There are no accounts and no photo copy on our server.
 - **Colour** is measured on the device.
-- **YouCam tasks:** photos pass through our server's memory to YouCam and are written nowhere on our side. Every task's result is downloaded by our server, then the browser confirms receipt and the task is deleted with `task/delete`, which removes the input photo too. If the tab closes mid-task, the page sends the delete as it closes, and a daily sweep deletes anything left over.
+- **YouCam tasks:** photos pass through our server's memory to YouCam and are written nowhere on our side. Every task's result is downloaded by our server, then the browser confirms receipt and the task is deleted with `task/delete`, which removes the input photo too. If the tab closes mid-task, the page sends the delete as it closes. Failing that, a capped sweep runs after studio requests at most every 10 minutes (a compare-and-swap marker in the bucket lets one instance run it) and deletes results left uncollected for 11 minutes; the daily cron catches the rest.
 - **Fitter links** are encrypted with AES-GCM in the browser. The server stores only ciphertext, in a private GCS bucket reached through keyless workload identity federation. Shares are deleted after 60 days by a bucket lifecycle rule. The key lives in the URL fragment, which never reaches a server.
 - **What the server does keep:** a per-day count of YouCam units used (one number per date, in the same bucket), and in memory only, hourly unit and link-creation tallies per IP address. No photos, no readable health data, no analytics or cookies. See [/privacy](https://hairloom-studio.vercel.app/privacy).
 
@@ -140,11 +152,13 @@ npm run dev                                   # http://localhost:3141
   - Every YouCam call goes through one limit of `YOUCAM_CALLS_PER_MINUTE` (default 40) per instance, with `YOUCAM_JUDGE_CALLS_PER_MINUTE` (default 10) kept for judges.
   - Tasks are settled on the server after each start, so a failed task is refunded even if the browser never polls. A daily cron (`/api/cron/settle`, `CRON_SECRET`) sweeps what is left.
 - **Shares** are written to `.data/` locally. Set `GCS_BUCKET` and `GCS_WIF_AUDIENCE` for production.
+- **Limits are per instance, spend is not.** The call limiter, unit reservations and per-visitor hourly caps live in each Vercel instance's memory, so N warm instances could forward up to N × 40 calls a minute and give a visitor N shares. What bounds spending is shared: the daily unit caps are a compare-and-swap counter in the GCS bucket (`budget/`), and every task first checks the live YouCam balance against the unit floor. So extra instances can make the studio busier, but not more expensive than the daily caps allow. YouCam's own limit (250 calls per 5 minutes per key) answers 429, which the studio shows as "busy".
 
 **Scripts:**
 - `scripts/export-demo.mjs` refreshes demo data from the lab runs, `scripts/export-real.mjs` the real-photo tests, and `scripts/export-runs.mjs` the evidence ledger (`data/lab-runs.json`).
 - `scripts/measure.cjs` re-measures demo hair colours in a real browser.
 - `scripts/e2e.cjs <url>` runs the end-to-end check (1 unit).
+- `scripts/check-costs.mjs` compares the units in `lib/kinds.ts` with YouCam's feature-cost list (a read; it checks the balance didn't move) and writes `data/feature-costs.json` for the evidence page. Run it with `node --env-file=<your env file> --import tsx scripts/check-costs.mjs`.
 - `npm test` runs:
   - CIEDE2000 against the Sharma reference pairs;
   - the whitelist and option validation;
@@ -161,6 +175,10 @@ npm run dev                                   # http://localhost:3141
 - The closeness ranking weighs length, texture and colour by hand. It hasn't yet been checked against what fitters and clients choose.
 - On-device hair segmentation and face detection use MediaPipe (Apache 2.0).
 - Brows were only tried on faces that still have brows, and the measured hair shade missed once on the real photos (backlit brown read as off black).
+
+## Built during the submission period
+
+Hairloom was built from Oct 21, 2026, inside the hackathon's submission period. The public history starts with a handful of commits on Oct 21 because the repository was recreated that night: an earlier history contained the nine Unsplash test portraits, and we rewrote it so those third-party photos are not redistributed. The evidence ledger (`data/lab-runs.json`, built by `scripts/export-runs.mjs` from the lab outputs) is stamped 2026-10-21, the lab scripts that made the demo are in `lab/`, and the commits since then show each round of fixes.
 
 ## License
 
