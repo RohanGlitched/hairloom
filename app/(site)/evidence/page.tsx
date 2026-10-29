@@ -295,7 +295,7 @@ export default function Evidence() {
             {SOURCES.map(([t, u]) => <li key={u}><a href={u} target="_blank" rel="noreferrer">{t}</a></li>)}
           </ol>
           <p className="small" style={{ marginTop: 20 }}>Wig shade codes are a loose convention that varies by brand; our hex values approximate typical swatches.</p>
-          <p className="small" style={{ marginTop: 10 }}>Judged build: tag <a href="https://github.com/RohanGlitched/hairloom/tree/v1.3-submission">v1.3-submission</a>. Main is frozen from Nov 2 to Nov 20 except to keep the demo running.</p>
+          <p className="small" style={{ marginTop: 10 }}>Judged build: tag <a href="https://github.com/RohanGlitched/hairloom/tree/v1.4-submission">v1.4-submission</a>. Main is frozen from Nov 2 to Nov 20 except to keep the demo running.</p>
           <p className="small" style={{ marginTop: 10 }}>The real-photo tests use Unsplash photos, under the Unsplash License and credited to each photographer. They are not covered by the code&rsquo;s MIT licence. MediaPipe models are Apache 2.0. See the NOTICE file in the repository.</p>
         </div>
       </section>

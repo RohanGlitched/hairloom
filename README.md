@@ -161,7 +161,7 @@ npm run dev                                   # http://localhost:3141
 - `scripts/export-demo.mjs` refreshes demo data from the lab runs, `scripts/export-real.mjs` the real-photo tests, and `scripts/export-runs.mjs` the evidence ledger (`data/lab-runs.json`).
 - `scripts/measure.cjs` re-measures demo hair colours in a real browser.
 - `scripts/e2e.cjs <url>` runs the end-to-end check (1 unit).
-- `scripts/check-costs.mjs` ([per-kind comparison](https://github.com/RohanGlitched/hairloom/blob/v1.3-submission/scripts/check-costs.mjs#L46)) compares the units in `lib/kinds.ts` with YouCam's feature-cost list (a read; it checks the balance didn't move) and writes `data/feature-costs.json` for the evidence page. Run it with `node --env-file=<your env file> --import tsx scripts/check-costs.mjs`.
+- `scripts/check-costs.mjs` ([per-kind comparison](https://github.com/RohanGlitched/hairloom/blob/v1.4-submission/scripts/check-costs.mjs#L46)) compares the units in `lib/kinds.ts` with YouCam's feature-cost list (a read; it checks the balance didn't move) and writes `data/feature-costs.json` for the evidence page. Run it with `node --env-file=<your env file> --import tsx scripts/check-costs.mjs`.
 - `npm test` runs:
   - CIEDE2000 against the Sharma reference pairs;
   - the whitelist and option validation;
@@ -196,7 +196,7 @@ npm test                          # 55 tests, including every unit cost against 
 
 ## Built during the submission period
 
-Judged build: tag [`v1.3-submission`](https://github.com/RohanGlitched/hairloom/tree/v1.3-submission). Main is frozen from Nov 2 to Nov 20 except to keep the demo running.
+Judged build: tag [`v1.4-submission`](https://github.com/RohanGlitched/hairloom/tree/v1.4-submission). Main is frozen from Nov 2 to Nov 20 except to keep the demo running.
 
 
 Hairloom was built from Oct 21, 2026, inside the hackathon's submission period. The public history starts with a handful of commits on Oct 21 because the repository was recreated that night: an earlier history contained the nine Unsplash test portraits, and we rewrote it so those third-party photos are not redistributed. The evidence ledger (`data/lab-runs.json`, built by `scripts/export-runs.mjs` from the lab outputs) was first built on 2026-10-21 and rebuilt on 2026-10-30 to add that day's two rounds of lab runs, the lab scripts that made the demo are in `lab/`, and the commits since then show each round of fixes.
