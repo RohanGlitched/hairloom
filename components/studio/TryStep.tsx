@@ -2,11 +2,11 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { LENGTH_LABEL, WIGS, inr } from "@/lib/catalogue";
-import { deltaE00, greyBlend, greyWords, matchWord, nearestShades, type Lab } from "@/lib/color";
+import { deltaE00, greyBlend, greyWords, hexToLab, matchWord, nearestShades, type Lab } from "@/lib/color";
 import { greyOf, measured, renderLab, wigShade } from "@/lib/colours";
 import { prepare } from "@/lib/client";
 import { VOLUME, EXTENSION } from "@/lib/kinds";
-import { band, closeness, lengthFromTerm, lengthStep, orLonger, textureFromType, textureStep } from "@/lib/match";
+import { band, closeness, closenessParts, lengthFromTerm, lengthStep, orLonger, partsWords, textureFromType, textureStep } from "@/lib/match";
 import { Reveal } from "@/components/Reveal";
 import { loadPublicListings, nearestListings, priceOf, type StockItem } from "@/lib/stock";
 import type { Ctx } from "./Studio";
@@ -81,7 +81,7 @@ export function TryStep({ ctx }: { ctx: Ctx }) {
     if (!picked.current) setSel(opening);
   }, [opening]);
 
-  async function tryOn(key: string, kind: "wig" | "ownHair" | "hairColor" | "hairVol" | "hairExt", opt: Record<string, string | number>, images: string[]) {
+  async function tryOn(key: string, kind: "wig" | "ownHair" | "shopPhoto" | "hairColor" | "hairVol" | "hairExt", opt: Record<string, string | number>, images: string[]) {
     picked.current = true;
     if (window.innerWidth < 900) document.getElementById("try-mirror")?.scrollIntoView({ behavior: "smooth", block: "start" });
     if (session.renders[key]) return setSel(key);
@@ -93,6 +93,15 @@ export function TryStep({ ctx }: { ctx: Ctx }) {
     setSel(key);
   }
 
+  /** A wig photo from any shop, as the reference for one try-on on this photo. */
+  async function shopPhoto(file?: File) {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) return setMsg("Choose a photo file (JPG or PNG).");
+    const ref = await prepare(file, 1024);
+    const n = Object.keys(session.renders).filter((k) => k.startsWith("shop:")).length + 1;
+    await tryOn(`shop:${n}`, "shopPhoto", {}, [basePhoto!, ref]);
+  }
+
   async function newToday(file?: File) {
     if (!file) return;
     const url = await prepare(file, 1024);
@@ -102,7 +111,7 @@ export function TryStep({ ctx }: { ctx: Ctx }) {
   if (!session.kept || !basePhoto) {
     return (
       <div className={s.step}>
-        <StepHead n={2} title="Try wigs on your own face" lede="Make your hair passport first, so every try-on can be compared with the hair you kept." />
+        <StepHead n={2} title="Try wigs on your own face" lede="Make your kept-hair record first, so every try-on can be compared with the hair you kept." />
         <button className="btn btn-ivory" onClick={() => ctx.go("keep")}>Go to step 1</button>
       </div>
     );
@@ -194,10 +203,12 @@ export function TryStep({ ctx }: { ctx: Ctx }) {
                 <li><span>Texture</span>{textureStep(keptTex, wig.texture)?.word ?? wig.texture}</li>
                 <li><span>Colour</span>{dE != null ? matchWord(dE) : render ? "Measuring…" : "Try it on to compare"}</li>
                 <li><span>Stock shade</span><i style={{ background: wigShade(wig).hex }} aria-hidden="true" />{wigShade(wig).code}, {wigShade(wig).name.toLowerCase()}</li>
+                <li><span>Match</span>{partsWords(closenessParts(wig, { length: keptLen, texture: keptTex, orLonger: keptMore }, dE))}</li>
               </ul>
               {pid && !shaded(wig.id) && <p className="small">Shades are prepared for {ranked.find(({ w }) => shaded(w.id))?.w.name ?? "one wig"} in this demo. With your own photo, any wig can be recoloured.</p>}
               {shadeSource && keptLab && (!pid || shaded(wig.id)) && (
                 <div className={s.shades}>
+                  {nearestShades(keptLab, 1)[0] && hexToLab(nearestShades(keptLab, 1)[0].hex)[0] > 55 && <p className={s.listNote}>Light shades can still come back darker than asked, so check a swatch before ordering.</p>}
                   <p className="small">Order it in a shade closer to {session.mode === "demo" ? `${session.name}'s` : "your"} own hair{greyWords(keptGrey?.grey) ? ` (${greyWords(keptGrey?.grey)}${greyBlend(keptGrey?.grey, keptGrey?.base) ? `; a fitter may suggest a ${greyBlend(keptGrey?.grey, keptGrey?.base)!.code} blend, judged by eye` : ""})` : ""}:</p>
                   <div>
                     {nearestShades(keptLab, 3).filter((n) => !pid || ready(`shade:${wig.id}:${n.code}`)).map((n) => {
@@ -233,6 +244,11 @@ export function TryStep({ ctx }: { ctx: Ctx }) {
                 </details>
               )}
             </>
+          ) : sel?.startsWith("shop:") ? (
+            <>
+              <h2 className="h-sub">A shop&rsquo;s wig photo</h2>
+              <p className="small">YouCam&rsquo;s hairstyle try-on with the shop&rsquo;s photo as the reference, placed on the {baseLabel.toLowerCase()} photo. Check the shade and cap with the shop before buying.</p>
+            </>
           ) : sel === "own" ? (
             <>
               <h2 className="h-sub">{session.mode === "demo" ? `${session.name}'s own hair` : "Your own hair"}</h2>
@@ -259,6 +275,11 @@ export function TryStep({ ctx }: { ctx: Ctx }) {
               </button>
             )}
           </div>
+          <label className={`btn btn-ghost btn-sm ${s.shopBtn}`} aria-disabled={!!busy || !ctx.units.live}>
+            Try a wig photo from any shop · 2 units
+            <input type="file" accept="image/*" className={s.file} disabled={!!busy || !ctx.units.live} onChange={(e) => { void shopPhoto(e.target.files?.[0]); e.target.value = ""; }} />
+          </label>
+          <p className="small">A product photo of the wig on a model or mannequin, facing the camera. Use a photo you have the right to use; it goes to YouCam for this one try-on and is deleted after.</p>
           <p className={s.cant}>A try-on shows style and colour. It can&rsquo;t show cap fit, weight or how the lace looks close up, so try real wigs with your fitter before buying.</p>
         </div>
       </div>

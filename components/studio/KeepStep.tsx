@@ -32,7 +32,7 @@ export function KeepStep({ ctx }: { ctx: Ctx }) {
     const alopecia = session.situation === "alopecia";
     return (
       <div className={s.step}>
-        <StepHead n={1} title={`${session.name}'s hair passport`} lede={alopecia ? "Read by YouCam from three photos taken while her hair still covered the patches." : "Read by YouCam from three photos taken before treatment, with the head measured at home."} />
+        <StepHead n={1} title={`${session.name}'s kept-hair record`} lede={alopecia ? "Read by YouCam from three photos taken while her hair still covered the patches." : "Read by YouCam from three photos taken before treatment, with the head measured at home."} />
         <Passport p={{ name: session.name, kept: session.kept, turns: session.turns ?? [], readings: session.readings, cap: session.cap, situation: session.situation }} lab={session.personaId ? measured(`${session.personaId}/kept`) : null} grey={session.personaId ? greyOf(`${session.personaId}/kept`) : null} />
         <div className={s.next}><button className="btn btn-ivory" onClick={() => ctx.go("try")}>Next: try wigs</button></div>
       </div>

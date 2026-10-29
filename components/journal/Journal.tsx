@@ -20,7 +20,7 @@ const CRUK2 = "https://www.cancerresearchuk.org/about-cancer/coping/physically/c
 
 /** Days are relative to the first treatment; regrowth is relative to the last. */
 const PLAN: Milestone[] = [
-  { day: -14, title: "Keep your hair passport", body: "Three photos with your hair down, while it is still yours. This is the record every later step compares with.", action: { href: "/studio", label: "Open the studio" }, src: { label: "ACS: take photos and save a lock of hair", url: ACS } },
+  { day: -14, title: "Keep a record of your hair", body: "Three photos with your hair down, while it is still yours. This is the record every later step compares with.", action: { href: "/studio", label: "Open the studio" }, src: { label: "ACS: take photos and save a lock of hair", url: ACS } },
   { day: -10, title: "Choose and fit a wig", body: "Charities advise matching a wig before hair loss, while a fitter can still see your colour and style. Send your shortlist ahead.", action: { href: "/studio?step=try", label: "Try wigs" }, src: { label: "CRUK", url: CRUK2 } },
   { day: -3, title: "Soft headwear and a sleep cap", body: "Have something soft for nights and for the days without a wig.", action: { href: "/studio?step=look", label: "Try headwear" } },
   { day: 0, title: "First treatment", body: "If it helps, add a skin check-in once per treatment cycle. Bring anything that worries you to your care team." },
@@ -29,10 +29,10 @@ const PLAN: Milestone[] = [
   { day: 42, title: "Brows and lashes may thin", body: "They can go weeks or months after the hair on your head. Practise your rebuilt brows before you need them.", action: { href: "/studio?step=look", label: "Rebuild brows" } },
 ];
 const ALOPECIA: Milestone[] = [
-  { day: 0, title: "Keep your hair passport now", body: "While your hair still covers the patches. It is the record a fitter matches to, however things change.", action: { href: "/studio", label: "Open the studio" } },
+  { day: 0, title: "Keep a record of your hair now", body: "While your hair still covers the patches. It is the record a fitter matches to, however things change.", action: { href: "/studio", label: "Open the studio" } },
   { day: 7, title: "Try toppers before wigs", body: "If the patches are small, a topper or clip-ins may be enough. Preview volume and clip-in length on your own photo.", action: { href: "/studio?step=try", label: "Preview volume" } },
   { day: 30, title: "Re-photograph each month", body: "Patches in alopecia areata can spread, settle or regrow, so a monthly photo helps you and your dermatologist see the pattern. It is a photo record, not a measurement." },
-  { day: 60, title: "Choose with a fitter when you're ready", body: "Send your passport and shortlist ahead, with your head size and parting.", action: { href: "/studio?step=share", label: "Share a brief" } },
+  { day: 60, title: "Choose with a fitter when you're ready", body: "Send your kept-hair record and shortlist ahead, with your head size and parting.", action: { href: "/studio?step=share", label: "Share a brief" } },
 ];
 const REGROWTH: Milestone[] = [
   { day: 90, title: "Regrowth usually starts", body: "Hair usually returns within about three to six months of finishing, sometimes a different colour or curlier. Re-read it and compare with the hair you kept.", action: { href: "#regrowth", label: "Read new growth" }, src: { label: "CRUK, ACS", url: ACS2 } },
@@ -235,7 +235,7 @@ export function Journal() {
           <div className={s.pay}>
             <div><h3 className="h-sub">India</h3><p>Some hospitals and charities give free wigs made from donated hair, such as the Tata Memorial Centre with the Cherian Foundation, and Cope with Cancer in Mumbai. Ask your oncology team or social worker.</p></div>
             <div><h3 className="h-sub">UK</h3><p>Wigs are free on the NHS in Scotland and Wales. In England an NHS stock synthetic wig costs &pound;80.15 unless you qualify for free prescriptions.</p><a className="src" href="https://www.nhsbsa.nhs.uk/help-travel-eye-care-wigs-and-fabric-support-costs/wigs-and-fabric-supports" target="_blank" rel="noreferrer">NHSBSA</a></div>
-            <div><h3 className="h-sub">US</h3><p>Original Medicare doesn&rsquo;t cover wigs. Some private plans do with a doctor&rsquo;s prescription for a &ldquo;cranial prosthesis&rdquo;; your passport&rsquo;s photos and head size can go with the claim.</p><a className="src" href="https://www.breastcancer.org/treatment-side-effects/hair-loss/wigs/insurance" target="_blank" rel="noreferrer">Breastcancer.org</a></div>
+            <div><h3 className="h-sub">US</h3><p>Original Medicare doesn&rsquo;t cover wigs. Some private plans do with a doctor&rsquo;s prescription for a &ldquo;cranial prosthesis&rdquo;; your kept-hair record&rsquo;s photos and head size can go with the claim.</p><a className="src" href="https://www.breastcancer.org/treatment-side-effects/hair-loss/wigs/insurance" target="_blank" rel="noreferrer">Breastcancer.org</a></div>
             <div><h3 className="h-sub">Children</h3><p>Hairloom is for adults. Children&rsquo;s hair loss needs a paediatric team and specialist wig charities, who fit wigs for growing heads.</p></div>
           </div>
         </div>

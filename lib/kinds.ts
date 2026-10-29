@@ -1,7 +1,7 @@
 // The whitelist of YouCam tasks the studio can run. The client names a kind; the server
 // builds the request body here, so no arbitrary feature or prompt can be sent through us.
 import { HEADWEAR, WIGS } from "./catalogue";
-import { hexToLab } from "./color";
+import { hexToLab, labToHex } from "./color";
 
 /**
  * Colour intensity for Hair Color Try-On. At 70, light shades landed far from the asked colour (Margaret's
@@ -9,9 +9,17 @@ import { hexToLab } from "./color";
  */
 export const colourIntensity = (hex: string) => (hexToLab(hex)[0] > 55 ? 100 : 70);
 
+/** Light shades also come back darker than asked, by more the lighter they are; above L* 55 the colour
+ * sent is lifted by the measured shortfall (fitted on Margaret's three blondes, so in-sample). */
+export const LIFT = (L: number) => (L > 55 ? Math.max(0, 0.4 * L - 14.7) : 0);
+export function compensated(hex: string) {
+  const [L, a, b] = hexToLab(hex);
+  return LIFT(L) ? labToHex([Math.min(92, L + LIFT(L)), a, b]) : hex;
+}
+
 export type KindName =
   | "hairType" | "hairFrizz" | "hairLength" | "face"
-  | "wig" | "ownHair" | "hairColor" | "headwear" | "brows" | "skin" | "hairVol" | "hairExt";
+  | "wig" | "ownHair" | "shopPhoto" | "hairColor" | "headwear" | "brows" | "skin" | "hairVol" | "hairExt";
 
 type Opt = Record<string, string | number | undefined>;
 type Ctx = { files: string[]; opt: Opt };
@@ -67,12 +75,18 @@ export const KINDS: Record<KindName, Kind> = {
     path: "/s2s/v2.1/task/hair-transfer", images: 2, units: 2, api: "AI Hairstyle Virtual Try-On", jpegOnly: true,
     body: ({ files }) => ({ src_file_id: files[0], ref_file_id: files[1], hair_color: "ref" }),
   },
+  /** A shop's own wig photo (on a model or mannequin) as the reference: the same checks as every kind
+   * (JPEG only, size cap, reservation, signed handle, delete), with the wig photo sent by the browser. */
+  shopPhoto: {
+    path: "/s2s/v2.1/task/hair-transfer", images: 2, units: 2, api: "AI Hairstyle Virtual Try-On", jpegOnly: true,
+    body: ({ files }) => ({ src_file_id: files[0], ref_file_id: files[1], hair_color: "ref" }),
+  },
   hairColor: {
     path: "/s2s/v2.0/task/hair-color", images: 1, units: 1, api: "AI Hair Color Virtual Try-On",
     body: ({ files, opt }) => {
       const hex = typeof opt.hex === "string" ? opt.hex : "";
       if (!/^#[0-9a-fA-F]{6}$/.test(hex)) throw new Error("bad colour");
-      return { src_file_id: files[0], pattern: { name: "full" }, palettes: [{ color: hex, color_intensity: colourIntensity(hex), shine_intensity: 40 }] };
+      return { src_file_id: files[0], pattern: { name: "full" }, palettes: [{ color: compensated(hex), color_intensity: colourIntensity(hex), shine_intensity: 40 }] };
     },
   },
   headwear: {

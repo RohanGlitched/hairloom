@@ -31,7 +31,7 @@ export type Ctx = {
 
 export type Step = "keep" | "try" | "look" | "share";
 const STEPS: { id: Step; label: string; hint: string }[] = [
-  { id: "keep", label: "Keep", hint: "Your hair passport" },
+  { id: "keep", label: "Keep", hint: "Your kept-hair record" },
   { id: "try", label: "Try", hint: "Wigs and your own hair" },
   { id: "look", label: "Brows & headwear", hint: "For the days without" },
   { id: "share", label: "Share", hint: "Send to your fitter" },
@@ -148,7 +148,7 @@ export function Studio({ initialPersona, initialStep, initialWig }: { initialPer
         <div className={s.sideFoot}>
           <button className="btn btn-ghost btn-sm" onClick={() => setSession(null)}>Switch person</button>
           {session.mode === "live" && (
-            <button className="btn btn-ghost btn-sm" onClick={async () => { if (window.confirm("Erase your hair passport and every try-on from this device?")) { await erase(); setSession(null); } }}>Erase my photos</button>
+            <button className="btn btn-ghost btn-sm" onClick={async () => { if (window.confirm("Erase your kept-hair record and every try-on from this device?")) { await erase(); setSession(null); } }}>Erase my photos</button>
           )}
         </div>
       </aside>
@@ -167,7 +167,7 @@ function UnitMeter({ units, spent }: { units: Units; spent: number }) {
     <details className={s.meter}>
       <summary>{units.live ? "Live studio is on" : units.units == null ? "Checking the live studio…" : "Live studio is resting"}</summary>
       <p className="small">
-        Each reading or try-on uses YouCam API units (1–2 for a try-on, up to 16 for a passport). You&rsquo;ve used {spent}; <span className="num">{units.units ?? "—"}</span> are left on this demo account, with some kept back for judging.
+        Each reading or try-on uses YouCam API units (1–2 for a try-on, up to 16 for a kept-hair record). You&rsquo;ve used {spent}; <span className="num">{units.units ?? "—"}</span> are left on this demo account, with some kept back for judging.
       </p>
     </details>
   );
@@ -180,7 +180,7 @@ function Consent({ onAgree, onBack }: { onAgree: () => void; onBack: () => void 
       <p className="kicker">Before you add photos</p>
       <h1 className="h-sec">How your photos are handled</h1>
       <ul>
-        <li>Your photos and passport are kept in this browser. There&rsquo;s no account.</li>
+        <li>Your photos and kept-hair record are kept in this browser. There&rsquo;s no account.</li>
         <li>For each reading or try-on, the photo it needs is sent through our server to YouCam (Perfect Corp) to be processed. As soon as your browser has the result, we ask YouCam to delete that task and its photo.</li>
         <li>Hair colour is measured on this device and never uploaded for that.</li>
         <li>Hairloom helps with appearance. It doesn&rsquo;t diagnose anything; talk to your care team about treatment and hair loss.</li>
@@ -201,7 +201,7 @@ function Start({ onDemo, onLive, units, onCode, wig }: { onDemo: (p: Persona) =>
       <div className={s.startHead}>
         <p className="kicker">The studio</p>
         <h1 className="h-sec">Whose hair are we keeping today?</h1>
-        <p className="lede">Start with a demo person to see every step instantly, or use your own photos. Your passport stays in this browser.</p>
+        <p className="lede">Start with a demo person to see every step instantly, or use your own photos. Your record stays in this browser.</p>
         {wig && <p className={s.fromShop}>You came from {BOUTIQUE.name} to try <b>{wig}</b>. It will be first in step 2, whoever you choose.</p>}
       </div>
       <div className={s.startGrid}>
@@ -222,7 +222,7 @@ function Start({ onDemo, onLive, units, onCode, wig }: { onDemo: (p: Persona) =>
           </span>
           <span className={s.startText}>
             <b>Use my own photos</b>
-            <span>YouCam&rsquo;s camera guides you through three angles, or upload photos. Your passport stays on this device.</span>
+            <span>YouCam&rsquo;s camera guides you through three angles, or upload photos. Your record stays on this device.</span>
             <small>
               {units.units == null ? "Checking the live studio…"
                 : units.lane === "bad_code" ? "That judge code isn't right; check it or clear it"

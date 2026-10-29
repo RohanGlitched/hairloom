@@ -16,22 +16,22 @@
   <b><a href="https://hairloom-studio.vercel.app/evidence">Evidence</a></b>
 </p>
 
-**Hairloom** helps people facing hair loss choose a wig while they still have their hair, and keep choosing after. It keeps a *hair passport* before treatment: curl pattern, frizz, length, face shape and brows from the YouCam API, plus a wig shade code measured on the device. Later it puts that hair, any wig, a headscarf or rebuilt brows back on the person's own photo, even after hair loss. The shortlist goes to their wig fitter in an end-to-end sealed link.
+**Hairloom** helps people facing hair loss choose a wig while they still have their hair, and keep choosing after. It keeps a *kept-hair record* before treatment: curl pattern, frizz, length, face shape and brows from the YouCam API, plus a wig shade code measured on the device. Later it puts that hair, any wig, a headscarf or rebuilt brows back on the person's own photo, even after hair loss. The shortlist goes to their wig fitter in an end-to-end sealed link.
 
 What it does that a wig catalogue can't:
 
 - **Your own hair, back on your week-4 photo**, from the photo you kept (Hairstyle Try-On worked on 8 of 8 try-ons on four real shaved heads).
 - **A sealed fitter brief** with a pull list in your shade code and cap size, encrypted in the browser.
-- **The shop's own stock, ranked against your passport**: paste a catalogue on the fitter desk, or ask through the MCP server.
+- **The shop's own stock, ranked against the hair you kept**: paste a catalogue on the fitter desk, or ask through the MCP server.
 - **Beyond chemotherapy**: alopecia areata, pattern thinning and men, through Hair Volume and Hair Extension try-ons.
 - **11 YouCam APIs**, each doing one job, with every task we kept in a public evidence ledger, failures included.
 
-About 65% of people having chemotherapy lose hair. Hair usually starts to fall out two to three weeks after the first cycle, and cancer charities advise matching a wig *before* that happens. Most wig shops take returns only if the wig hasn't been worn, and some take none. That makes wigs the retail category where trying on before buying matters most, and where it is hardest to do. Sources are listed on the [evidence page](https://hairloom-studio.vercel.app/evidence#sources).
+About 65% of people having chemotherapy lose hair. Hair usually starts to fall out two to three weeks after the first cycle, and cancer charities advise matching a wig *before* that happens. Most wig shops take returns only if the wig hasn't been worn, and some take none. That makes wigs the retail category where trying on before buying matters most, and where it is hardest to do. The American Cancer Society suggests photographing your hairstyle and saving a lock of hair before treatment to match a wig ([ACS](https://www.cancer.org/cancer/managing-cancer/side-effects/hair-skin-nails/hair-loss/choosing-and-wearing-wig.html)), Breastcancer.org suggests bringing pictures of the style you want ([Breastcancer.org](https://www.breastcancer.org/treatment-side-effects/hair-loss/wigs)), and Macmillan says choosing before your hair falls out lets you match its style and colour ([Macmillan](https://www.macmillan.org.uk/cancer-information-and-support/impacts-of-cancer/hair-loss/wigs-for-cancer-treatment)). Hairloom keeps those photos and reads them. Sources are listed on the [evidence page](https://hairloom-studio.vercel.app/evidence#sources).
 
 ## Try it in a minute
 
 1. Open the [studio with Anjali](https://hairloom-studio.vercel.app/studio?p=anjali). Anjali is a demo person, and every image is precomputed YouCam output, so nothing costs units. Nia (alopecia), Margaret and Ravi are there too.
-2. **Keep:** read her hair passport, with curl, frizz, length, face shape, brows, head size and her colour as a wig shade code.
+2. **Keep:** read her kept-hair record, with curl, frizz, length, face shape, brows, head size and her colour as a wig shade code.
 3. **Try:** pick wigs on her photo before hair loss, then switch to week 4. Wigs are ranked by how close each is to the hair she kept. You can drag across the mirror to compare, recolour a wig to a closer shade, or (as Margaret) preview fuller volume and clip-in length on a photo of thinning hair.
 4. **Brows & headwear**, then **Share:** create a sealed link and open it as the fitter.
 
@@ -74,14 +74,14 @@ Hairloom is also an MCP server (Streamable HTTP) at `https://hairloom-studio.ver
 
 | Tool | What it does |
 |---|---|
-| `match_wigs` | Ranks stock against a client's passport and gives a pull list in the client's shade, with a cap note. |
+| `match_wigs` | Ranks stock against the hair a client kept and gives a pull list in the client's shade, with a cap note. |
 | `shade_for_colour` | Turns a hair colour hex into common wig shade codes, using CIEDE2000. |
 | `list_stock` | Browses the boutique's wigs, with their listed shade codes. |
 | `show_on_demo_person` | Returns a precomputed YouCam try-on of a wig on a demo person. |
 | `fitting_plan` | Gives the dates to plan around treatment, from ACS, CRUK and Macmillan guidance. |
 | `fitting_cost` | Gives the YouCam units and dollars for a fitting. |
 
-The server never sees client photos. For live try-ons, pair it with YouCam's hosted MCP servers (`/mcp/fashion`, `/mcp/beauty`). `node scripts/mcp-check.mjs <url>` runs a smoke test. `match_wigs` takes a shop's own `stock` (with SKU, shade code, cap sizes and product URL) and returns hold notes; `match_wigs` and `shade_for_colour` take the passport's grey share and suggest a grey blend.
+The server never sees client photos. For live try-ons, pair it with YouCam's hosted MCP servers (`/mcp/fashion`, `/mcp/beauty`). `node scripts/mcp-check.mjs <url>` runs a smoke test. `match_wigs` takes a shop's own `stock` (with SKU, shade code, cap sizes and product URL) and returns hold notes; `match_wigs` and `shade_for_colour` take the record's grey share and suggest a grey blend.
 
 On the [fitter desk](https://hairloom-studio.vercel.app/fitter#assistant), **Ask the fitter desk** walks the same tools in order (`match_wigs`, `shade_for_colour`, `fitting_plan`, `show_on_demo_person`) for the open brief and ends in a pull list. It is a fixed, rules-based plan, not a language model, so it costs no model calls and no YouCam units; each step is a real call to `/api/mcp`.
 
@@ -95,22 +95,22 @@ On the [fitter desk](https://hairloom-studio.vercel.app/fitter#assistant), **Ask
   - Patients never pay.
   - Boutiques pay per client brief.
   - Wig brands embed [a widget](https://hairloom-studio.vercel.app/embed?wig=asha).
-  - Hospitals and wig banks sponsor passports.
-- **What it costs:** a chemotherapy wig fitting is 41 YouCam units ($1.97–2.26), a thinning session 12 and a sponsored passport 22. The cost table is built from the studio's own task list and matches the MCP `fitting_cost` tool.
+  - Hospitals and wig banks sponsor kept-hair records.
+- **What it costs:** a chemotherapy wig fitting is 41 YouCam units ($1.97–2.26), a thinning session 12 and a sponsored record 22. The cost table is built from the studio's own task list and matches the MCP `fitting_cost` tool.
 - **Draft prices:**
   - ₹399 + GST per fitter brief.
   - ₹99 per widget shop session (capped at 10 units).
-  - ₹150 per sponsored passport, which covers 500 patients for ₹75,000. Health care is an eligible CSR activity under section 135 of India's Companies Act.
+  - ₹150 per sponsored record, which covers 500 patients for ₹75,000. Health care is an eligible CSR activity under section 135 of India's Companies Act.
 - **Does it pay a boutique?** At the labelled defaults (30 clients a month, half a visit saved, 5% buying one more wig at a 40% margin), the boutique nets about ₹5,130 a month. One extra wig a month covers it, and Hairloom keeps about half the fee after YouCam's pay-as-you-go price.
 - **The market for YouCam:**
   - About 40% of women show pattern thinning by 50 (DermNet), and alopecia areata has a 2% lifetime incidence.
   - The medical wig segment is projected at $1.9B by 2035 (GMI).
   - These are the same hair try-ons Perfect Corp already sells, bought by people who need them more.
-- **Pilot:** eight weeks with one oncology wig bank or boutique in India, judged on three thresholds: 60% of patients keep a passport before hair loss, 25% fewer fitting visits, and 80% of wigs still worn at four weeks.
+- **Pilot:** eight weeks with one oncology wig bank or boutique in India, judged on three thresholds: 60% of patients keep a record before hair loss, 25% fewer fitting visits, and 80% of wigs still worn at four weeks.
 
 ## Privacy
 
-- **Photos and passport** live only in the browser (IndexedDB). There are no accounts and no photo copy on our server.
+- **Photos and the kept-hair record** live only in the browser (IndexedDB). There are no accounts and no photo copy on our server.
 - **Colour** is measured on the device.
 - **YouCam tasks:** photos pass through our server's memory to YouCam and are written nowhere on our side. Every task's result is downloaded by our server, then the browser confirms receipt and the task is deleted with `task/delete`, which removes the input photo too. If the tab closes mid-task, the page sends the delete as it closes. Failing that, a capped sweep runs after studio requests at most every 10 minutes (a compare-and-swap marker in the bucket lets one instance run it) and deletes results left uncollected for 11 minutes; the daily cron catches the rest.
 - **Fitter links** are encrypted with AES-GCM in the browser. The server stores only ciphertext, in a private GCS bucket reached through keyless workload identity federation. Shares are deleted after 60 days by a bucket lifecycle rule. The key lives in the URL fragment, which never reaches a server.
@@ -124,7 +124,7 @@ browser                                   server (Next.js on Vercel)            
 Camera Kit / upload → resize       ──▶   /api/try  whitelist of 12 task kinds ──▶  file upload → task
 MediaPipe hair mask → Lab → ΔE00          unit floor + per-visitor budget            poll → result
 MediaPipe face crop (skin)         ◀──   download result, then task/delete   ◀──
-IndexedDB passport + renders
+IndexedDB record + renders
 AES-GCM seal  ─────────────────────▶   /api/share  ciphertext only ──▶ GCS (WIF, no keys)
 ```
 
@@ -196,7 +196,7 @@ npm test                          # 51 tests, including every unit cost against 
 
 ## Built during the submission period
 
-Judged build: tag [`v1.1-submission`](https://github.com/RohanGlitched/hairloom/tree/v1.1-submission). Main is frozen from Nov 2 to Nov 20 except to keep the demo running.
+Judged build: tag [`v1.2-submission`](https://github.com/RohanGlitched/hairloom/tree/v1.2-submission). Main is frozen from Nov 2 to Nov 20 except to keep the demo running.
 
 
 Hairloom was built from Oct 21, 2026, inside the hackathon's submission period. The public history starts with a handful of commits on Oct 21 because the repository was recreated that night: an earlier history contained the nine Unsplash test portraits, and we rewrote it so those third-party photos are not redistributed. The evidence ledger (`data/lab-runs.json`, built by `scripts/export-runs.mjs` from the lab outputs) was first built on 2026-10-21 and rebuilt on 2026-10-30 to add that day's two rounds of lab runs, the lab scripts that made the demo are in `lab/`, and the commits since then show each round of fixes.

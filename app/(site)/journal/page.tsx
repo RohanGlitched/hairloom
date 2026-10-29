@@ -14,7 +14,7 @@ export default function JournalPage() {
           <p className="kicker">Journal</p>
           <h1 className="h-hero" style={{ maxWidth: "16ch" }}>Plan around your hair.</h1>
           <p className="lede" style={{ marginTop: 14 }}>
-            Enter your treatment dates, or choose alopecia or thinning, and Hairloom lays out when to keep your passport, choose a wig, expect changes and look for regrowth. Add a skin check-in once a cycle if it helps.
+            Enter your treatment dates, or choose alopecia or thinning, and Hairloom lays out when to keep a record of your hair, choose a wig, expect changes and look for regrowth. Add a skin check-in once a cycle if it helps.
           </p>
         </div>
       </section>

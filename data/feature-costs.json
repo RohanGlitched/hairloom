@@ -1,5 +1,5 @@
 {
- "checked": "2026-10-29T19:04:21.260Z",
+ "checked": "2026-10-29T21:12:54.561Z",
  "endpoint": "GET /s2s/v2.0/credit/feature-cost",
  "skus": 103,
  "unitsSpentByCheck": 0,
@@ -51,6 +51,15 @@
   },
   {
    "kind": "ownHair",
+   "api": "AI Hairstyle Virtual Try-On",
+   "path": "/s2s/v2.1/task/hair-transfer",
+   "ours": 2,
+   "youcam": 2,
+   "sku": "AI Hair Style Virtual Try-On V2.0 (Custom)",
+   "ok": true
+  },
+  {
+   "kind": "shopPhoto",
    "api": "AI Hairstyle Virtual Try-On",
    "path": "/s2s/v2.1/task/hair-transfer",
    "ours": 2,

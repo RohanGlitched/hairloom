@@ -51,6 +51,7 @@ export function Embed({ wigId, shop }: { wigId: string; shop?: string }) {
           <a className={s.cta} href={studio} target="_blank" rel="noopener">Try {w.name} on your own photo</a>
           {shop && <a className={s.cta2} href={shop} target="_top" rel="noopener">Reserve {w.name} in shade {sh.code} at {new URL(shop).hostname}</a>}
         </div>
+        <p className={s.small}><a href="/studio?step=try" target="_blank" rel="noopener" style={{ color: "inherit" }}>Have a photo of another shop&rsquo;s wig? Try that on in the studio too.</a></p>
         <p className={s.small}>Drag the mirror to compare. Opens Hairloom with {w.name} first. Your photos are stored only on your device. Demo people are generated with YouCam.</p>
       </div>
     </main>

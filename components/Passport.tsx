@@ -13,7 +13,7 @@ export type PassportSubject = Pick<Persona, "name" | "kept" | "turns" | "reading
 const PARTING: Record<string, string> = { left: "Left", centre: "Centre", right: "Right", none: "No parting" };
 
 /**
- * The hair passport: YouCam readings, the fitter's own measurements, and hair colour as a wig shade code.
+ * The kept-hair record: YouCam readings, the fitter's own measurements, and hair colour as a wig shade code.
  * `lab` is a measurement already taken (demo people); without it, colour is measured here in the browser.
  */
 export function Passport({ p, lab: given, grey: givenGrey, number, date = dayLabel(demoDates().keptAt) }: { p: PassportSubject; lab?: Lab | null; grey?: { grey: number; base: Lab | null } | null; number?: string; date?: string }) {
@@ -47,9 +47,9 @@ export function Passport({ p, lab: given, grey: givenGrey, number, date = dayLab
   ];
 
   return (
-    <article className={s.card} aria-label={`Hair passport for ${p.name}`}>
+    <article className={s.card} aria-label={`Kept-hair record for ${p.name}`}>
       <header className={s.head}>
-        <h3>Hair passport</h3>
+        <h3>Kept-hair record</h3>
         <span>No. {no} · kept {date}</span>
       </header>
       <div className={s.body}>

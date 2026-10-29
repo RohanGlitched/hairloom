@@ -15,7 +15,7 @@ type Now = Pick<Readings, "type" | "length">;
 const SLOTS = ["Front", "Turned one way", "Turned the other way"];
 
 /**
- * "Read new growth": the passport's own detections (Hair Type and Hair Length, one shared upload)
+ * "Read new growth": the kept-hair record's own detections (Hair Type and Hair Length, one shared upload)
  * on photos of new growth, compared with the hair kept. Anjali's example is prepared, so it's free.
  */
 export function Regrowth() {
@@ -77,7 +77,7 @@ export function Regrowth() {
           <p className="kicker">Regrowth</p>
           <h2 id="regrow-title" className="h-sec">Read the new growth against the hair you kept.</h2>
           <p className="lede">
-            Hair usually returns within three to six months of finishing treatment, often curlier or a different colour. The same YouCam detections that made the passport, Hair Type and Hair Length on one shared upload, read the new growth, and Hairloom says what changed and which wigs suit it while it grows.
+            Hair usually returns within three to six months of finishing treatment, often curlier or a different colour. The same YouCam detections that made the kept-hair record, Hair Type and Hair Length on one shared upload, read the new growth, and Hairloom says what changed and which wigs suit it while it grows.
           </p>
           <dl className={s.diff}>
             <dt>Curl</dt>
@@ -90,7 +90,7 @@ export function Regrowth() {
             While it grows: {bridge.map(({ w, band }, i) => <span key={w.id}>{i > 0 && " or "}<Link href={`/studio?wig=${w.id}`}>{w.name}</Link> ({w.style.toLowerCase()}, {inr(w.price)}, {band.toLowerCase()})</span>)}, ranked against the new growth rather than the hair kept. A topper or a soft cap also works while it fills in.
           </p>
           <p className="small">
-            {live ? "Your new growth, read live and compared with your passport. Photos stay in this browser." : <>Example: Anjali, a demo person. {ex.note}</>}
+            {live ? "Your new growth, read live and compared with your kept-hair record. Photos stay in this browser." : <>Example: Anjali, a demo person. {ex.note}</>}
           </p>
 
           <div className={s.regLive}>
@@ -116,7 +116,7 @@ export function Regrowth() {
                 </button>
               </>
             ) : (
-              <p className="small">It compares with the passport in this browser, so <Link href="/studio">keep your passport in the studio</Link> first.</p>
+              <p className="small">It compares with the kept-hair record in this browser, so <Link href="/studio">keep a record of your hair in the studio</Link> first.</p>
             )}
             {err && <p className={s.err} role="alert">{err}</p>}
           </div>

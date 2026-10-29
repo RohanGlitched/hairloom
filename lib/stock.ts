@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { LENGTH_LABEL, SHADES, type Wig } from "./catalogue";
 import { deltaE00, hexToLab, type Lab } from "./color";
-import { band, capSize, closeness, lengthFromTerm, lengthStep, orLonger, textureFromType, textureStep } from "./match";
+import { band, capSize, closeness, closenessParts, lengthFromTerm, lengthStep, orLonger, partsWords, textureFromType, textureStep } from "./match";
 
 export const CAPS = ["Petite", "Average", "Large"] as const;
 export type CapSize = (typeof CAPS)[number];
@@ -117,7 +117,7 @@ export type Client = {
 
 export type Ranked = {
   item: StockItem; score: number; band: string; length: string; texture: string;
-  pullShade: string; cap: { size: CapSize | null; ok: boolean; note: string }; hold: string;
+  pullShade: string; cap: { size: CapSize | null; ok: boolean; note: string }; hold: string; why: string;
 };
 
 /** Ranks stock against a client's passport: length, texture and colour, as the studio does. */
@@ -126,11 +126,11 @@ export function rankStock(items: StockItem[], c: Client): Ranked[] {
   const want = capSize(c.capCm) as CapSize | null;
   const scored = items.filter((it) => !c.fit || !it.fit || it.fit === c.fit).map((item) => {
     const lab = shadeLab(item.shade);
-    const score = closeness(item as Pick<Wig, "length" | "texture">, { length: len, texture: tex, orLonger: more }, c.lab && lab ? deltaE00(c.lab, lab) : null);
-    return { item, score };
+    const parts = closenessParts(item as Pick<Wig, "length" | "texture">, { length: len, texture: tex, orLonger: more }, c.lab && lab ? deltaE00(c.lab, lab) : null);
+    return { item, score: parts.score, why: partsWords(parts) };
   }).sort((a, b) => b.score - a.score);
   const best = scored[0]?.score;
-  return scored.map(({ item, score }) => {
+  return scored.map(({ item, score, why }) => {
     const pullShade = c.code ? `${c.code}${c.blend ? ` or ${c.blend}` : ""}` : item.shade;
     const ok = !want || item.caps.includes(want);
     const size = want && ok ? want : item.caps.includes("Average") ? "Average" : item.caps[0];
@@ -140,7 +140,7 @@ export function rankStock(items: StockItem[], c: Client): Ranked[] {
       item, score, band: band(score, best),
       length: lengthStep(len, item.length, more)?.word ?? LENGTH_LABEL[item.length],
       texture: textureStep(tex, item.texture)?.word ?? item.texture,
-      pullShade, cap: { size, ok, note }, hold,
+      pullShade, cap: { size, ok, note }, hold, why,
     };
   });
 }

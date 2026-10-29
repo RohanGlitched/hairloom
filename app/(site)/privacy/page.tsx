@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = { title: "Privacy", description: "Where your photos go in Hairloom, and where they don't." };
 
 const ROWS = [
-  ["Your photos and passport", "Stored only in this browser (IndexedDB). There are no accounts and no copy of them on our server. “Erase my photos” in the studio clears everything."],
+  ["Your photos and kept-hair record", "Stored only in this browser (IndexedDB). There are no accounts and no copy of them on our server. “Erase my photos” in the studio clears everything."],
   ["Hair colour", "Measured in your browser by a hair mask (MediaPipe). That photo is never uploaded for colour."],
   ["Try-ons and readings", "Each one sends the needed photo through our server to YouCam (Perfect Corp). Our server passes it on from memory and writes it nowhere. As soon as your browser has the result, we ask YouCam to delete the task and its input photo. If you close the tab first, the browser sends that delete request as the page closes. If even that can't get through, our server deletes it: a clean-up runs at most every 10 minutes while anyone is using the studio and deletes any result left uncollected for 11 minutes, and a daily clean-up catches the rest. So a forgotten task is usually deleted within about 25 minutes, and within a day at worst. Demo people are prepared in advance and send nothing."],
   ["Fitter links", "Encrypted in your browser with AES-GCM before anything is sent. Our server stores only the ciphertext and a random link id, in a private Google Cloud Storage bucket that deletes it after 60 days. The key is the part of the link after #, which browsers never send to a server, so we can't read a shared link. Anyone you give the full link to can open it."],

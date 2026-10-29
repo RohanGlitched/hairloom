@@ -326,9 +326,9 @@
       "brows": "/demo/margaret/brows.jpg",
       "withHair": {},
       "shades": {
-        "june:14": "/demo/margaret/shade_june_14_i100.jpg",
-        "june:16": "/demo/margaret/shade_june_16_i100.jpg",
-        "june:24": "/demo/margaret/shade_june_24_i100.jpg"
+        "june:14": "/demo/margaret/shade_june_14_lift.jpg",
+        "june:16": "/demo/margaret/shade_june_16_lift.jpg",
+        "june:24": "/demo/margaret/shade_june_24_lift.jpg"
       },
       "thinPhoto": "/demo/margaret/thinning.jpg",
       "thinning": {

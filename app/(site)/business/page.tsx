@@ -22,26 +22,26 @@ const PILOT_ISSUE = `${REPO}/issues/new?labels=pilot&title=${encodeURIComponent(
 
 const BUYERS = [
   { who: "People facing hair loss", pays: "Free", body: "They bring the need and the photos. Charging them at the hardest moment is wrong, and they are the reason shops and hospitals pay." },
-  { who: "Wig boutiques and fitters", pays: "Per client brief", body: `A passport, the shortlist on the client's face and the cap size arrive before the first visit. Draft pilot price: ₹${BRIEF_INR} a client plus GST, against ${rs(CHEMO, "sub")}–${rs(CHEMO, "payg")} of API cost.` },
-  { who: "Wig brands and online shops", pays: "Per studio session, via the widget", body: "A “see it after hair loss” panel beside each product, free to show, and a door into the studio with that wig first. Draft price: ₹99 for a shop session on the shopper's own photo: a light passport and two try-ons, capped at 10 units (about ₹42–48 of API cost)." },
-  { who: "Hospitals, wig banks and CSR", pays: "Sponsored passports", body: `Every patient gets a passport at diagnosis: ${SPONSORED} units, about ${rs(SPONSORED, "sub")} of API cost. At a sponsor price of ₹${SPONSOR_INR}, 500 patients cost ₹${(500 * SPONSOR_INR).toLocaleString("en-IN")}. Health care is an eligible CSR activity under section 135 of India's Companies Act.` },
+  { who: "Wig boutiques and fitters", pays: "Per client brief", body: `A kept-hair record, the shortlist on the client's face and the cap size arrive before the first visit. Draft pilot price: ₹${BRIEF_INR} a client plus GST, against ${rs(CHEMO, "sub")}–${rs(CHEMO, "payg")} of API cost.` },
+  { who: "Wig brands and online shops", pays: "Per studio session, via the widget", body: "A “see it after hair loss” panel beside each product, free to show, and a door into the studio with that wig first. Draft price: ₹99 for a shop session on the shopper's own photo: a light record and two try-ons, capped at 10 units (about ₹42–48 of API cost)." },
+  { who: "Hospitals, wig banks and CSR", pays: "Sponsored records", body: `Every patient gets a kept-hair record at diagnosis: ${SPONSORED} units, about ${rs(SPONSORED, "sub")} of API cost. At a sponsor price of ₹${SPONSOR_INR}, 500 patients cost ₹${(500 * SPONSOR_INR).toLocaleString("en-IN")}. Health care is an eligible CSR activity under section 135 of India's Companies Act.` },
 ];
 
 const MARKET = [
   { n: "~40%", t: "of women show pattern thinning by 50", src: ["DermNet", "https://dermnetnz.org/topics/female-pattern-hair-loss"], body: "The volume market. Toppers, volumisers and clip-ins sell to them long before any wig. Hair Volume and Hair Extension try-ons show fuller hair and clip-in length on their own photo." },
   { n: "~2%", t: "lifetime incidence of alopecia areata", src: ["PMC", "https://pmc.ncbi.nlm.nih.gov/articles/4521674"], body: "Patches that come and go. A monthly photo record and a topper-or-wig plan, which the journal's alopecia mode already gives." },
-  { n: "$1.9B", t: "medical wig segment projected by 2035", src: ["GMI 2026", "https://www.gminsights.com/industry-analysis/hair-wig-and-extension-market"], body: "Chemotherapy and medical buyers: wig brands, boutiques, wig banks and hospitals. They buy on trust and fit, which is what the passport and fitter brief carry." },
+  { n: "$1.9B", t: "medical wig segment projected by 2035", src: ["GMI 2026", "https://www.gminsights.com/industry-analysis/hair-wig-and-extension-market"], body: "Chemotherapy and medical buyers: wig brands, boutiques, wig banks and hospitals. They buy on trust and fit, which is what the kept-hair record and fitter brief carry." },
 ];
 
 const THRESHOLDS = [
-  ["60%", "of patients offered a passport keep one before their hair falls out"],
+  ["60%", "of patients offered a kept-hair record keep one before their hair falls out"],
   ["−25%", "fitting visits per client, against the two months before"],
   ["80%", "of wigs bought are still worn at four weeks"],
 ];
 
 const PILOT = [
   ["Weeks 1–2", "One oncology centre's wig bank or boutique in Pune or Mumbai. Staff trained on the fitter desk; consent wording reviewed with the centre."],
-  ["Weeks 3–6", "Passports offered at the first chemotherapy appointment, before hair loss. Fitter briefs used for every fitting."],
+  ["Weeks 3–6", "Kept-hair records offered at the first chemotherapy appointment, before hair loss. Fitter briefs used for every fitting."],
   ["Weeks 7–8", "Compare with the previous two months: fitting visits per client, minutes per fitting, wigs worn at four weeks, and how clients felt about choosing."],
 ];
 
@@ -77,7 +77,7 @@ export default function Business() {
               </article>
             ))}
           </div>
-          <p className="small" style={{ marginTop: 20 }}>Insurers are a later step: in the US, some private plans reimburse a wig prescribed as a “cranial prosthesis”, and a passport could support that claim with photos and measurements. Prices here are drafts for a pilot, not offers.</p>
+          <p className="small" style={{ marginTop: 20 }}>Insurers are a later step: in the US, some private plans reimburse a wig prescribed as a “cranial prosthesis”, and a kept-hair record could support that claim with photos and measurements. Prices here are drafts for a pilot, not offers.</p>
         </div>
       </section>
 
@@ -88,7 +88,7 @@ export default function Business() {
             <p className="lede" style={{ marginTop: 12 }}>
               Unit costs from YouCam&rsquo;s price list: $0.048 a unit on the 500-unit subscription ($0.046 at 10,000 a month), $0.055 pay as you go. The table is built from the same task list the studio runs, and matches the MCP server&rsquo;s fitting_cost tool.
             </p>
-            <p className="small" style={{ marginTop: 14 }}>A lighter passport (curl, frizz, length only) is {lite} units. The face reading is optional and the dearest single step, at {KINDS.face.units} units. Skin check-ins in the journal are {KINDS.skin.units} units each, so we suggest one per treatment cycle.</p>
+            <p className="small" style={{ marginTop: 14 }}>A lighter record (curl, frizz, length only) is {lite} units. The face reading is optional and the dearest single step, at {KINDS.face.units} units. Skin check-ins in the journal are {KINDS.skin.units} units each, so we suggest one per treatment cycle.</p>
           </div>
           <CostTable />
         </div>
@@ -151,7 +151,7 @@ export default function Business() {
           </div>
           <div style={{ marginTop: 28 }}><a className="btn btn-ink" href={PILOT_ISSUE} target="_blank" rel="noreferrer">Ask for a pilot</a></div>
           <p className="small" style={{ marginTop: 20 }}>
-            Organisations already doing this work include the Tata Memorial Centre with the Cherian Foundation, which give donated-hair wigs to patients, and Cope with Cancer in Mumbai, which makes free wigs for women on chemotherapy. A passport helps them match a donated wig to the person. We haven&rsquo;t contacted them yet.
+            Organisations already doing this work include the Tata Memorial Centre with the Cherian Foundation, which give donated-hair wigs to patients, and Cope with Cancer in Mumbai, which makes free wigs for women on chemotherapy. A kept-hair record helps them match a donated wig to the person. We haven&rsquo;t contacted them yet.
           </p>
         </div>
       </section>

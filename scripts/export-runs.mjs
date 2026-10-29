@@ -92,6 +92,13 @@ function classify(rel) {
     if (/^nia_(below|above)45$/.test(n)) return { api: API.i2i, origin: o };
     return null;
   }
+  // Oct 30 round 4 (lab/round4.mts and the live shop-photo check): lifted light shades, one shop-photo try-on.
+  m = /^r4\/(.+)$/.exec(rel);
+  if (m) {
+    if (m[1].startsWith("margaret_shade_")) return { api: API.colour, origin: "demo" };
+    if (m[1].startsWith("shop_")) return { api: API.transfer, origin: "demo" };
+    return null;
+  }
   if (rel.startsWith("cat/")) return { api: API.t2i, origin: "demo" }; // the boutique's stock
   // Early research and the demo people's source photos: lab/out/<task>
   if (/^persona\d$/.test(rel)) return { api: API.t2i, origin: "demo" };
@@ -139,7 +146,7 @@ const count = (f) => runs.filter(f).length;
 const origins = Object.fromEntries(["demo", "real-photo", "research"].map((o) => [o, { runs: count((r) => r.origin === o), ok: count((r) => r.origin === o && r.ok) }]));
 const units = runs.filter((r) => r.ok).reduce((n, r) => n + (UNITS[r.api] ?? 0), 0);
 const out = {
-  generated: new Date().toISOString().slice(0, 10),
+  generated: new Date(Date.now() + 5.5 * 3600_000).toISOString().slice(0, 10), // the date in IST, where the lab runs
   source: "lab/out and lab/real/out: one saved output file per finished YouCam task. Tasks whose output was not kept (early exploration, one-unit end-to-end checks) are not counted.",
   runs: runs.length,
   ok: count((r) => r.ok),

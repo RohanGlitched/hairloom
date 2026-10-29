@@ -21,8 +21,8 @@ import { liningNote } from "./skinNote";
 const SITE = process.env.PUBLIC_ORIGIN ?? "https://hairloom-studio.vercel.app";
 
 export const SERVER_INSTRUCTIONS = `Hairloom helps wig fitters prepare for clients facing hair loss (chemotherapy, alopecia, thinning).
-A client's hair passport records curl pattern (YouCam hair type, e.g. "1 to 2A"), length (e.g. "above chest"), hair colour (hex, measured from the hair pixels), head size in cm and parting.
-Use match_wigs to rank stock against a passport and get a pull list in the client's shade (pass the boutique's own stock, or it uses the Hairloom demo boutique); shade_for_colour to turn a hex into common wig shade codes; list_stock to browse; show_on_demo_person for a free example render; fitting_plan for dates around treatment; fitting_cost for YouCam API cost.
+A client's kept-hair record holds curl pattern (YouCam hair type, e.g. "1 to 2A"), length (e.g. "above chest"), hair colour (hex, measured from the hair pixels), head size in cm and parting.
+Use match_wigs to rank stock against the hair a client kept and get a pull list in the client's shade (pass the boutique's own stock, or it uses the Hairloom demo boutique); shade_for_colour to turn a hex into common wig shade codes; list_stock to browse; show_on_demo_person for a free example render; fitting_plan for dates around treatment; fitting_cost for YouCam API cost.
 For live try-ons on a client's own photo, use YouCam's hosted MCP servers (https://mcp-api-01.makeupar.com/mcp/fashion and /mcp/beauty) or the Hairloom studio, which stores photos only on the client's device and deletes each YouCam task after its result.
 Hairloom is about appearance, not medical care: never diagnose, and point clinical questions to the client's care team. Shade codes vary by brand; always confirm against real swatches.`;
 
@@ -71,14 +71,14 @@ function register(server: McpServer) {
   server.registerTool(
     "match_wigs",
     {
-      title: "Rank stock against a client's hair passport",
+      title: "Rank stock against the hair a client kept",
       description: "Ranks wigs by how close each is to the hair the client kept (length, texture and measured colour), and returns a pull list in the client's nearest shade code with a cap note. Pass `stock` to rank the boutique's own wigs; without it, ranks the Hairloom demo boutique.",
       inputSchema: z.object({
         hair_length: z.string().max(40).optional().describe('YouCam hair length term, e.g. "above chest", "ear length"'),
         hair_type: z.string().max(20).optional().describe('YouCam hair type mapping, e.g. "1 to 2A", "4A to 4B"'),
         hair_hex: hex.optional().describe("Measured hair colour, e.g. #342820"),
-        hair_grey_percent: z.number().min(0).max(100).optional().describe("Share of grey hair pixels, 0-100, from the Hairloom passport. From 15 up, the pull list names a grey blend."),
-        hair_base_hex: hex.optional().describe("Colour of the hair that isn't grey, from the passport; the base of a grey blend"),
+        hair_grey_percent: z.number().min(0).max(100).optional().describe("Share of grey hair pixels, 0-100, from the Hairloom kept-hair record. From 15 up, the pull list names a grey blend."),
+        hair_base_hex: hex.optional().describe("Colour of the hair that isn't grey, from the kept-hair record; the base of a grey blend"),
         head_cm: z.number().min(45).max(65).optional(),
         fit: z.enum(["Women", "Men"]).optional(),
         top: z.number().int().min(1).max(10).optional(),
@@ -189,7 +189,7 @@ function register(server: McpServer) {
     "fitting_plan",
     {
       title: "Dates to plan around treatment",
-      description: "General timings from cancer charities (ACS, CRUK, Macmillan) for when to keep a passport, choose a wig, re-measure and expect regrowth; or, for alopecia, a monthly photo plan from a start date. Not medical advice.",
+      description: "General timings from cancer charities (ACS, CRUK, Macmillan) for when to keep a record of the hair, choose a wig, re-measure and expect regrowth; or, for alopecia, a monthly photo plan from a start date. Not medical advice.",
       inputSchema: z.object({
         first_treatment: isoDate.describe("Chemotherapy: the first treatment. Alopecia: the day to start."), last_treatment: isoDate.optional(), situation: z.enum(["chemo", "alopecia"]).optional(),
         skin_redness: z.tuple([z.number().min(0).max(100), z.number().min(0).max(100)]).optional().describe("First and latest YouCam redness score from the client's skin check-ins (higher is better)"),
@@ -203,14 +203,14 @@ function register(server: McpServer) {
       const d = (base: Date, n: number) => new Date(base.getTime() + n * 86400000).toISOString().slice(0, 10);
       if (situation === "alopecia") {
         return text([
-          `${d(s, 0)}: keep the hair passport now, while the hair still covers the patches.`,
+          `${d(s, 0)}: keep a record of the hair now, while the hair still covers the patches.`,
           `${d(s, 7)}: if the patches are small, show volume and clip-in previews or a topper before a full wig.`,
           ...[30, 60, 90].map((n) => `${d(s, n)}: a monthly photo in the same light, so the client and their dermatologist can see whether patches spread, settle or regrow.`),
           "Alopecia areata is unpredictable; a fitter can plan for both a topper and a full wig. General guidance only.",
         ].join("\n"));
       }
       const lines = [
-        `${d(s, -14)}: keep the hair passport (three photos, head size, parting).`,
+        `${d(s, -14)}: keep a record of the hair (three photos, head size, parting).`,
         `${d(s, -10)}: choose and fit a wig while colour and style can still be matched.`,
         `${d(s, 14)}: hair usually starts to fall out about 2–3 weeks after the first cycle.`,
         `${d(s, 21)}: re-measure the head and adjust the cap.`,
@@ -255,7 +255,7 @@ function register(server: McpServer) {
       const lite = KINDS.hairType.units + KINDS.hairFrizz.units + KINDS.hairLength.units;
       const pass = passport === "full" ? lite + KINDS.face.units : passport === "lite" ? lite : 0;
       const units = pass + wig_tryons * KINDS.wig.units + recolours * KINDS.hairColor.units + headwear * KINDS.headwear.units + brows * KINDS.brows.units + own_hair * KINDS.ownHair.units + skin_checkins * KINDS.skin.units + volume_previews * KINDS.hairVol.units + clip_in_previews * KINDS.hairExt.units;
-      return both(`${price(units)} (Passport ${pass}, try-ons ${wig_tryons * KINDS.wig.units}, recolours ${recolours}, headwear ${headwear}, brows ${brows}, own hair ${own_hair * KINDS.ownHair.units}, skin ${skin_checkins * KINDS.skin.units}, volume ${volume_previews * KINDS.hairVol.units}, clip-ins ${clip_in_previews * KINDS.hairExt.units}.)`, out(units));
+      return both(`${price(units)} (Record ${pass}, try-ons ${wig_tryons * KINDS.wig.units}, recolours ${recolours}, headwear ${headwear}, brows ${brows}, own hair ${own_hair * KINDS.ownHair.units}, skin ${skin_checkins * KINDS.skin.units}, volume ${volume_previews * KINDS.hairVol.units}, clip-ins ${clip_in_previews * KINDS.hairExt.units}.)`, out(units));
     },
   );
 }

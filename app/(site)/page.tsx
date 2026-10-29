@@ -211,10 +211,10 @@ export default function Home() {
       <section className="paper sec" aria-labelledby="pass-title">
         <div className={`wrap ${s.passWrap}`}>
           <div className={s.passText}>
-            <p className="kicker">The hair passport</p>
+            <p className="kicker">The kept-hair record</p>
             <h2 id="pass-title" className="h-sec">A record a wig fitter can work from.</h2>
             <p className="lede">
-              The passport is the reference YouCam uses to put your own hair back at week four. Charities advise keeping photos and a lock of hair; Hairloom keeps the photos and reads them: curl pattern, frizz, length, face shape and brows from YouCam, and colour as a common wig shade code.
+              The kept-hair record is the reference YouCam uses to put your own hair back at week four. Charities advise keeping photos and a lock of hair; Hairloom keeps the photos and reads them: curl pattern, frizz, length, face shape and brows from YouCam, and colour as a common wig shade code.
             </p>
             <ul className={s.ticks}>
               <li>Three angles, from YouCam&rsquo;s guided camera, which shows face position, facing and light as you shoot, or from photos you upload.</li>
@@ -222,7 +222,7 @@ export default function Home() {
               <li>Colour measured from the hair pixels on your device and matched to common wig shade codes.</li>
               <li>Stays on your device until you choose to share it.</li>
             </ul>
-            <Link href="/studio" className="btn btn-ink">Start your hair passport</Link>
+            <Link href="/studio" className="btn btn-ink">Start your kept-hair record</Link>
           </div>
           <Passport p={anjali} lab={measured("anjali/kept")} grey={greyOf("anjali/kept")} date={dayLabel(brief.keptAt)} />
         </div>
@@ -235,7 +235,7 @@ export default function Home() {
             <p className="kicker">For wig fitters</p>
             <h2 id="fitter-title" className="h-sec">The fitting starts before the client walks in.</h2>
             <p className="lede">
-              A client sends a link. The fitter sees the passport, the wigs they liked on their own face, their shade code and a note that heads can shrink by up to a size during treatment. A fitter&rsquo;s AI assistant can do the same through Hairloom&rsquo;s MCP server: rank stock, give the pull list and plan dates.
+              A client sends a link. The fitter sees the kept-hair record, the wigs they liked on their own face, their shade code and a note that heads can shrink by up to a size during treatment. A fitter&rsquo;s AI assistant can do the same through Hairloom&rsquo;s MCP server: rank stock, give the pull list and plan dates.
             </p>
             <div className={s.ctas}>
               <Link href="/fitter" className="btn btn-ivory">Open the fitter desk</Link>
@@ -268,7 +268,7 @@ export default function Home() {
             <p className="kicker">For retailers and wig banks</p>
             <h2 id="biz-title" className="h-sec">About $2 of YouCam units per client fitted.</h2>
             <p className="lede">
-              A full fitting, with passport, eight wigs, own hair, three shades, headwear and brows, is 41 YouCam units. Boutiques pay per client brief, wig brands embed a widget, and hospitals and wig banks sponsor passports. Patients never pay.
+              A full fitting, with the kept-hair record, eight wigs, own hair, three shades, headwear and brows, is 41 YouCam units. Boutiques pay per client brief, wig brands embed a widget, and hospitals and wig banks sponsor kept-hair records. Patients never pay.
             </p>
             <div className={s.ctas}>
               <Link href="/business" className="btn btn-ivory">See the business case</Link>
@@ -312,7 +312,7 @@ export default function Home() {
           <p className="kicker">Privacy</p>
           <h2 id="priv-title" className="h-sec">Your photos are yours.</h2>
           <div className={s.privacy}>
-            <div><h3 className="h-sub">On your device</h3><p>Your passport and try-ons are kept in your browser. There is no account and no server copy.</p></div>
+            <div><h3 className="h-sub">On your device</h3><p>Your kept-hair record and try-ons are kept in your browser. There is no account and no server copy.</p></div>
             <div><h3 className="h-sub">Deleted at YouCam</h3><p>Each photo goes to YouCam only for the step that needs it, and the task is deleted there, with its photo, as soon as your browser has the result.</p></div>
             <div><h3 className="h-sub">Sealed when shared</h3><p>A fitter link is encrypted in your browser. The key travels in the link itself and never reaches our server.</p></div>
           </div>

@@ -15,6 +15,7 @@ import s from "./studio.module.css";
 
 export function lookLabel(key: string) {
   if (key === "own") return { label: "Own hair", detail: "Their kept hair, placed on today's photo" };
+  if (key.startsWith("shop:")) return { label: "A shop's wig photo", detail: "Tried on from a shop's own product photo" };
   const [kind, a, b] = key.split(":");
   if (kind === "wig" || kind === "hair") { const w = WIGS.find((x) => x.id === a); return { label: w?.name ?? a, detail: w ? `${w.style} · ${w.cap} · ${w.fibre}` : "" }; }
   if (kind === "thin") return { label: a.startsWith("female_") ? "Fuller volume" : "Clip-in length", detail: "A preview for thinning hair; ask the fitter about a topper for the crown" };
@@ -35,7 +36,7 @@ export function ShareStep({ ctx }: { ctx: Ctx }) {
   if (!session.kept || !session.readings) {
     return (
       <div className={s.step}>
-        <StepHead n={4} title="Share with your fitter" lede="Make your hair passport and pick a few looks first." />
+        <StepHead n={4} title="Share with your fitter" lede="Make your kept-hair record and pick a few looks first." />
         <button className="btn btn-ivory" onClick={() => ctx.go("keep")}>Go to step 1</button>
       </div>
     );
@@ -83,7 +84,7 @@ export function ShareStep({ ctx }: { ctx: Ctx }) {
 
   return (
     <div className={s.step}>
-      <StepHead n={4} title="Share with your wig fitter" lede="One link carries your passport and shortlist. It's locked in this browser, and the key travels only inside the link, so our server can never read it." />
+      <StepHead n={4} title="Share with your wig fitter" lede="One link carries your kept-hair record and shortlist. It's locked in this browser, and the key travels only inside the link, so our server can never read it." />
 
       <div className={s.shareGrid}>
         <div>
@@ -118,7 +119,7 @@ export function ShareStep({ ctx }: { ctx: Ctx }) {
           {link && (
             <div className={s.linkBox}>
               <p className={s.doneLine}><span aria-hidden="true">✓</span> Your fitter link is ready</p>
-              <p className="small">Send it by message or email. Your fitter sees your passport, these looks on your face and a list of wigs to have ready. Anyone with the full link can open it, and it expires after 60 days.</p>
+              <p className="small">Send it by message or email. Your fitter sees your kept-hair record, these looks on your face and a list of wigs to have ready. Anyone with the full link can open it, and it expires after 60 days.</p>
               <code>{link}</code>
               <div className={s.next}>
                 <button className="btn btn-ivory btn-sm" onClick={async () => { await navigator.clipboard.writeText(link).catch(() => undefined); setCopied(true); }}>{copied ? "Copied" : "Copy link"}</button>

@@ -27,7 +27,7 @@ export function LookStep({ ctx }: { ctx: Ctx }) {
   if (!base || !session.readings) {
     return (
       <div className={s.step}>
-        <StepHead n={3} title="Brows and headwear" lede="Make your hair passport first. Your brows are rebuilt from the shape and colour it records." />
+        <StepHead n={3} title="Brows and headwear" lede="Make your kept-hair record first. Your brows are rebuilt from the shape and colour it records." />
         <button className="btn btn-ivory" onClick={() => ctx.go("keep")}>Go to step 1</button>
       </div>
     );
@@ -74,7 +74,7 @@ export function LookStep({ ctx }: { ctx: Ctx }) {
         <div className={s.detail}>
           <h2 className="h-sub">{session.mode === "demo" ? `${session.name}'s brows, rebuilt` : "Your brows, rebuilt"}</h2>
           <p className="small">
-            Drawn in the shape and shade your passport kept ({brow ? `${brow.left_shape?.toLowerCase()}, ${brow.left_body_thickness?.toLowerCase()}` : "shape not read"}
+            Drawn in the shape and shade your kept-hair record holds ({brow ? `${brow.left_shape?.toLowerCase()}, ${brow.left_body_thickness?.toLowerCase()}` : "shape not read"}
             {d.browHex && <i className={s.inlineChip} style={{ background: d.browHex }} aria-hidden="true" />}), with YouCam&rsquo;s makeup try-on. A brow pencil in that shade is a good thing to buy early.
           </p>
           {browKey !== "brows:demo" && (

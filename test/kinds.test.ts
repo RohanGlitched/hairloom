@@ -79,3 +79,22 @@ test("light shades are recoloured at full intensity, darker ones at 70", async (
   assert.equal(body("#a08262"), 100, "14, dark blonde (L* 56)");
   assert.equal(body("#3b2a20"), 70, "4, dark brown");
 });
+
+test("light shades are sent lighter by the measured shortfall; dark ones go as asked", async () => {
+  const { KINDS: K, compensated } = await import("../lib/kinds.ts");
+  const { hexToLab } = await import("../lib/color.ts");
+  const sent = (hex: string) => (K.hairColor.body({ files: ["f"], opt: { hex } }) as { palettes: { color: string }[] }).palettes[0].color;
+  assert.equal(sent("#3b2a20"), "#3b2a20", "dark brown is sent unchanged");
+  assert.ok(hexToLab(sent("#cfae7b"))[0] > hexToLab("#cfae7b")[0] + 10, "warm blonde is lifted");
+  assert.equal(sent("#cfae7b"), compensated("#cfae7b"));
+  assert.ok(hexToLab(compensated("#ffffff"))[0] <= 92.5, "never pushed past L* 92");
+});
+
+test("a shop's own wig photo runs as a whitelisted two-photo hair-transfer, JPEG only", async () => {
+  const { KINDS: K, validate } = await import("../lib/kinds.ts");
+  assert.equal(K.shopPhoto.images, 2);
+  assert.equal(K.shopPhoto.jpegOnly, true);
+  assert.equal(K.shopPhoto.path, "/s2s/v2.1/task/hair-transfer");
+  assert.deepEqual(K.shopPhoto.body({ files: ["you", "shop"], opt: {} }), { src_file_id: "you", ref_file_id: "shop", hair_color: "ref" });
+  assert.equal(validate("shopPhoto", {}), null);
+});

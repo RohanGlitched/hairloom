@@ -1,12 +1,12 @@
 {
- "generated": "2026-10-29",
+ "generated": "2026-10-30",
  "source": "lab/out and lab/real/out: one saved output file per finished YouCam task. Tasks whose output was not kept (early exploration, one-unit end-to-end checks) are not counted.",
- "runs": 265,
- "ok": 250,
+ "runs": 268,
+ "ok": 253,
  "origins": {
   "demo": {
-   "runs": 196,
-   "ok": 192
+   "runs": 199,
+   "ok": 195
   },
   "real-photo": {
    "runs": 41,
@@ -17,7 +17,7 @@
    "ok": 25
   }
  },
- "unitsEstimate": 510,
+ "unitsEstimate": 513,
  "tasks": [
   {
    "name": "ang_p1_down",
@@ -1759,6 +1759,30 @@
    "ok": false,
    "error": "error_face_angle_invalid",
    "ms": 7869
+  },
+  {
+   "name": "r4/margaret_shade_june_14_lift",
+   "api": "AI Hair Color Virtual Try-On",
+   "origin": "demo",
+   "ok": true,
+   "error": null,
+   "ms": 11385
+  },
+  {
+   "name": "r4/margaret_shade_june_16_lift",
+   "api": "AI Hair Color Virtual Try-On",
+   "origin": "demo",
+   "ok": true,
+   "error": null,
+   "ms": 10169
+  },
+  {
+   "name": "r4/margaret_shade_june_24_lift",
+   "api": "AI Hair Color Virtual Try-On",
+   "origin": "demo",
+   "ok": true,
+   "error": null,
+   "ms": 10342
   },
   {
    "name": "skin_test",

@@ -7,7 +7,7 @@ import { demoBrief } from "@/lib/brief";
 import { appointmentLabel, dayLabel } from "@/lib/dates";
 import { capSize } from "@/lib/match";
 import { wigShade } from "@/lib/colours";
-import { nearestShades } from "@/lib/color";
+import { hexToLab, nearestShades } from "@/lib/color";
 import { prepare, runTask } from "@/lib/client";
 import { Consent, hasConsent } from "@/components/Consent";
 import { unseal, type SharePayload } from "@/lib/seal";
@@ -53,7 +53,7 @@ export function FitterDesk() {
           <p className="lede">
             {brief
               ? "Decrypted in this browser from the link your client sent. Nothing here was readable by our server."
-              : "Open a client's sealed link to see their hair passport and shortlist before they arrive. No account and nothing to install."}
+              : "Open a client's sealed link to see their kept-hair record and shortlist before they arrive. No account and nothing to install."}
           </p>
           {!brief && (
             <div className={s.open} id="open">
@@ -103,7 +103,7 @@ function Brief({ b, onClose }: { b: SharePayload; onClose: () => void }) {
           <div>
             <dl className={s.facts}>
               {when && <><dt>Appointment</dt><dd>{when}</dd></>}
-              <dt>Shade</dt><dd>{b.colour ? <><i style={{ background: b.colour.hex }} />Nearest code {b.colour.code}, {b.colour.name.toLowerCase()} <small>(ΔE {b.colour.dE}, measured on the client&rsquo;s device)</small>{b.colour.grey != null && b.colour.grey >= 0.05 && <><br />About {Math.round(b.colour.grey * 100)}% grey{b.colour.blend ? `: try a ${b.colour.blend} blend, judged by eye` : ""}</>}</> : "Not measured"}</dd>
+              <dt>Shade</dt><dd>{b.colour ? <><i style={{ background: b.colour.hex }} />{hexToLab(b.colour.hex)[0] > 55 && <small>Light shades come back darker; check a swatch. </small>}Nearest code {b.colour.code}, {b.colour.name.toLowerCase()} <small>(ΔE {b.colour.dE}, measured on the client&rsquo;s device)</small>{b.colour.grey != null && b.colour.grey >= 0.05 && <><br />About {Math.round(b.colour.grey * 100)}% grey{b.colour.blend ? `: try a ${b.colour.blend} blend, judged by eye` : ""}</>}</> : "Not measured"}</dd>
               <dt>Curl pattern</dt><dd>{d.curl ? `${d.curl.raw}, ${d.curl.label.toLowerCase()}` : "Not read"}</dd>
               <dt>Frizz</dt><dd>{d.frizz?.label ?? "Not read"}</dd>
               <dt>Length</dt><dd>{d.length?.label ?? "Not read"}</dd>
@@ -269,7 +269,7 @@ function Assistant({ brief, situation, person, fit }: { brief: SharePayload; sit
           <p className="kicker">For your AI assistant</p>
           <h2 className="h-sec">Ask your AI assistant what to pull before the client arrives.</h2>
           <p className="lede" style={{ marginTop: 12 }}>
-            Hairloom runs an MCP server. Add it to any AI assistant that supports remote MCP servers, and it can rank your stock (or our demo boutique&rsquo;s) against a client&rsquo;s passport, give the pull list in their shade, plan dates around treatment and cost a fitting. Pair it with YouCam&rsquo;s own hosted MCP servers for live try-ons.
+            Hairloom runs an MCP server. Add it to any AI assistant that supports remote MCP servers, and it can rank your stock (or our demo boutique&rsquo;s) against the hair a client kept, give the pull list in their shade, plan dates around treatment and cost a fitting. Pair it with YouCam&rsquo;s own hosted MCP servers for live try-ons.
           </p>
           <div className={s.mcpUrl}>
             <code>{url}</code>

@@ -6,7 +6,7 @@ import s from "./Consent.module.css";
 
 /** The same terms the studio asks for before its first upload, for the other pages that upload a photo. */
 export const TERMS = [
-  "Your photos and passport are kept in this browser. There’s no account.",
+  "Your photos and kept-hair record are kept in this browser. There’s no account.",
   "For each reading or try-on, the photo it needs is sent through our server to YouCam (Perfect Corp) to be processed. As soon as your browser has the result, we ask YouCam to delete that task and its photo.",
   "Hairloom helps with appearance. It doesn’t diagnose anything; talk to your care team about treatment and hair loss.",
 ];

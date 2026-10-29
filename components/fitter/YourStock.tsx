@@ -80,7 +80,7 @@ export function YourStock({ client, fit: given, renders }: { client: SharePayloa
             <h2 id="ys-title" className="h-sec">Rank your shop&rsquo;s wigs for {who(client.name)}.</h2>
           </div>
           <p className="lede">
-            Paste your catalogue as CSV or JSON: SKU, name, length, texture, shade code, cap sizes, price and product link. Hairloom ranks it against this client&rsquo;s passport with the same score the studio uses, and writes the hold note for each wig. It runs in this browser: nothing is uploaded and no YouCam units are used.
+            Paste your catalogue as CSV or JSON: SKU, name, length, texture, shade code, cap sizes, price and product link. Hairloom ranks it against the hair this client kept with the same score the studio uses, and writes the hold note for each wig. It runs in this browser: nothing is uploaded and no YouCam units are used.
           </p>
         </div>
         <div className={s.ysGrid}>
@@ -126,6 +126,7 @@ export function YourStock({ client, fit: given, renders }: { client: SharePayloa
                     {thumb && <img className={s.ysThumb} src={thumb} alt={`${r.item.name} on ${who(client.name)}`} loading="lazy" />}
                     <div className={s.ysMain}>
                       <p className={s.ysName}><b>{r.item.name}</b> <span>{r.item.retailer ?? r.item.sku}</span> <em>{r.band}</em></p>
+                      <p className={s.ysWhy}>Match {r.why}</p>
                       <p className="small">{r.length} · {r.texture} · pull in shade {r.pullShade}{r.item.shade !== c.code ? ` (stocked ${r.item.shade})` : ""} · cap {r.cap.note}{priceOf(r.item) ? ` · ${priceOf(r.item)}` : ""}</p>
                       <div className={s.ysAct}>
                         <CopyButton text={r.hold} label="Copy hold note" />

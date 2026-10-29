@@ -63,3 +63,9 @@ test("when nothing in stock is close, the nearest few say so instead of 'A new l
   assert.equal(band(60, 60), "Closest in stock");
   assert.equal(band(52, 60), "A small change");
 });
+
+test("the closeness score is shown with its parts", async () => {
+  const { closenessParts, partsWords } = await import("../lib/match.ts");
+  const p = closenessParts({ length: "chest", texture: "wavy" }, { length: "shoulder", texture: "straight" }, 1.6);
+  assert.equal(partsWords(p), `${p.score}/100: length +1, texture +1, colour ΔE00 1.6`);
+});

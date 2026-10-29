@@ -49,6 +49,19 @@ export function closeness(wig: Pick<Wig, "length" | "texture">, kept: { length: 
   return Math.max(0, Math.round(score));
 }
 
+/** The closeness score with its parts: length and texture steps away, and the colour difference used. */
+export function closenessParts(wig: Pick<Wig, "length" | "texture">, kept: { length: Length | null; texture: Texture | null; orLonger?: boolean }, dE?: number | null) {
+  const dl = kept.length ? LENGTH_ORDER.indexOf(wig.length) - LENGTH_ORDER.indexOf(kept.length) : null;
+  const dt = kept.texture ? TEXTURE_ORDER.indexOf(wig.texture) - TEXTURE_ORDER.indexOf(kept.texture) : null;
+  return { score: closeness(wig, kept, dE), length: dl == null ? null : kept.orLonger && dl > 0 ? 0 : dl, texture: dt, dE: dE ?? null };
+}
+
+/** "82/100: length same, texture +1, colour ΔE00 1.6" */
+export function partsWords(p: ReturnType<typeof closenessParts>) {
+  const step = (n: number | null, name: string) => (n == null ? `${name} not read` : n === 0 ? `${name} same` : `${name} ${n > 0 ? "+" : ""}${n}`);
+  return `${p.score}/100: ${step(p.length, "length")}, ${step(p.texture, "texture")}, colour ${p.dE == null ? "not measured" : `ΔE00 ${p.dE.toFixed(1)}`}`;
+}
+
 /**
  * Plain words for the closeness score, instead of a percentage. With `best`, the top of a weak list says
  * so: when nothing in stock is close, the few nearest are "Nearest in this shop", not "A new look".

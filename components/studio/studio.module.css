@@ -203,3 +203,6 @@
 .listings b { color: var(--ivory); font-weight: 600; }
 .listings a { color: var(--brass-hi); font-size: 13px; }
 .listNote { font-size: 12px; color: #a18f9d; }
+
+.shopBtn { position: relative; justify-self: start; }
+.shopBtn[aria-disabled="true"] { opacity: .5; }
