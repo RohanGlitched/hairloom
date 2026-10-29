@@ -1,0 +1,116 @@
+{
+ "checked": "2026-10-29T19:04:21.260Z",
+ "endpoint": "GET /s2s/v2.0/credit/feature-cost",
+ "skus": 103,
+ "unitsSpentByCheck": 0,
+ "rows": [
+  {
+   "kind": "hairType",
+   "api": "AI Hair Type Detection",
+   "path": "/s2s/v2.0/task/hair-type-detection",
+   "ours": 2,
+   "youcam": 2,
+   "sku": "AI Hair Type Detection V1.0",
+   "ok": true
+  },
+  {
+   "kind": "hairFrizz",
+   "api": "AI Hair Frizziness Detection",
+   "path": "/s2s/v2.0/task/hair-frizziness-detection",
+   "ours": 2,
+   "youcam": 2,
+   "sku": "AI Hair Frizziness Detection V1.0",
+   "ok": true
+  },
+  {
+   "kind": "hairLength",
+   "api": "AI Hair Length Detection",
+   "path": "/s2s/v2.0/task/hair-length-detection",
+   "ours": 2,
+   "youcam": 2,
+   "sku": "AI Hair Length Detection V1.0",
+   "ok": true
+  },
+  {
+   "kind": "face",
+   "api": "AI Face Attribute & Ratio Analyzer",
+   "path": "/s2s/v2.0/task/face-attr-analysis",
+   "ours": 10,
+   "youcam": 10,
+   "sku": "Face Attribute & Ratio Analysis (1-5 features)",
+   "ok": true
+  },
+  {
+   "kind": "wig",
+   "api": "AI Hairstyle Virtual Try-On",
+   "path": "/s2s/v2.1/task/hair-transfer",
+   "ours": 2,
+   "youcam": 2,
+   "sku": "AI Hair Style Virtual Try-On V2.0 (Custom)",
+   "ok": true
+  },
+  {
+   "kind": "ownHair",
+   "api": "AI Hairstyle Virtual Try-On",
+   "path": "/s2s/v2.1/task/hair-transfer",
+   "ours": 2,
+   "youcam": 2,
+   "sku": "AI Hair Style Virtual Try-On V2.0 (Custom)",
+   "ok": true
+  },
+  {
+   "kind": "hairColor",
+   "api": "AI Hair Color Virtual Try-On",
+   "path": "/s2s/v2.0/task/hair-color",
+   "ours": 1,
+   "youcam": 1,
+   "sku": "AI Hair Color Virtual Try-On V1.0 (Full)",
+   "ok": true
+  },
+  {
+   "kind": "headwear",
+   "api": "AI Image Generator (image to image)",
+   "path": "/s2s/v2.0/task/image-to-image/youcam",
+   "ours": 1,
+   "youcam": 1,
+   "sku": "AI Image Generator V2.0 (Image to Image)",
+   "ok": true
+  },
+  {
+   "kind": "brows",
+   "api": "AI Makeup Virtual Try-On",
+   "path": "/s2s/v2.0/task/makeup-vto",
+   "ours": 1,
+   "youcam": 1,
+   "sku": "AI Makeup Virtual Try-On V1.0",
+   "ok": true
+  },
+  {
+   "kind": "hairVol",
+   "api": "AI Hair Volume Virtual Try-On",
+   "path": "/s2s/v2.0/task/hair-vol",
+   "ours": 2,
+   "youcam": 2,
+   "sku": "AI Hair Volume Virtual Try-On V1.0",
+   "ok": true
+  },
+  {
+   "kind": "hairExt",
+   "api": "AI Hair Extension Virtual Try-On",
+   "path": "/s2s/v2.0/task/hair-ext",
+   "ours": 1,
+   "youcam": 1,
+   "sku": "AI Hair Extension Virtual Try-On V1.0",
+   "ok": true
+  },
+  {
+   "kind": "skin",
+   "api": "AI Skin Analysis",
+   "path": "/s2s/v2.1/task/skin-analysis",
+   "ours": 9,
+   "youcam": 9,
+   "sku": "AI Skin Analysis V2.1 SD (1-4 concerns)",
+   "ok": true
+  }
+ ]
+}

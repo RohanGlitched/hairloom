@@ -6,6 +6,7 @@ import { WIGS } from "@/lib/catalogue";
 import { greyBlend, labToHex, nearestShades } from "@/lib/color";
 import { RealTests } from "@/components/RealTests";
 import real from "@/data/real.json";
+import costs from "@/data/feature-costs.json";
 import s from "./evidence.module.css";
 
 export const metadata: Metadata = { title: "Evidence", description: "Every YouCam task we ran while building Hairloom, what failed, what we measured, and what we would ask Perfect Corp for." };
@@ -120,6 +121,19 @@ export default function Evidence() {
                 <span role="cell" className={s.errs}>{REJECTED[a.api] ?? "Made the demo people and the boutique’s wigs. The studio never calls it."}{a.errors.length ? ` Errors: ${a.errors.join(", ")}.` : ""}</span>
               </div>
             ))}
+          </div>
+
+          <h3 id="costs" className="h-sub" style={{ marginTop: 40 }}>Unit costs, checked against YouCam&rsquo;s own list</h3>
+          <p className="lede" style={{ marginTop: 12 }}>
+            The cost table, the fitting prices and the MCP <code>fitting_cost</code> tool all use the units in the studio&rsquo;s whitelist. <code>scripts/check-costs.mjs</code> compares them with YouCam&rsquo;s feature-cost endpoint, which only reads a price list. On {new Date(costs.checked).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })} it read {costs.skus} SKUs, the unit balance was the same before and after ({costs.unitsSpentByCheck} units spent), and {costs.rows.filter((r) => r.ok).length} of {costs.rows.length} task kinds matched.
+          </p>
+          <div className={s.tableWrap}>
+            <table className={s.shadeTable}>
+              <thead><tr><th>Task kind</th><th>YouCam SKU</th><th>Ours</th><th>YouCam</th></tr></thead>
+              <tbody>
+                {costs.rows.map((r) => <tr key={r.kind}><td>{r.kind}</td><td>{r.sku ?? "Not found"}</td><td className="num">{r.ours}</td><td className="num">{r.youcam ?? "—"}{r.ok ? "" : " (differs)"}</td></tr>)}
+              </tbody>
+            </table>
           </div>
 
           <h2 id="real" className="h-sec" style={{ marginTop: 72 }}>Real photographs</h2>
