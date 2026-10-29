@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { PERSONAS } from "@/lib/demo";
 import { API_COUNT, LEDGER, REJECTED, TOTALS, byApi, missingEvidence } from "@/lib/evidence";
-import { measured, shadeCheck } from "@/lib/colours";
+import { greyOf, measured, shadeCheck } from "@/lib/colours";
 import { WIGS } from "@/lib/catalogue";
-import { labToHex, nearestShades } from "@/lib/color";
+import { greyBlend, labToHex, nearestShades } from "@/lib/color";
 import { RealTests } from "@/components/RealTests";
 import real from "@/data/real.json";
 import s from "./evidence.module.css";
@@ -67,6 +67,12 @@ export default function Evidence() {
   const realFit = realLabelled.filter((p) => p.labelOk).length;
   const labels = cross.map((c) => c.label).filter((l): l is string => !!l);
   const constant = labels.length > 1 && new Set(labels).size === 1;
+  const plainHits = stock.filter((r) => r.c!.got.code === r.w.code).length;
+  const greyHits = stock.filter((r) => r.c!.withGrey === r.w.code).length;
+  const greyWigs = stock.filter((r) => (r.c!.grey ?? 0) >= 0.15).sort((a, b) => b.c!.grey! - a.c!.grey!);
+  const restMax = Math.max(...stock.filter((r) => (r.c!.grey ?? 0) < 0.15).map((r) => r.c!.grey ?? 0));
+  const pct = (g: number | null | undefined) => `${Math.round((g ?? 0) * 100)}%`;
+  const people = PERSONAS.map((p) => { const g = greyOf(`${p.id}/kept`); return { name: p.name, grey: g?.grey ?? null, blend: greyBlend(g?.grey, g?.base) }; });
 
   return (
     <>
@@ -148,21 +154,29 @@ export default function Evidence() {
           </p>
           <div className={s.tableWrap}>
             <table className={s.shadeTable}>
-              <thead><tr><th>Wig</th><th>Listed</th><th>Measured</th><th>ΔE00</th></tr></thead>
+              <thead><tr><th>Wig</th><th>Listed</th><th>Measured</th><th>ΔE00</th><th>Grey</th><th>With grey check</th></tr></thead>
               <tbody>
                 {stock.map(({ w, c }) => (
-                  <tr key={w.id}><td>{w.name}</td><td><i style={{ background: c!.listed.hex }} aria-hidden="true" />{c!.listed.code}</td><td><i style={{ background: c!.got.hex }} aria-hidden="true" />{c!.got.code}{c!.got.code === w.code ? "" : " (miss)"}</td><td className="num">{c!.dE.toFixed(1)}</td></tr>
+                  <tr key={w.id}><td>{w.name}</td><td><i style={{ background: c!.listed.hex }} aria-hidden="true" />{c!.listed.code}</td><td><i style={{ background: c!.got.hex }} aria-hidden="true" />{c!.got.code}{c!.got.code === w.code ? "" : " (miss)"}</td><td className="num">{c!.dE.toFixed(1)}</td><td className="num">{pct(c!.grey)}</td><td>{c!.withGrey}{c!.withGrey === w.code ? "" : " (miss)"}</td></tr>
                 ))}
               </tbody>
             </table>
           </div>
+
+          <h3 id="grey" className="h-sub" style={{ marginTop: 40 }}>Grey, measured on the device</h3>
+          <p className="lede" style={{ marginTop: 12 }}>
+            A single median colour can&rsquo;t describe grey hair, so Hairloom also counts the share of hair pixels that are light and nearly colourless (L* above 55, chroma under 8; thresholds set before measuring). On the wig photos it reads {greyWigs.map((r) => `${r.w.name} ${pct(r.c!.grey)}`).join(", ")}, and every other wig under {pct(restMax)}. From 15% grey the studio suggests a grey blend code (1B/44, 38, 44, 51, 56 or 60, or a blonde base with 60), and with that check {greyHits} of {stock.length} wigs come back as their listed code, against {plainHits} without it. Among the demo people, {people.filter((x) => x.grey != null && x.grey >= 0.05).map((x) => `${x.name} reads about ${pct(x.grey)} grey${x.blend ? ` (suggested blend ${x.blend.code})` : ""}`).join(" and ")}.
+          </p>
+          <p className="lede" style={{ marginTop: 12 }}>
+            We also tried trimming more of the darkest pixels before taking the median (on Oct 30, with the trim option in <code>lib/hairColor.ts</code>): leaving out the darkest 30% gave 7 of 16 listed codes, and 40% gave 8 of 16. That is tuned on these same 16 photos, and the 40% trim read Margaret&rsquo;s grey-blonde hair as light grey (51), so the studio keeps the 15% trim and reports the grey share beside it.
+          </p>
 
           <h2 className="h-sec" style={{ marginTop: 72 }}>Not proven yet</h2>
           <ul className={s.open}>
             <li>No real person with hair loss has used Hairloom from start to finish. The real-photo tests use stock portraits, and shaved heads are smoother and better lit than chemotherapy hair loss. A pilot with consenting clients and a wig fitter is the next step.</li>
             <li>YouCam&rsquo;s guided camera (Camera Kit) is built in but has not been tested on a real phone, so we can&rsquo;t yet say how well its face and light checks work. Uploading photos works without it.</li>
             <li>Everything was tested on generated wig photos from our demo boutique and on stock portraits, not on a real retailer&rsquo;s product photos.</li>
-            <li>Salt-and-pepper hair, such as Ravi’s, is measured as its dominant dark shade, so the suggestions lean jet black. A fitter should judge a grey blend such as 44 or 56 by eye.</li>
+            <li>Grey is now measured, but the blend codes it suggests are a loose convention that varies by brand, and they haven&rsquo;t been checked against real swatches. Ravi&rsquo;s salt-and-pepper reads about {pct(people.find((x) => x.name === "Ravi")?.grey)} grey, under the 15% where a blend is suggested, so his shade suggestions still lean dark and a fitter judges the grey by eye.</li>
             <li>The measured hair shade has no reference swatch to check against, and it missed once on the real photos.</li>
             <li>The closeness ranking weighs length, texture and colour by hand. It hasn&rsquo;t been checked against what fitters and clients actually choose.</li>
             <li>Shade codes vary by brand, and our hex values approximate typical swatches without white balance, so a fitter still checks against real swatches.</li>

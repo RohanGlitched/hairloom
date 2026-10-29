@@ -18,7 +18,8 @@ export type SharePayload = {
   keptAt: number;
   kept: string; // small JPEG data URL
   readings: unknown;
-  colour: { hex: string; code: string; name: string; dE: number } | null;
+  /** `grey`: share of grey hair pixels (0-1); `blend`: a suggested grey blend code, judged by eye. */
+  colour: { hex: string; code: string; name: string; dE: number; grey?: number; blend?: string } | null;
   looks: { key: string; label: string; src: string; detail: string }[];
   note: string;
   appointment?: string;
@@ -44,7 +45,7 @@ export const PayloadSchema = z.object({
       color: z.object({ eyebrow_color: hex.optional(), hair_color: hex.optional(), hair_color_name: short(30).optional() }).partial().optional(),
     }).passthrough().nullable(),
   }),
-  colour: z.object({ hex, code: short(8), name: short(40), dE: z.number().finite() }).nullable(),
+  colour: z.object({ hex, code: short(8), name: short(40), dE: z.number().finite(), grey: z.number().min(0).max(1).optional(), blend: z.string().regex(/^[0-9A-Z/]{1,8}$/).optional() }).nullable(),
   looks: z.array(z.object({ key: short(60), label: short(80), src: jpeg, detail: short(200) })).max(6),
   note: short(1200),
   appointment: short(40).optional(),

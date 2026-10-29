@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Passport } from "@/components/Passport";
 import type { Cap, Readings } from "@/lib/demo";
-import { measured } from "@/lib/colours";
+import { greyOf, measured } from "@/lib/colours";
 import { prepare } from "@/lib/client";
 import { KINDS, type KindName } from "@/lib/kinds";
 import { capSize } from "@/lib/match";
@@ -33,7 +33,7 @@ export function KeepStep({ ctx }: { ctx: Ctx }) {
     return (
       <div className={s.step}>
         <StepHead n={1} title={`${session.name}'s hair passport`} lede={alopecia ? "Read by YouCam from three photos taken while her hair still covered the patches." : "Read by YouCam from three photos taken before treatment, with the head measured at home."} />
-        <Passport p={{ name: session.name, kept: session.kept, turns: session.turns ?? [], readings: session.readings, cap: session.cap, situation: session.situation }} lab={session.personaId ? measured(`${session.personaId}/kept`) : null} />
+        <Passport p={{ name: session.name, kept: session.kept, turns: session.turns ?? [], readings: session.readings, cap: session.cap, situation: session.situation }} lab={session.personaId ? measured(`${session.personaId}/kept`) : null} grey={session.personaId ? greyOf(`${session.personaId}/kept`) : null} />
         <div className={s.next}><button className="btn btn-ivory" onClick={() => ctx.go("try")}>Next: try wigs</button></div>
       </div>
     );

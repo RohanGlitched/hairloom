@@ -11,7 +11,7 @@ export default function Measure() {
   useEffect(() => {
     (async () => {
       const { measureHair } = await import("@/lib/hairColor");
-      const res: Record<string, { hex: string; lab: number[]; pixels: number } | null> = {};
+      const res: Record<string, { hex: string; lab: number[]; pixels: number; grey: number; base: number[] | null } | null> = {};
       const jobs: [string, string][] = [];
       for (const w of WIGS) jobs.push([`catalogue/${w.id}`, `/catalogue/${w.id}.jpg`]);
       for (const p of PERSONAS) {
@@ -24,7 +24,8 @@ export default function Measure() {
       // Real photographs are not published; their measurements are kept from earlier runs (see measure.cjs).
       for (const [k, src] of jobs) {
         const r = await measureHair(src).catch(() => null);
-        res[k] = r ? { hex: r.hex, lab: r.lab.map((v) => Math.round(v * 100) / 100), pixels: r.pixels } : null;
+        const round = (l: number[]) => l.map((v) => Math.round(v * 100) / 100);
+        res[k] = r ? { hex: r.hex, lab: round(r.lab), pixels: r.pixels, grey: Math.round(r.grey * 1000) / 1000, base: r.base ? round(r.base) : null } : null;
       }
       setOut(JSON.stringify(res, null, 1));
     })();

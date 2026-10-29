@@ -1,6 +1,6 @@
 import { PERSONAS, persona, type Persona } from "./demo";
-import { measured, renderLab } from "./colours";
-import { deltaE00, labToHex, nearestShades } from "./color";
+import { greyOf, measured, renderLab } from "./colours";
+import { deltaE00, greyBlend, labToHex, nearestShades } from "./color";
 import { HEADWEAR, WIGS } from "./catalogue";
 import { closeness, lengthFromTerm, orLonger, textureFromType } from "./match";
 import { demoDates } from "./dates";
@@ -39,7 +39,9 @@ export function demoBrief(id = "anjali", now = Date.now()): SharePayload {
   const lab = measured(`${p.id}/kept`);
   const n = lab ? nearestShades(lab, 1)[0] : null;
   const { keptAt, appointment } = demoDates(now);
-  const base = { v: 1 as const, name: `${p.name} (demo)`, keptAt, kept: p.kept, readings: p.readings, colour: lab && n ? { hex: labToHex(lab), code: n.code, name: n.name, dE: Math.round(n.dE * 10) / 10 } : null, note: NOTES[p.id] ?? "", appointment, cap: p.cap };
+  const g = greyOf(`${p.id}/kept`), blend = greyBlend(g?.grey, g?.base);
+  const colour = lab && n ? { hex: labToHex(lab), code: n.code, name: n.name, dE: Math.round(n.dE * 10) / 10, ...(g ? { grey: g.grey } : {}), ...(blend ? { blend: blend.code } : {}) } : null;
+  const base = { v: 1 as const, name: `${p.name} (demo)`, keptAt, kept: p.kept, readings: p.readings, colour, note: NOTES[p.id] ?? "", appointment, cap: p.cap };
   if (p.id === "anjali") {
     return {
       ...base,

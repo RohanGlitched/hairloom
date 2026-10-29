@@ -31,7 +31,14 @@ function quietMediaPipe() {
   };
 }
 
-export type HairColour = { lab: Lab; hex: string; pixels: number; coverage: number };
+/**
+ * `grey` is the share of hair pixels that read as grey or white: light (L* above 55) with almost no
+ * colour (chroma C* below 8); thresholds set before we measured, not tuned on our photos. `base` is the
+ * median of the other hair pixels, the colour a grey blend is mixed into.
+ */
+export type HairColour = { lab: Lab; hex: string; pixels: number; coverage: number; grey: number; base: Lab | null };
+export const GREY_L = 55, GREY_C = 8;
+const isGrey = ([L, a, b]: Lab) => L > GREY_L && Math.hypot(a, b) < GREY_C;
 
 async function toImage(src: string): Promise<HTMLImageElement> {
   const img = new Image();
@@ -42,7 +49,7 @@ async function toImage(src: string): Promise<HTMLImageElement> {
 }
 
 /** Measures hair colour in an image (URL or data URL). Returns null when too little hair is visible. */
-export async function measureHair(src: string): Promise<HairColour | null> {
+export async function measureHair(src: string, trim: { dark: number; light: number } = { dark: 0.15, light: 0.15 }): Promise<HairColour | null> {
   const [seg, img] = await Promise.all([load(), toImage(src)]);
   const scale = Math.min(1, 512 / Math.max(img.naturalWidth, img.naturalHeight));
   const w = Math.round(img.naturalWidth * scale), h = Math.round(img.naturalHeight * scale);
@@ -67,10 +74,17 @@ export async function measureHair(src: string): Promise<HairColour | null> {
   result.close();
   if (labs.length < 400) return null;
 
-  // Trim the darkest 15% (shadow) and brightest 15% (shine) by lightness, then median each channel.
-  labs.sort((a, b) => a[0] - b[0]);
-  const core = labs.slice(Math.floor(labs.length * 0.15), Math.ceil(labs.length * 0.85));
+  const grey = labs.filter(isGrey).length / labs.length;
+  const lab = trimmedMedian(labs, trim);
+  const rest = labs.filter((l) => !isGrey(l));
+  const base = rest.length >= 400 ? trimmedMedian(rest, trim) : null;
+  return { lab, hex: labToHex(lab), pixels: labs.length, coverage: labs.length / (w * h), grey, base };
+}
+
+/** Trim the darkest and brightest pixels by lightness (shadow and shine), then take each channel's median. */
+function trimmedMedian(all: Lab[], trim: { dark: number; light: number }): Lab {
+  const labs = [...all].sort((a, b) => a[0] - b[0]);
+  const core = labs.slice(Math.floor(labs.length * trim.dark), Math.ceil(labs.length * (1 - trim.light)));
   const med = (k: 0 | 1 | 2) => { const v = core.map((l) => l[k]).sort((a, b) => a - b); return v[Math.floor(v.length / 2)]; };
-  const lab: Lab = [med(0), med(1), med(2)];
-  return { lab, hex: labToHex(lab), pixels: labs.length, coverage: labs.length / (w * h) };
+  return [med(0), med(1), med(2)];
 }

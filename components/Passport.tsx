@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { SHADES } from "@/lib/catalogue";
-import { nearestShades, type Lab, labToHex } from "@/lib/color";
+import { greyBlend, greyWords, nearestShades, type Lab, labToHex } from "@/lib/color";
 import { describe, type Cap, type Persona } from "@/lib/demo";
 import { capSize } from "@/lib/match";
 import { dayLabel, demoDates } from "@/lib/dates";
@@ -16,19 +16,22 @@ const PARTING: Record<string, string> = { left: "Left", centre: "Centre", right:
  * The hair passport: YouCam readings, the fitter's own measurements, and hair colour as a wig shade code.
  * `lab` is a measurement already taken (demo people); without it, colour is measured here in the browser.
  */
-export function Passport({ p, lab: given, number, date = dayLabel(demoDates().keptAt) }: { p: PassportSubject; lab?: Lab | null; number?: string; date?: string }) {
+export function Passport({ p, lab: given, grey: givenGrey, number, date = dayLabel(demoDates().keptAt) }: { p: PassportSubject; lab?: Lab | null; grey?: { grey: number; base: Lab | null } | null; number?: string; date?: string }) {
   const d = describe(p.readings);
   const [lab, setLab] = useState<Lab | null>(given ?? null);
+  const [grey, setGrey] = useState<{ grey: number; base: Lab | null } | null>(givenGrey ?? null);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    if (given) { setLab(given); return; }
+    if (given) { setLab(given); setGrey(givenGrey ?? null); return; }
     let live = true;
     setLab(null);
     setFailed(false);
-    import("@/lib/hairColor").then(({ measureHair }) => measureHair(p.kept)).then((r) => { if (!live) return; if (r) setLab(r.lab); else setFailed(true); }).catch(() => live && setFailed(true));
+    import("@/lib/hairColor").then(({ measureHair }) => measureHair(p.kept)).then((r) => { if (!live) return; if (r) { setLab(r.lab); setGrey({ grey: r.grey, base: r.base }); } else setFailed(true); }).catch(() => live && setFailed(true));
     return () => { live = false; };
-  }, [p.kept, given]);
+  }, [p.kept, given, givenGrey]);
+  const greyNote = greyWords(grey?.grey);
+  const blend = greyBlend(grey?.grey, grey?.base);
 
   const near = lab ? nearestShades(lab, 3) : null;
   const no = number ?? passportNo(p.kept);
@@ -81,10 +84,16 @@ export function Passport({ p, lab: given, number, date = dayLabel(demoDates().ke
                   ))}
                 </div>
                 <p className={s.note}>Wig shade <b>{near[0].code}</b>, {near[0].name.toLowerCase()}. Measured from the hair in the front photo, on this device.</p>
+                {greyNote && (
+                  <p className={s.note}>
+                    <b>{greyNote[0].toUpperCase() + greyNote.slice(1)}</b>
+                    {blend ? <>: ask for a grey blend such as <b>{blend.code}</b> ({blend.name.toLowerCase()}), judged by eye against swatches.</> : ": not enough for a grey blend, so mention it to your fitter."}
+                  </p>
+                )}
                 <details className={s.more}>
                   <summary>How the colour is measured</summary>
                   <p>
-                    A hair mask (MediaPipe) finds the hair pixels; Hairloom takes their median colour in CIELAB, leaving out shadow and shine, and compares it with {SHADES.length} common wig shades using CIEDE2000. Differences: {near.map((n) => `${n.code} ${n.dE.toFixed(1)}`).join(", ")} (under 3 is hard to tell apart). Shade codes vary by brand, so a fitter checks against real swatches.
+                    A hair mask (MediaPipe) finds the hair pixels; Hairloom takes their median colour in CIELAB, leaving out shadow and shine, and compares it with {SHADES.length} common wig shades using CIEDE2000. Grey is the share of hair pixels that are light and nearly colourless (L* above 55, chroma below 8); from 15% up it suggests a grey blend code. Differences: {near.map((n) => `${n.code} ${n.dE.toFixed(1)}`).join(", ")} (under 3 is hard to tell apart). Shade codes vary by brand, so a fitter checks against real swatches.
                   </p>
                 </details>
               </>

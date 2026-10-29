@@ -3,7 +3,7 @@ import { createMcpHandler } from "mcp-handler";
 import type { McpServer } from "@modelcontextprotocol/server";
 import { z } from "zod";
 import { LENGTH_LABEL, WIGS, inr, type Length, type Texture } from "./catalogue";
-import { deltaE00, hexToLab, nearestShades } from "./color";
+import { deltaE00, greyBlend, hexToLab, nearestShades } from "./color";
 import { measured, renderLab, wigShade } from "./colours";
 import { PERSONAS } from "./demo";
 import { KINDS } from "./kinds";
@@ -75,6 +75,7 @@ function register(server: McpServer) {
         hair_length: z.string().max(40).optional().describe('YouCam hair length term, e.g. "above chest", "ear length"'),
         hair_type: z.string().max(20).optional().describe('YouCam hair type mapping, e.g. "1 to 2A", "4A to 4B"'),
         hair_hex: hex.optional().describe("Measured hair colour, e.g. #342820"),
+        hair_grey_percent: z.number().min(0).max(100).optional().describe("Share of grey hair pixels, 0-100, from the Hairloom passport. From 15 up, the pull list names a grey blend."),
         head_cm: z.number().min(45).max(65).optional(),
         fit: z.enum(["Women", "Men"]).optional(),
         top: z.number().int().min(1).max(10).optional(),
@@ -91,12 +92,14 @@ function register(server: McpServer) {
       outputSchema: MATCH_OUT,
       annotations: { readOnlyHint: true },
     },
-    async ({ hair_length, hair_type, hair_hex, head_cm, fit, top = 5, stock }) => {
+    async ({ hair_length, hair_type, hair_hex, hair_grey_percent, head_cm, fit, top = 5, stock }) => {
       const len = lengthFromTerm(hair_length) as Length | null;
       const tex = textureFromType(hair_type) as Texture | null;
       const more = orLonger(hair_length);
       const lab = hair_hex ? hexToLab(hair_hex) : null;
       const client = lab ? nearestShades(lab, 1)[0] : null;
+      // The passport's hex is the whole hair; the blend's base is approximated by it here.
+      const blend = hair_grey_percent != null ? greyBlend(hair_grey_percent / 100, lab) : null;
       // One shape for both sources; demo wigs carry the colour measured from their product photo.
       const rows = stock
         ? stock.map((w) => ({ name: w.name, fit: w.fit, length: w.length as Length, texture: w.texture as Texture, lab: w.hex ? hexToLab(w.hex) : null, cap: w.cap ?? "cap not given", price: w.price_inr, shade: w.hex ? nearestShades(hexToLab(w.hex), 1)[0].code : null }))
@@ -112,9 +115,9 @@ function register(server: McpServer) {
       const best = ranked[0]?.score;
       // Pull what is close; a "new look" only when nothing in stock is closer.
       const close = ranked.filter(({ score }) => band(score, best) !== "A new look");
-      const pull = (close.length ? close : ranked).slice(0, 3).map(({ w }) => ({ name: w.name, shade: client ? `${client.code} and one shade either side${w.shade && w.shade !== client.code ? ` (stocked as ${w.shade})` : ""}` : w.shade ? `${w.shade} (stock shade)` : "as stocked" }));
+      const pull = (close.length ? close : ranked).slice(0, 3).map(({ w }) => ({ name: w.name, shade: client ? `${client.code}${blend ? ` or the ${blend.code} grey blend` : ""} and one shade either side${w.shade && w.shade !== client.code ? ` (stocked as ${w.shade})` : ""}` : w.shade ? `${w.shade} (stock shade)` : "as stocked" }));
       const lines = [
-        `Client: ${kept}, ${tex ?? "texture not given"}${client ? `, nearest shade ${client.code} (${client.name.toLowerCase()})` : ""}${head_cm ? `, ${capSize(head_cm)} cap (${head_cm} cm)` : ""}.`,
+        `Client: ${kept}, ${tex ?? "texture not given"}${client ? `, nearest shade ${client.code} (${client.name.toLowerCase()})` : ""}${hair_grey_percent != null && hair_grey_percent >= 5 ? `, about ${Math.round(hair_grey_percent)}% grey${blend ? ` (try a ${blend.code} blend, by eye)` : ""}` : ""}${head_cm ? `, ${capSize(head_cm)} cap (${head_cm} cm)` : ""}.`,
         `Ranking ${stock ? `your ${stock.length} wigs` : "the Hairloom demo boutique (pass `stock` for your own)"}${lab ? ", colour compared with each wig's stocked colour" : ""}:`,
         ...ranked.map(({ w, score }, i) => `${i + 1}. ${w.name} — ${band(score, best)}. ${lengthStep(len, w.length, more)?.word ?? LENGTH_LABEL[w.length]}; ${textureStep(tex, w.texture)?.word ?? w.texture}; ${w.cap}${w.price != null ? `; ${inr(w.price)}` : ""}.`),
         "",
@@ -137,12 +140,16 @@ function register(server: McpServer) {
     {
       title: "Wig shade codes for a hair colour",
       description: "Returns the nearest common wig shade codes for a hex colour, by CIEDE2000. Codes vary by brand; confirm with swatches.",
-      inputSchema: z.object({ hex, count: z.number().int().min(1).max(6).optional() }),
+      inputSchema: z.object({ hex, count: z.number().int().min(1).max(6).optional(), grey_percent: z.number().min(0).max(100).optional().describe("Share of grey hair, 0-100; from 15 up a grey blend is suggested") }),
       annotations: { readOnlyHint: true },
     },
-    async ({ hex: h, count = 3 }) => {
+    async ({ hex: h, count = 3, grey_percent }) => {
       const near = nearestShades(hexToLab(h), count);
-      return text(near.map((n) => `${n.code} — ${n.name} (ΔE00 ${n.dE.toFixed(1)}${n.dE < 3 ? ", hard to tell apart" : ""})`).join("\n"));
+      const blend = grey_percent != null ? greyBlend(grey_percent / 100, hexToLab(h)) : null;
+      return text([
+        ...near.map((n) => `${n.code} — ${n.name} (ΔE00 ${n.dE.toFixed(1)}${n.dE < 3 ? ", hard to tell apart" : ""})`),
+        ...(blend ? [`About ${Math.round(grey_percent!)}% grey: try a ${blend.code} blend (${blend.name.toLowerCase()}), judged by eye against swatches.`] : []),
+      ].join("\n"));
     },
   );
 

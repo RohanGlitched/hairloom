@@ -68,3 +68,23 @@ export function matchWord(dE: number) {
   if (dE < 10) return "Noticeably different";
   return "A clear change";
 }
+
+/**
+ * A grey blend from the share of grey hair pixels and the colour of the rest. A loose convention that
+ * varies by brand (1B/44 mostly dark with some grey, 38 ash brown with grey, 44 salt and pepper,
+ * 51 light grey, 56 smoke, 60 white), so it is a starting point for a fitter, judged by eye.
+ */
+export function greyBlend(grey: number | null | undefined, base: Lab | null | undefined): { code: string; name: string } | null {
+  if (grey == null || grey < 0.15) return null;
+  if (grey >= 0.9) return { code: "60", name: "White" };
+  if (grey >= 0.7) return { code: "56", name: "Smoke grey" };
+  if (grey >= 0.5) return { code: "51", name: "Light grey" };
+  if (grey >= 0.3) return { code: "44", name: "Salt and pepper" };
+  const b = base ? nearestShades(base, 1)[0] : null;
+  if (!b || ["1", "1B", "2"].includes(b.code)) return { code: "1B/44", name: "Off black with some grey" };
+  if (["4", "6", "8", "10", "12", "38"].includes(b.code)) return { code: "38", name: "Ash brown with grey" };
+  return { code: `${b.code}/60`, name: `${b.name} with white` };
+}
+
+/** "About 27% grey", or null below 5%, where a few light strands are more likely shine than grey. */
+export const greyWords = (grey: number | null | undefined) => (grey != null && grey >= 0.05 ? `about ${Math.round(grey * 100)}% grey` : null);

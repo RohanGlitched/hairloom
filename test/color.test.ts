@@ -32,3 +32,17 @@ test("nearest wig shade for measured demo hair", () => {
   assert.equal(nearestShades(hexToLab("#0d120f"), 1)[0].code, "1"); // Nia, jet black
   assert.ok(deltaE00(hexToLab("#342820"), hexToLab("#FAF0BE")) > 60, "YouCam's 'Blonde' reading is far from the pixels");
 });
+
+test("grey blends follow the grey share, and a blonde base keeps its own code", async () => {
+  const { greyBlend, greyWords, hexToLab } = await import("../lib/color.ts");
+  assert.equal(greyBlend(0.1, hexToLab("#1d1714")), null, "under 15%: no blend");
+  assert.equal(greyBlend(0.2, hexToLab("#1d1714"))?.code, "1B/44", "dark base");
+  assert.equal(greyBlend(0.25, hexToLab("#5e4331"))?.code, "38", "brown base");
+  assert.equal(greyBlend(0.27, hexToLab("#a08262"))?.code, "14/60", "blonde base");
+  assert.equal(greyBlend(0.4, null)?.code, "44");
+  assert.equal(greyBlend(0.6, null)?.code, "51");
+  assert.equal(greyBlend(0.81, null)?.code, "56");
+  assert.equal(greyBlend(0.95, null)?.code, "60");
+  assert.equal(greyWords(0.02), null, "a few light strands are shine, not grey");
+  assert.equal(greyWords(0.094), "about 9% grey");
+});

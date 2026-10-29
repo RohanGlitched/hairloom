@@ -96,7 +96,7 @@ function Brief({ b, onClose }: { b: SharePayload; onClose: () => void }) {
           <div>
             <dl className={s.facts}>
               {when && <><dt>Appointment</dt><dd>{when}</dd></>}
-              <dt>Shade</dt><dd>{b.colour ? <><i style={{ background: b.colour.hex }} />Nearest code {b.colour.code}, {b.colour.name.toLowerCase()} <small>(ΔE {b.colour.dE}, measured on the client&rsquo;s device)</small></> : "Not measured"}</dd>
+              <dt>Shade</dt><dd>{b.colour ? <><i style={{ background: b.colour.hex }} />Nearest code {b.colour.code}, {b.colour.name.toLowerCase()} <small>(ΔE {b.colour.dE}, measured on the client&rsquo;s device)</small>{b.colour.grey != null && b.colour.grey >= 0.05 && <><br />About {Math.round(b.colour.grey * 100)}% grey{b.colour.blend ? `: try a ${b.colour.blend} blend, judged by eye` : ""}</>}</> : "Not measured"}</dd>
               <dt>Curl pattern</dt><dd>{d.curl ? `${d.curl.raw}, ${d.curl.label.toLowerCase()}` : "Not read"}</dd>
               <dt>Frizz</dt><dd>{d.frizz?.label ?? "Not read"}</dd>
               <dt>Length</dt><dd>{d.length?.label ?? "Not read"}</dd>
@@ -109,7 +109,7 @@ function Brief({ b, onClose }: { b: SharePayload; onClose: () => void }) {
           <div className={s.prep}>
             <h2 className="h-sub">Before they arrive</h2>
             <ul>
-              {pull.map(({ w, code }) => <li key={w.id}>Pull <b>{w.name}</b> in shade {code} and one shade either side.</li>)}
+              {pull.map(({ w, code }) => <li key={w.id}>Pull <b>{w.name}</b> in shade {code}{b.colour?.blend ? ` or the ${b.colour.blend} blend` : ""} and one shade either side.</li>)}
               <li>Have an adjustable cap ready{b.cap?.cm ? ` around ${capSize(b.cap.cm)!.toLowerCase()}` : ""}: heads can be up to a size smaller after hair loss (American Cancer Society). Re-measure at the fitting.</li>
               {d.frizz && /frizz/i.test(d.frizz.label) && <li>Their own hair had some frizz; a slightly textured fibre will look more like them.</li>}
               <li>Offer a soft liner or sleep cap if the scalp is sensitive.</li>

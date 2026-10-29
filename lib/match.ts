@@ -49,9 +49,13 @@ export function closeness(wig: Pick<Wig, "length" | "texture">, kept: { length: 
   return Math.max(0, Math.round(score));
 }
 
-/** Plain words for the closeness score, instead of a percentage. With `best`, the top of a weak list says so. */
+/**
+ * Plain words for the closeness score, instead of a percentage. With `best`, the top of a weak list says
+ * so: when nothing in stock is close, the few nearest are "Nearest in this shop", not "A new look".
+ */
 export function band(score: number, best?: number) {
   if (score >= 75) return "Closest to yours";
+  if (best != null && best < 50 && score >= best - 6) return "Nearest in this shop";
   if (best != null && score === best) return "Closest in stock";
   if (score >= 50) return "A small change";
   return "A new look";

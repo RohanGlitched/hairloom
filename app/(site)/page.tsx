@@ -7,7 +7,7 @@ import { Reveal } from "@/components/Reveal";
 import { PERSONAS, persona } from "@/lib/demo";
 import { API_COUNT_WORD, TOTALS, byApi } from "@/lib/evidence";
 import { BOUTIQUE, WIGS } from "@/lib/catalogue";
-import { measured } from "@/lib/colours";
+import { greyOf, measured } from "@/lib/colours";
 import { demoBrief } from "@/lib/brief";
 import { capSize } from "@/lib/match";
 import { appointmentLabel, dayLabel } from "@/lib/dates";
@@ -175,7 +175,7 @@ export default function Home() {
             </ul>
             <Link href="/studio" className="btn btn-ink">Start your hair passport</Link>
           </div>
-          <Passport p={anjali} lab={measured("anjali/kept")} date={dayLabel(brief.keptAt)} />
+          <Passport p={anjali} lab={measured("anjali/kept")} grey={greyOf("anjali/kept")} date={dayLabel(brief.keptAt)} />
         </div>
       </section>
 

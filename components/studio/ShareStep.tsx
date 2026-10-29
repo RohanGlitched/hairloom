@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { HEADWEAR, WIGS } from "@/lib/catalogue";
-import { nearestShades, labToHex } from "@/lib/color";
-import { measured } from "@/lib/colours";
+import { greyBlend, nearestShades, labToHex } from "@/lib/color";
+import { greyOf, measured } from "@/lib/colours";
 import { prepare } from "@/lib/client";
 import { seal, type SharePayload } from "@/lib/seal";
 import type { Ctx } from "./Studio";
@@ -44,15 +44,17 @@ export function ShareStep({ ctx }: { ctx: Ctx }) {
     setBusy(true); setErr(null); setLink(null);
     try {
       const pre = session.mode === "demo" && session.personaId ? measured(`${session.personaId}/kept`) : null;
-      const m = pre ? { lab: pre, hex: labToHex(pre) } : await import("@/lib/hairColor").then(({ measureHair }) => measureHair(session.kept!)).catch(() => null);
+      const g0 = pre && session.personaId ? greyOf(`${session.personaId}/kept`) : null;
+      const m = pre ? { lab: pre, hex: labToHex(pre), grey: g0?.grey ?? null, base: g0?.base ?? null } : await import("@/lib/hairColor").then(({ measureHair }) => measureHair(session.kept!)).catch(() => null);
       const n = m ? nearestShades(m.lab, 1)[0] : null;
+      const blend = m ? greyBlend(m.grey, m.base) : null;
       const payload: SharePayload = {
         v: 1,
         name: session.name === "You" ? "Client" : session.name,
         keptAt: session.keptAt ?? Date.now(),
         kept: await prepare(session.kept!, 420),
         readings: session.readings,
-        colour: m && n ? { hex: m.hex, code: n.code, name: n.name, dE: Math.round(n.dE * 10) / 10 } : null,
+        colour: m && n ? { hex: m.hex, code: n.code, name: n.name, dE: Math.round(n.dE * 10) / 10, ...(m.grey != null ? { grey: Math.round(m.grey * 1000) / 1000 } : {}), ...(blend ? { blend: blend.code } : {}) } : null,
         looks: await Promise.all(looks.map(async (k) => ({ key: k, ...lookLabel(k), src: await prepare(session.renders[k].src, 520) }))),
         note: session.note.slice(0, 1200),
         appointment: when || undefined,

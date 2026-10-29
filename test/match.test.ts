@@ -53,3 +53,13 @@ test("decrypted shares are validated before rendering", () => {
   assert.equal(PayloadSchema.safeParse({ ...ok, kept: "https://evil.example/track.jpg" }).success, false, "remote image");
   assert.equal(PayloadSchema.safeParse({ ...ok, looks: Array(7).fill(ok.looks[0]) }).success, false, "too many looks");
 });
+
+test("when nothing in stock is close, the nearest few say so instead of 'A new look'", async () => {
+  const { band } = await import("../lib/match.ts");
+  assert.equal(band(80, 80), "Closest to yours");
+  assert.equal(band(44, 44), "Nearest in this shop");
+  assert.equal(band(40, 44), "Nearest in this shop");
+  assert.equal(band(30, 44), "A new look");
+  assert.equal(band(60, 60), "Closest in stock");
+  assert.equal(band(52, 60), "A small change");
+});

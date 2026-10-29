@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { LENGTH_LABEL, WIGS, inr } from "@/lib/catalogue";
-import { deltaE00, matchWord, nearestShades, type Lab } from "@/lib/color";
-import { measured, renderLab, wigShade } from "@/lib/colours";
+import { deltaE00, greyBlend, greyWords, matchWord, nearestShades, type Lab } from "@/lib/color";
+import { greyOf, measured, renderLab, wigShade } from "@/lib/colours";
 import { prepare } from "@/lib/client";
 import { VOLUME, EXTENSION } from "@/lib/kinds";
 import { band, closeness, lengthFromTerm, lengthStep, orLonger, textureFromType, textureStep } from "@/lib/match";
@@ -26,6 +26,7 @@ export function TryStep({ ctx }: { ctx: Ctx }) {
   const [msg, setMsg] = useState<string | null>(null);
   const [fit, setFit] = useState<Fit>(session.fit ?? "All");
   const [keptLab, setKeptLab] = useState<Lab | null>(null);
+  const [keptGrey, setKeptGrey] = useState<{ grey: number; base: Lab | null } | null>(null);
   const [nowLab, setNowLab] = useState<Lab | null>(null);
 
 
@@ -40,8 +41,8 @@ export function TryStep({ ctx }: { ctx: Ctx }) {
   // Colour: demo people use measurements taken at build time (no model download); live sessions measure here.
   useEffect(() => {
     if (!session.kept) return;
-    if (pid) return setKeptLab(measured(`${pid}/kept`));
-    import("@/lib/hairColor").then(({ measureHair }) => measureHair(session.kept!)).then((r) => setKeptLab(r?.lab ?? null)).catch(() => undefined);
+    if (pid) { setKeptGrey(greyOf(`${pid}/kept`)); return setKeptLab(measured(`${pid}/kept`)); }
+    import("@/lib/hairColor").then(({ measureHair }) => measureHair(session.kept!)).then((r) => { setKeptLab(r?.lab ?? null); setKeptGrey(r ? { grey: r.grey, base: r.base } : null); }).catch(() => undefined);
   }, [session.kept, pid]);
   useEffect(() => {
     setNowLab(null);
@@ -194,7 +195,7 @@ export function TryStep({ ctx }: { ctx: Ctx }) {
               {pid && !shaded(wig.id) && <p className="small">Shades are prepared for {ranked.find(({ w }) => shaded(w.id))?.w.name ?? "one wig"} in this demo. With your own photo, any wig can be recoloured.</p>}
               {shadeSource && keptLab && (!pid || shaded(wig.id)) && (
                 <div className={s.shades}>
-                  <p className="small">Order it in a shade closer to your own hair:</p>
+                  <p className="small">Order it in a shade closer to {session.mode === "demo" ? `${session.name}'s` : "your"} own hair{greyWords(keptGrey?.grey) ? ` (${greyWords(keptGrey?.grey)}${greyBlend(keptGrey?.grey, keptGrey?.base) ? `; a fitter may suggest a ${greyBlend(keptGrey?.grey, keptGrey?.base)!.code} blend, judged by eye` : ""})` : ""}:</p>
                   <div>
                     {nearestShades(keptLab, 3).filter((n) => !pid || ready(`shade:${wig.id}:${n.code}`)).map((n) => {
                       const key = `shade:${wig.id}:${n.code}`;
@@ -218,7 +219,7 @@ export function TryStep({ ctx }: { ctx: Ctx }) {
           ) : sel === "own" ? (
             <>
               <h2 className="h-sub">{session.mode === "demo" ? `${session.name}'s own hair` : "Your own hair"}</h2>
-              <p className="small">YouCam&rsquo;s hairstyle try-on with your kept photo as the reference, placed on your {(session.later ?? "later").toLowerCase()} photo. Handy for showing a fitter exactly what you&rsquo;d like back.</p>
+              <p className="small">YouCam&rsquo;s hairstyle try-on with {session.mode === "demo" ? `${session.name}'s` : "your"} kept photo as the reference, placed on the {(session.later ?? "later").toLowerCase()} photo. Handy for showing a fitter exactly what {session.mode === "demo" ? (session.fit === "Men" ? "he'd" : "she'd") : "you'd"} like back.</p>
             </>
           ) : sel?.startsWith("thin:") ? (
             <>
