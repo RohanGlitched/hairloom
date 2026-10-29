@@ -1,12 +1,12 @@
 {
  "generated": "2026-10-30",
  "source": "lab/out and lab/real/out: one saved output file per finished YouCam task. Tasks whose output was not kept (early exploration, one-unit end-to-end checks) are not counted.",
- "runs": 268,
- "ok": 253,
+ "runs": 269,
+ "ok": 254,
  "origins": {
   "demo": {
-   "runs": 199,
-   "ok": 195
+   "runs": 200,
+   "ok": 196
   },
   "real-photo": {
    "runs": 41,
@@ -17,7 +17,7 @@
    "ok": 25
   }
  },
- "unitsEstimate": 513,
+ "unitsEstimate": 515,
  "tasks": [
   {
    "name": "ang_p1_down",
@@ -1783,6 +1783,14 @@
    "ok": true,
    "error": null,
    "ms": 10342
+  },
+  {
+   "name": "r4/shop_rosa",
+   "api": "AI Hairstyle Virtual Try-On",
+   "origin": "demo",
+   "ok": true,
+   "error": null,
+   "ms": 21915
   },
   {
    "name": "skin_test",
