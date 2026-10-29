@@ -65,7 +65,7 @@ Hairloom is also an MCP server (Streamable HTTP) at `https://hairloom-studio.ver
 |---|---|
 | `match_wigs` | Ranks stock against a client's passport and gives a pull list in the client's shade, with a cap note. |
 | `shade_for_colour` | Turns a hair colour hex into common wig shade codes, using CIEDE2000. |
-| `list_stock` | Browses the boutique's wigs, with shades measured from the product photos. |
+| `list_stock` | Browses the boutique's wigs, with their listed shade codes. |
 | `show_on_demo_person` | Returns a precomputed YouCam try-on of a wig on a demo person. |
 | `fitting_plan` | Gives the dates to plan around treatment, from ACS, CRUK and Macmillan guidance. |
 | `fitting_cost` | Gives the YouCam units and dollars for a fitting. |

@@ -10,6 +10,7 @@ import { BOUTIQUE, WIGS } from "@/lib/catalogue";
 import { measured } from "@/lib/colours";
 import { demoBrief } from "@/lib/brief";
 import { capSize } from "@/lib/match";
+import { appointmentLabel, dayLabel } from "@/lib/dates";
 import s from "./home.module.css";
 
 const anjali = persona("anjali");
@@ -60,6 +61,9 @@ const APIS = [
   ["AI Image Generator", "Headwear that keeps your face; demo people and boutique stock"],
   ["AI Skin Analysis", "Optional skin check-ins in the journal, once per treatment cycle"],
 ];
+
+// Demo dates are relative to today, so the page is rebuilt every hour.
+export const revalidate = 3600;
 
 export default function Home() {
   const apis = byApi().filter((a) => a.group === "studio");
@@ -171,7 +175,7 @@ export default function Home() {
             </ul>
             <Link href="/studio" className="btn btn-ink">Start your hair passport</Link>
           </div>
-          <Passport p={anjali} lab={measured("anjali/kept")} />
+          <Passport p={anjali} lab={measured("anjali/kept")} date={dayLabel(brief.keptAt)} />
         </div>
       </section>
 
@@ -190,7 +194,7 @@ export default function Home() {
             </div>
           </div>
           <div className={s.brief}>
-            <p className={s.briefHead}><span>Fitting brief</span><span>{brief.name} · Wed 28 Oct, 11:00</span></p>
+            <p className={s.briefHead}><span>Fitting brief</span><span>{brief.name} · {brief.appointment ? appointmentLabel(brief.appointment) : ""}</span></p>
             <div className={s.briefRow}>
               {brief.looks.slice(0, 3).map((l) => (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -241,7 +245,7 @@ export default function Home() {
           <div className={s.evTable} role="table" aria-label="YouCam tasks by API">
             <div role="row" className={s.evHead}><span role="columnheader">API</span><span role="columnheader">Runs</span><span role="columnheader">Succeeded</span><span role="columnheader">Median time</span></div>
             {apis.map((a) => (
-              <div role="row" key={a.api}>
+              <div role="row" key={a.api + a.scope}>
                 <span role="cell">{a.api}{a.scope ? <span style={{ color: "var(--ink-soft)", fontSize: 13 }}>, {a.scope}</span> : null}</span>
                 <span role="cell" className="num">{a.runs}</span>
                 <span role="cell" className="num">{a.ok}</span>

@@ -50,7 +50,7 @@ function register(server: McpServer) {
     "list_stock",
     {
       title: "List the boutique's wigs",
-      description: "Lists wigs in the demo boutique (Kesh & Co., fictional), with shade codes measured from each product photo. Optional filters.",
+      description: "Lists wigs in the demo boutique (Kesh & Co., fictional), with their listed shade codes. Optional filters.",
       inputSchema: z.object({
         fit: z.enum(["Women", "Men"]).optional(),
         length: z.enum(LENGTHS).optional(),

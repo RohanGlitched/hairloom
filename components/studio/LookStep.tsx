@@ -72,7 +72,7 @@ export function LookStep({ ctx }: { ctx: Ctx }) {
         </div>
 
         <div className={s.detail}>
-          <h2 className="h-sub">Your brows, rebuilt</h2>
+          <h2 className="h-sub">{session.mode === "demo" ? `${session.name}'s brows, rebuilt` : "Your brows, rebuilt"}</h2>
           <p className="small">
             Drawn in the shape and shade your passport kept ({brow ? `${brow.left_shape?.toLowerCase()}, ${brow.left_body_thickness?.toLowerCase()}` : "shape not read"}
             {d.browHex && <i className={s.inlineChip} style={{ background: d.browHex }} aria-hidden="true" />}), with YouCam&rsquo;s makeup try-on. A brow pencil in that shade is a good thing to buy early.
@@ -84,9 +84,18 @@ export function LookStep({ ctx }: { ctx: Ctx }) {
               ))}
             </div>
           )}
-          <button className="btn btn-ivory btn-sm" disabled={!!busy || (!session.renders[browKey] && !ctx.units.live)} onClick={() => run(browKey, "brows", { pattern: browPattern(brow?.left_shape), hex: d.browHex ?? "#3a2a22", thickness: thick })}>
-            {session.renders[browKey] ? "Show rebuilt brows" : session.mode === "demo" ? "Rebuild brows (runs live)" : "Rebuild my brows · 1 unit"}
-          </button>
+          {session.renders[browKey] ? (
+            // A two-state toggle: the mirror shows the rebuilt brows, or the photo underneath.
+            <button className={s.toggle} aria-pressed={sel === browKey} onClick={() => setSel(sel === browKey ? null : browKey)}>
+              <span className={s.toggleBox} aria-hidden="true">{sel === browKey ? "✓" : ""}</span>
+              {sel === browKey ? "Rebuilt brows shown" : "Show rebuilt brows"}
+              <small>{sel === browKey ? `Tap to see the ${baseLabel.toLowerCase()} photo` : `On the ${baseLabel.toLowerCase()} photo`}</small>
+            </button>
+          ) : (
+            <button className="btn btn-ivory btn-sm" disabled={!!busy || !ctx.units.live} onClick={() => run(browKey, "brows", { pattern: browPattern(brow?.left_shape), hex: d.browHex ?? "#3a2a22", thickness: thick })}>
+              {session.mode === "demo" ? "Rebuild brows (runs live)" : "Rebuild my brows · 1 unit"}
+            </button>
+          )}
 
           <h2 className="h-sub" style={{ marginTop: 28 }}>Headwear</h2>
           <div className={s.headGrid}>
@@ -94,10 +103,14 @@ export function LookStep({ ctx }: { ctx: Ctx }) {
               const key = `head:${h.id}`;
               const has = !!session.renders[key];
               return (
-                <button key={h.id} className={s.headBtn} aria-pressed={sel === key} disabled={!!busy || (!has && !ctx.units.live)} onClick={() => { if (window.innerWidth < 900) document.getElementById("look-mirror")?.scrollIntoView({ behavior: "smooth", block: "start" }); void run(key, "headwear", { headwear: h.id }); }}>
-                  <b>{h.name}</b>
-                  <span>{h.note}</span>
-                  {!has && <small>{busy === key ? "Working…" : session.mode === "demo" ? "Runs live" : "Try on · 1 unit"}</small>}
+                <button key={h.id} className={`${s.headBtn} ${has ? s.headWith : ""}`} aria-pressed={sel === key} disabled={!!busy || (!has && !ctx.units.live)} onClick={() => { if (window.innerWidth < 900) document.getElementById("look-mirror")?.scrollIntoView({ behavior: "smooth", block: "start" }); void run(key, "headwear", { headwear: h.id }); }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  {has && <img className={s.headThumb} src={session.renders[key].src} alt="" loading="lazy" />}
+                  <span className={s.headText}>
+                    <b>{h.name}</b>
+                    <span>{h.note}</span>
+                    {!has && <small>{busy === key ? "Working…" : session.mode === "demo" ? "Runs live" : "Try on · 1 unit"}</small>}
+                  </span>
                 </button>
               );
             })}

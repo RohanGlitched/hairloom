@@ -100,7 +100,7 @@ export function ShareStep({ ctx }: { ctx: Ctx }) {
             <input type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} />
           </label>
           <button className="btn btn-ivory" disabled={busy} onClick={create}>{busy ? "Sealing the link…" : "Create fitter link"}</button>
-          {session.mode === "demo" && !link && <p className="small"><a href="/fitter#demo">Or see what a fitter sees, with Anjali&rsquo;s demo brief</a></p>}
+          {session.mode === "demo" && !link && <p className="small"><a href={`/fitter#demo=${session.personaId ?? "anjali"}`}>Or see what a fitter sees, with {session.name}&rsquo;s demo brief</a></p>}
           {err && <p className={s.err} role="alert">{err}</p>}
           {link && (
             <div className={s.linkBox}>

@@ -5,6 +5,7 @@ import { SHADES } from "@/lib/catalogue";
 import { nearestShades, type Lab, labToHex } from "@/lib/color";
 import { describe, type Cap, type Persona } from "@/lib/demo";
 import { capSize } from "@/lib/match";
+import { dayLabel, demoDates } from "@/lib/dates";
 import s from "./Passport.module.css";
 
 export type PassportSubject = Pick<Persona, "name" | "kept" | "turns" | "readings"> & { cap?: Cap | null; situation?: Persona["situation"] | "other" };
@@ -15,7 +16,7 @@ const PARTING: Record<string, string> = { left: "Left", centre: "Centre", right:
  * The hair passport: YouCam readings, the fitter's own measurements, and hair colour as a wig shade code.
  * `lab` is a measurement already taken (demo people); without it, colour is measured here in the browser.
  */
-export function Passport({ p, lab: given, number, date = "21 Oct 2026" }: { p: PassportSubject; lab?: Lab | null; number?: string; date?: string }) {
+export function Passport({ p, lab: given, number, date = dayLabel(demoDates().keptAt) }: { p: PassportSubject; lab?: Lab | null; number?: string; date?: string }) {
   const d = describe(p.readings);
   const [lab, setLab] = useState<Lab | null>(given ?? null);
   const [failed, setFailed] = useState(false);

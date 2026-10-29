@@ -162,7 +162,7 @@ export function TryStep({ ctx }: { ctx: Ctx }) {
                 onClick={() => tryOn("own", "ownHair", {}, [session.today!, session.kept!])}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={ready("own") ? session.renders.own.src : session.kept} alt="" />
-                <span><b>Own hair</b><small>Your kept hair, back</small></span>
+                <span><b>Own hair</b><small>{session.mode === "demo" ? `${session.name}'s kept hair, back` : "Your kept hair, back"}</small></span>
               </button>
             )}
             {ranked.map(({ w, score }) => {

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { BOUTIQUE, LENGTH_LABEL, WIGS, inr } from "@/lib/catalogue";
 import { describe } from "@/lib/demo";
 import { demoBrief } from "@/lib/brief";
+import { appointmentLabel, dayLabel } from "@/lib/dates";
 import { capSize } from "@/lib/match";
 import { wigShade } from "@/lib/colours";
 import { nearestShades } from "@/lib/color";
@@ -27,9 +28,14 @@ export function FitterDesk() {
   }
 
   useEffect(() => {
-    const h = window.location.hash;
-    if (h.includes("s=")) void openLink(h);
-    else if (h === "#demo") setBrief(demoBrief());
+    const read = () => {
+      const h = window.location.hash;
+      if (h.includes("s=")) void openLink(h);
+      else if (/^#demo(=\w+)?$/.test(h)) { setBrief(demoBrief(h.split("=")[1] ?? "anjali")); window.scrollTo({ top: 0 }); }
+    };
+    read();
+    window.addEventListener("hashchange", read);
+    return () => window.removeEventListener("hashchange", read);
   }, []);
 
   return (
@@ -67,7 +73,7 @@ export function FitterDesk() {
 function Brief({ b, onClose }: { b: SharePayload; onClose: () => void }) {
   const r = b.readings as Readings;
   const d = describe(r);
-  const when = b.appointment ? new Date(b.appointment).toLocaleString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : null;
+  const when = b.appointment ? appointmentLabel(b.appointment) : null;
   // One line per wig, pulled in the client's own measured shade (a recoloured pick names its shade).
   const pullMap = new Map<string, { w: (typeof WIGS)[number]; code: string }>();
   for (const l of b.looks) {
@@ -85,7 +91,7 @@ function Brief({ b, onClose }: { b: SharePayload; onClose: () => void }) {
           <div className={s.keptCol}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={b.kept} alt={`${b.name} before hair loss`} />
-            <p className="small">Kept {new Date(b.keptAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}</p>
+            <p className="small">Kept {dayLabel(b.keptAt)}</p>
           </div>
           <div>
             <dl className={s.facts}>
@@ -135,7 +141,7 @@ function Stock() {
       <div className="wrap">
         <p className="kicker">Demo stock</p>
         <h2 className="h-sec">{BOUTIQUE.name}, {BOUTIQUE.city}</h2>
-        <p className="lede" style={{ marginTop: 12 }}>{BOUTIQUE.note} Shade codes are measured from each photo&rsquo;s hair pixels, not typed in.</p>
+        <p className="lede" style={{ marginTop: 12 }}>{BOUTIQUE.note} Each tag shows the shade code the shop lists; measuring the photos reads darker, as the <a href="/evidence">evidence page</a> shows.</p>
         <div className={s.stock}>
           {WIGS.map((w) => {
             const sh = wigShade(w);

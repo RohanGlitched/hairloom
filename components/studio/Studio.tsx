@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BOUTIQUE, WIGS } from "@/lib/catalogue";
 import { PERSONAS, type Persona } from "@/lib/demo";
+import { NOTES, demoShortlist } from "@/lib/brief";
+import { demoDates } from "@/lib/dates";
 import { fetchUnits, prepare, runTask, type UnitsInfo } from "@/lib/client";
 import type { KindName } from "@/lib/kinds";
 import { type Session, type Render, emptySession, erase, get, set } from "@/lib/store";
@@ -49,7 +51,9 @@ function demoSession(p: Persona): Session {
   renders.own = pre(p.own, "AI Hairstyle Virtual Try-On");
   return {
     ...emptySession("demo", p.name), personaId: p.id, kept: p.kept, turns: p.turns.filter(Boolean) as string[], readings: p.readings,
-    keptAt: Date.parse("2026-10-21"), today: p.week4, base: "today", later: p.later, situation: p.situation, fit: p.fit, cap: p.cap, renders, shortlist: [],
+    keptAt: demoDates().keptAt, today: p.week4, base: "today", later: p.later, situation: p.situation, fit: p.fit, cap: p.cap, renders,
+    // Pre-seeded, so Share opens with looks to send: own hair back, the closest wig and one headwear.
+    shortlist: demoShortlist(p).filter((k) => renders[k]), note: NOTES[p.id] ?? "",
   };
 }
 

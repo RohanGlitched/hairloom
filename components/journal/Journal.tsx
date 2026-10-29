@@ -5,6 +5,7 @@ import Link from "next/link";
 import { prepare, runTask } from "@/lib/client";
 import { get, set } from "@/lib/store";
 import { persona } from "@/lib/demo";
+import { demoDates } from "@/lib/dates";
 import { Consent, hasConsent } from "@/components/Consent";
 import s from "./journal.module.css";
 
@@ -105,8 +106,9 @@ export function Journal() {
   }
 
   const demo = persona("anjali").skin ?? [];
-  const example = checks.length === 0 && demo.length > 0;
-  const shown: CheckIn[] = example ? demo.map((d, i) => ({ at: Date.parse("2026-10-21") + d.week * 7 * 86400000 + i, scores: d.scores, masks: d.masks, photo: d.photo })) : checks;
+  // The example check-ins are Anjali's, a demo person on chemotherapy, so they show only in chemotherapy mode.
+  const example = checks.length === 0 && demo.length > 0 && mode === "chemo";
+  const shown: CheckIn[] = example ? demo.map((d, i) => ({ at: demoDates().keptAt + d.week * 7 * 86400000 + i, scores: d.scores, masks: d.masks, photo: d.photo })) : checks;
   const last = shown[shown.length - 1];
 
   return (
@@ -155,7 +157,7 @@ export function Journal() {
                 ? <>Treatment can leave skin drier or more sensitive. A selfie each treatment cycle gives you YouCam&rsquo;s scores for moisture, redness, texture and radiance, so you can show your care team what changed rather than describe it. It is not a diagnosis; anything that worries you is a question for them.</>
                 : <>A selfie gives you YouCam&rsquo;s cosmetic scores for moisture, redness, texture and radiance, a photo record you can show your dermatologist if your skin changes. It doesn&rsquo;t measure hair loss and it is not a diagnosis.</>}
             </p>
-            <label className="btn btn-ink" style={{ marginTop: 22, position: "relative" }} onClick={(e) => { if (!agreed.current && !busy) { e.preventDefault(); setAsking(true); } }}>
+            <label className="btn btn-ghost" style={{ marginTop: 22, position: "relative" }} onClick={(e) => { if (!agreed.current && !busy) { e.preventDefault(); setAsking(true); } }}>
               {busy ? `Reading your skin… ${secs} s` : <>Check in on my skin <small style={{ fontWeight: 400, opacity: 0.75 }}>· 9 units</small></>}
               <input ref={picker} type="file" accept="image/*" capture="user" disabled={busy} style={{ position: "absolute", opacity: 0, width: 1, height: 1 }} onChange={(e) => { void checkIn(e.target.files?.[0]); e.target.value = ""; }} />
             </label>
@@ -199,7 +201,7 @@ export function Journal() {
                 </div>
                 <p className="small">
                   {example
-                    ? mode === "chemo" ? "Example: Anjali's check-ins before treatment and at week 4 (demo person, real YouCam output). Yours replace these." : "Example from Anjali, a demo person on chemotherapy (real YouCam output). Your own check-ins replace these."
+                    ? "Example: Anjali's check-ins before treatment and at week 4 (demo person, real YouCam output). Yours replace these."
                     : `${checks.length} check-in${checks.length > 1 ? "s" : ""}, latest ${new Date(last.at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}.`}{" "}
                   Scores are YouCam&rsquo;s raw 1&ndash;100 scores, and higher is better for every concern.
                 </p>
@@ -208,7 +210,7 @@ export function Journal() {
                 </p>
               </>
             ) : (
-              <div className={s.empty}>Your first check-in appears here, with a map of each concern.</div>
+              <div className={s.empty}>{mode === "alopecia" ? <>Your first check-in will appear here, with a map of each concern. A skin check-in is optional: it doesn&rsquo;t read your hair or your patches.</> : "Your first check-in appears here, with a map of each concern."}</div>
             )}
           </div>
         </div>
