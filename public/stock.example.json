@@ -1,0 +1,241 @@
+{
+ "note": "Example stock for Kesh & Co., the fictional demo boutique. Cap sizes are illustrative. Columns: sku, name, length (ear, chin, shoulder, chest, midback), texture (straight, wavy, curly, coily), shade (a wig shade code or #hex), caps (Petite, Average, Large), price_inr, fit, url (https).",
+ "stock": [
+  {
+   "sku": "KC-ASHA-2",
+   "name": "Asha",
+   "length": "shoulder",
+   "texture": "straight",
+   "shade": "2",
+   "caps": [
+    "Petite",
+    "Average",
+    "Large"
+   ],
+   "price_inr": 14900,
+   "fit": "Women",
+   "url": "https://hairloom-studio.vercel.app/embed?wig=asha"
+  },
+  {
+   "sku": "KC-MEERA-1B",
+   "name": "Meera",
+   "length": "chest",
+   "texture": "straight",
+   "shade": "1B",
+   "caps": [
+    "Average",
+    "Large"
+   ],
+   "price_inr": 48500,
+   "fit": "Women",
+   "url": "https://hairloom-studio.vercel.app/embed?wig=meera"
+  },
+  {
+   "sku": "KC-NORA-6",
+   "name": "Nora",
+   "length": "chin",
+   "texture": "straight",
+   "shade": "6",
+   "caps": [
+    "Petite",
+    "Average",
+    "Large"
+   ],
+   "price_inr": 8900,
+   "fit": "Women",
+   "url": "https://hairloom-studio.vercel.app/embed?wig=nora"
+  },
+  {
+   "sku": "KC-IVY-30",
+   "name": "Ivy",
+   "length": "ear",
+   "texture": "straight",
+   "shade": "30",
+   "caps": [
+    "Petite",
+    "Average",
+    "Large"
+   ],
+   "price_inr": 11200,
+   "fit": "Women",
+   "url": "https://hairloom-studio.vercel.app/embed?wig=ivy"
+  },
+  {
+   "sku": "KC-ZURI-1B",
+   "name": "Zuri",
+   "length": "shoulder",
+   "texture": "curly",
+   "shade": "1B",
+   "caps": [
+    "Petite",
+    "Average",
+    "Large"
+   ],
+   "price_inr": 16400,
+   "fit": "Women",
+   "url": "https://hairloom-studio.vercel.app/embed?wig=zuri"
+  },
+  {
+   "sku": "KC-AMARA-1",
+   "name": "Amara",
+   "length": "chin",
+   "texture": "coily",
+   "shade": "1",
+   "caps": [
+    "Petite",
+    "Average",
+    "Large"
+   ],
+   "price_inr": 12800,
+   "fit": "Women",
+   "url": "https://hairloom-studio.vercel.app/embed?wig=amara"
+  },
+  {
+   "sku": "KC-JUNE-38",
+   "name": "June",
+   "length": "chest",
+   "texture": "wavy",
+   "shade": "38",
+   "caps": [
+    "Petite",
+    "Average",
+    "Large"
+   ],
+   "price_inr": 17900,
+   "fit": "Women",
+   "url": "https://hairloom-studio.vercel.app/embed?wig=june"
+  },
+  {
+   "sku": "KC-SILVER-56",
+   "name": "Silver",
+   "length": "ear",
+   "texture": "straight",
+   "shade": "56",
+   "caps": [
+    "Petite",
+    "Average",
+    "Large"
+   ],
+   "price_inr": 13500,
+   "fit": "Women",
+   "url": "https://hairloom-studio.vercel.app/embed?wig=silver"
+  },
+  {
+   "sku": "KC-ROSA-33",
+   "name": "Rosa",
+   "length": "midback",
+   "texture": "wavy",
+   "shade": "33",
+   "caps": [
+    "Average",
+    "Large"
+   ],
+   "price_inr": 52000,
+   "fit": "Women",
+   "url": "https://hairloom-studio.vercel.app/embed?wig=rosa"
+  },
+  {
+   "sku": "KC-LENA-44",
+   "name": "Lena",
+   "length": "shoulder",
+   "texture": "straight",
+   "shade": "44",
+   "caps": [
+    "Petite",
+    "Average",
+    "Large"
+   ],
+   "price_inr": 15600,
+   "fit": "Women",
+   "url": "https://hairloom-studio.vercel.app/embed?wig=lena"
+  },
+  {
+   "sku": "KC-TARA-4",
+   "name": "Tara",
+   "length": "chest",
+   "texture": "straight",
+   "shade": "4",
+   "caps": [
+    "Average",
+    "Large"
+   ],
+   "price_inr": 44900,
+   "fit": "Women",
+   "url": "https://hairloom-studio.vercel.app/embed?wig=tara"
+  },
+  {
+   "sku": "KC-WREN-38",
+   "name": "Wren",
+   "length": "chest",
+   "texture": "wavy",
+   "shade": "38",
+   "caps": [
+    "Petite",
+    "Average",
+    "Large"
+   ],
+   "price_inr": 18900,
+   "fit": "Women",
+   "url": "https://hairloom-studio.vercel.app/embed?wig=wren"
+  },
+  {
+   "sku": "KC-KAI-4",
+   "name": "Kai",
+   "length": "ear",
+   "texture": "straight",
+   "shade": "4",
+   "caps": [
+    "Petite",
+    "Average",
+    "Large"
+   ],
+   "price_inr": 9800,
+   "fit": "Men",
+   "url": "https://hairloom-studio.vercel.app/embed?wig=kai"
+  },
+  {
+   "sku": "KC-DEV-44",
+   "name": "Dev",
+   "length": "ear",
+   "texture": "wavy",
+   "shade": "44",
+   "caps": [
+    "Petite",
+    "Average",
+    "Large"
+   ],
+   "price_inr": 9200,
+   "fit": "Men",
+   "url": "https://hairloom-studio.vercel.app/embed?wig=dev"
+  },
+  {
+   "sku": "KC-ARJUN-1B",
+   "name": "Arjun",
+   "length": "ear",
+   "texture": "straight",
+   "shade": "1B",
+   "caps": [
+    "Average",
+    "Large"
+   ],
+   "price_inr": 24500,
+   "fit": "Men",
+   "url": "https://hairloom-studio.vercel.app/embed?wig=arjun"
+  },
+  {
+   "sku": "KC-SAM-4",
+   "name": "Sam",
+   "length": "ear",
+   "texture": "curly",
+   "shade": "4",
+   "caps": [
+    "Petite",
+    "Average",
+    "Large"
+   ],
+   "price_inr": 10400,
+   "fit": "Men",
+   "url": "https://hairloom-studio.vercel.app/embed?wig=sam"
+  }
+ ]
+}

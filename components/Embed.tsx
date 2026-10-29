@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { WIGS, inr } from "@/lib/catalogue";
 import { wigShade } from "@/lib/colours";
 import { PERSONAS } from "@/lib/demo";
+import { demoSku } from "@/lib/stock";
 import { Reveal } from "@/components/Reveal";
 import s from "./Embed.module.css";
 
@@ -12,7 +13,7 @@ import s from "./Embed.module.css";
  * against the same photo without it, and a link into the studio with this wig pinned first.
  * Demo renders only: no units. It posts its height so the shop's iframe can fit it on phones.
  */
-export function Embed({ wigId }: { wigId: string }) {
+export function Embed({ wigId, shop }: { wigId: string; shop?: string }) {
   const w = WIGS.find((x) => x.id === wigId)!;
   const people = PERSONAS.filter((p) => p.wigs[w.id]);
   const [pid, setPid] = useState(people.find((p) => p.fit === w.fit)?.id ?? people[0]?.id);
@@ -37,7 +38,7 @@ export function Embed({ wigId }: { wigId: string }) {
       <div className={s.text}>
         <p className={s.kicker}>See it after hair loss</p>
         <h1>{w.name}</h1>
-        <p className={s.meta}><i style={{ background: sh.hex }} aria-hidden="true" />Shade {sh.code}, {w.cap}, <span>{inr(w.price)}</span></p>
+        <p className={s.meta}><i style={{ background: sh.hex }} aria-hidden="true" />Shade {sh.code}, {w.cap}, <span>{inr(w.price)}</span> · <span>{demoSku(w)}</span></p>
         <div className={s.people} role="tablist" aria-label="Shown on">
           {people.map((x) => (
             <button key={x.id} role="tab" aria-selected={x.id === p.id} onClick={() => setPid(x.id)}>
@@ -46,7 +47,10 @@ export function Embed({ wigId }: { wigId: string }) {
             </button>
           ))}
         </div>
-        <a className={s.cta} href={studio} target="_blank" rel="noopener">Try {w.name} on your own photo</a>
+        <div className={s.ctas}>
+          <a className={s.cta} href={studio} target="_blank" rel="noopener">Try {w.name} on your own photo</a>
+          {shop && <a className={s.cta2} href={shop} target="_top" rel="noopener">Reserve {w.name} in shade {sh.code} at {new URL(shop).hostname}</a>}
+        </div>
         <p className={s.small}>Drag the mirror to compare. Opens Hairloom with {w.name} first. Your photos are stored only on your device. Demo people are generated with YouCam.</p>
       </div>
     </main>

@@ -67,3 +67,34 @@
 .bot ol { margin: 0; padding-left: 20px; display: grid; gap: 2px; }
 .bot img { width: 140px; aspect-ratio: 3 / 4; object-fit: cover; object-position: 50% 15%; border-radius: 70px 70px 4px 4px; }
 .chatLabel { font: italic 15px var(--serif); color: #7d5a2c; margin-bottom: 4px; }
+
+/* Your own stock */
+.ysHead { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 48px; align-items: end; }
+.ysGrid { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 40px; margin-top: 36px; align-items: start; }
+.ysForm { display: grid; gap: 12px; }
+.ysForm textarea { font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--ivory); background: var(--night); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; resize: vertical; min-height: 180px; color-scheme: dark; }
+.ysForm textarea:focus { outline: 2px solid var(--brass); outline-offset: 1px; }
+.chipsRow { display: flex; gap: 8px; flex-wrap: wrap; }
+.chipsRow button { min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: none; cursor: pointer; font-size: 14px; color: var(--ivory); }
+.chipsRow button[aria-checked="true"] { border-color: var(--brass); background: var(--velvet-2); }
+.ysErr { margin: 0; padding: 10px 14px 10px 30px; border-radius: 10px; border: 1px solid rgba(229, 139, 133, .35); background: rgba(229, 139, 133, .08); color: #f2b4ae; font-size: 14px; display: grid; gap: 4px; }
+.ysList { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; border-top: 1px solid var(--line); }
+.ysList li { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.ysN { font: italic 22px var(--serif); color: var(--brass); }
+.ysMain { display: grid; gap: 6px; min-width: 0; }
+.ysName { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: baseline; }
+.ysName b { font: 400 20px var(--serif); }
+.ysName span { font-size: 12px; color: var(--mist); letter-spacing: .04em; }
+.ysName em { font-style: normal; font-size: 12px; color: var(--brass-hi); border: 1px solid var(--brass-lo); border-radius: 999px; padding: 1px 9px; }
+.ysAct { display: flex; flex-wrap: wrap; gap: 8px; }
+.ysEmpty { border: 2px dashed var(--line); border-radius: var(--radius); padding: 48px 24px; text-align: center; color: var(--mist); font-size: 15px; }
+.holdRow { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.holdRow :global(.btn) { min-height: 32px; padding: 0 12px; font-size: 13px; }
+
+/* Ask the fitter desk */
+.deskBar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.deskNote { font-size: 13px; color: var(--ink-soft); }
+.deskArgs { font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: #6a5a67; word-break: break-word; }
+.deskOut { white-space: pre-wrap; font-size: 14px; margin: 0; }
+.deskStep { display: grid; gap: 8px; }
+@media (max-width: 980px) { .ysHead, .ysGrid { grid-template-columns: 1fr; gap: 24px; } }

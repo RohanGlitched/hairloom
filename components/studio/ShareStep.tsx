@@ -54,7 +54,7 @@ export function ShareStep({ ctx }: { ctx: Ctx }) {
         keptAt: session.keptAt ?? Date.now(),
         kept: await prepare(session.kept!, 420),
         readings: session.readings,
-        colour: m && n ? { hex: m.hex, code: n.code, name: n.name, dE: Math.round(n.dE * 10) / 10, ...(m.grey != null ? { grey: Math.round(m.grey * 1000) / 1000 } : {}), ...(blend ? { blend: blend.code } : {}) } : null,
+        colour: m && n ? { hex: m.hex, code: n.code, name: n.name, dE: Math.round(n.dE * 10) / 10, ...(m.grey != null ? { grey: Math.round(m.grey * 1000) / 1000 } : {}), ...(blend ? { blend: blend.code } : {}), ...(m.base ? { base: labToHex(m.base) } : {}) } : null,
         looks: await Promise.all(looks.map(async (k) => ({ key: k, ...lookLabel(k), src: await prepare(session.renders[k].src, 520) }))),
         note: session.note.slice(0, 1200),
         appointment: when || undefined,

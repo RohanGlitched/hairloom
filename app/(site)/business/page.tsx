@@ -133,6 +133,7 @@ export default function Business() {
     document.getElementById("hairloom").style.height = e.data.h + "px";
 });</script>`}</code></pre>
             <p className="small" style={{ marginTop: 14 }}>It works today for the demo stock. A shop&rsquo;s own catalogue needs one product photo per wig: Hairloom measures the shade from the photo and YouCam renders the wig on the demo people once, so showing the widget costs nothing per view.</p>
+            <p className="small" style={{ marginTop: 10 }}>Add <code>&amp;shop=</code> and your own https product page to show a &ldquo;Reserve in shade &hellip;&rdquo; button that hands the shopper back to you. To rank your own catalogue for a client, paste it into the <Link href="/fitter#your-stock">fitter desk</Link> as CSV or JSON (<a href="/stock.example.json">template</a>); it never leaves the browser and uses no YouCam units.</p>
           </div>
           <EmbedFrame wig="asha" className={s.frame} />
         </div>

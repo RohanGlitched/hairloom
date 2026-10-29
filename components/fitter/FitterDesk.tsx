@@ -11,7 +11,10 @@ import { nearestShades } from "@/lib/color";
 import { prepare, runTask } from "@/lib/client";
 import { Consent, hasConsent } from "@/components/Consent";
 import { unseal, type SharePayload } from "@/lib/seal";
-import type { Readings } from "@/lib/demo";
+import { PERSONAS, type Readings } from "@/lib/demo";
+import { demoSku } from "@/lib/stock";
+import { CopyButton, YourStock } from "./YourStock";
+import { Desk } from "./Desk";
 import s from "./fitter.module.css";
 
 export function FitterDesk() {
@@ -19,19 +22,21 @@ export function FitterDesk() {
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [paste, setPaste] = useState("");
+  // Which demo person's brief is open, if any; tools and stock rank for the open brief, else Anjali's.
+  const [demoId, setDemoId] = useState<string | null>(null);
 
   async function openLink(hash: string) {
     const m = /s=([\w-]+)\.([\w-]+)/.exec(hash);
     if (!m) return setErr("That doesn't look like a Hairloom link. It should contain #s= followed by a code.");
     setLoading(true); setErr(null);
-    try { setBrief(await unseal(m[1], m[2])); } catch (e) { setErr((e as Error).message); } finally { setLoading(false); }
+    try { setBrief(await unseal(m[1], m[2])); setDemoId(null); } catch (e) { setErr((e as Error).message); } finally { setLoading(false); }
   }
 
   useEffect(() => {
     const read = () => {
       const h = window.location.hash;
       if (h.includes("s=")) void openLink(h);
-      else if (/^#demo(=\w+)?$/.test(h)) { setBrief(demoBrief(h.split("=")[1] ?? "anjali")); window.scrollTo({ top: 0 }); }
+      else if (/^#demo(=\w+)?$/.test(h)) { const id = h.split("=")[1] ?? "anjali"; setBrief(demoBrief(id)); setDemoId(PERSONAS.some((p) => p.id === id) ? id : "anjali"); window.scrollTo({ top: 0 }); }
     };
     read();
     window.addEventListener("hashchange", read);
@@ -54,7 +59,7 @@ export function FitterDesk() {
               <label className="visually-hidden" htmlFor="paste">Client link</label>
               <input id="paste" placeholder="Paste the link your client sent" value={paste} onChange={(e) => setPaste(e.target.value)} />
               <button className="btn btn-ivory" disabled={!paste || loading} onClick={() => openLink(paste)}>{loading ? "Opening…" : "Open brief"}</button>
-              <button className="btn btn-ghost" onClick={() => { setBrief(demoBrief()); history.replaceState(null, "", "#demo"); }}>Open a demo brief</button>
+              <button className="btn btn-ghost" onClick={() => { setBrief(demoBrief()); setDemoId("anjali"); history.replaceState(null, "", "#demo"); }}>Open a demo brief</button>
             </div>
           )}
           {err && <p className={s.err} role="alert">{err}</p>}
@@ -63,8 +68,9 @@ export function FitterDesk() {
 
       {brief && <Brief b={brief} onClose={() => { setBrief(null); history.replaceState(null, "", "/fitter"); }} />}
 
+      <YourStock client={brief ?? demoBrief()} fit={PERSONAS.find((p) => p.id === (brief ? demoId : "anjali"))?.fit} />
       <Stock />
-      <Assistant />
+      <Assistant brief={brief ?? demoBrief()} situation={PERSONAS.find((p) => p.id === (brief ? demoId : "anjali"))?.situation ?? "chemo"} person={brief ? demoId ?? undefined : "anjali"} fit={PERSONAS.find((p) => p.id === (brief ? demoId : "anjali"))?.fit} />
       <AutoTag />
     </>
   );
@@ -109,7 +115,19 @@ function Brief({ b, onClose }: { b: SharePayload; onClose: () => void }) {
           <div className={s.prep}>
             <h2 className="h-sub">Before they arrive</h2>
             <ul>
-              {pull.map(({ w, code }) => <li key={w.id}>Pull <b>{w.name}</b> in shade {code}{b.colour?.blend ? ` or the ${b.colour.blend} blend` : ""} and one shade either side.</li>)}
+              {pull.map(({ w, code }) => {
+                const cap = capSize(b.cap?.cm) ?? "to be measured";
+                const hold = `Please hold ${demoSku(w)} (${w.name}) in shade ${code}${b.colour?.blend ? ` or ${b.colour.blend}` : ""}, cap ${cap}, for ${b.name}${when ? `, fitting ${when}` : ""}.`;
+                return (
+                  <li key={w.id}>
+                    Pull <b>{w.name}</b> in shade {code}{b.colour?.blend ? ` or the ${b.colour.blend} blend` : ""} and one shade either side.
+                    <span className={s.holdRow} data-noprint>
+                      <CopyButton text={hold} label={`Reserve ${demoSku(w)}`} />
+                      <a className="btn btn-ghost btn-sm" href={`/embed?wig=${w.id}`} target="_blank" rel="noopener">Product page</a>
+                    </span>
+                  </li>
+                );
+              })}
               <li>Have an adjustable cap ready{b.cap?.cm ? ` around ${capSize(b.cap.cm)!.toLowerCase()}` : ""}: heads can be up to a size smaller after hair loss (American Cancer Society). Re-measure at the fitting.</li>
               {d.frizz && /frizz/i.test(d.frizz.label) && <li>Their own hair had some frizz; a slightly textured fibre will look more like them.</li>}
               <li>Offer a soft liner or sleep cap if the scalp is sensitive.</li>
@@ -231,7 +249,7 @@ function AutoTag() {
   );
 }
 
-function Assistant() {
+function Assistant({ brief, situation, person, fit }: { brief: SharePayload; situation: "chemo" | "alopecia"; person?: string; fit?: "Women" | "Men" }) {
   const [copied, setCopied] = useState(false);
   const url = typeof window === "undefined" ? "https://hairloom-studio.vercel.app/api/mcp" : `${window.location.origin}/api/mcp`;
   return (
@@ -249,23 +267,7 @@ function Assistant() {
           </div>
           <p className="small" style={{ marginTop: 10 }}>Tools: match_wigs, shade_for_colour, list_stock, show_on_demo_person, fitting_plan, fitting_cost. No client photos ever pass through it.</p>
         </div>
-        <div className={s.chat} aria-label="Example conversation">
-          <p className={s.chatLabel}>An example conversation, using the live tools</p>
-          <p className={s.me}>My 2 pm client is 1 to 2A, above chest, colour #342820, head 55.5 cm. What should I pull?</p>
-          <p className={s.tool}>match_wigs</p>
-          <div className={s.bot}>
-            <p>Her nearest shade is <b>4, dark brown</b>, with an <b>average cap</b>. Closest to her own hair:</p>
-            <ol><li>Asha: same length and texture, lace front, ₹14,900</li><li>Nora: one step shorter, classic cap, ₹8,900</li><li>Tara: one step longer, hand-tied, ₹44,900</li></ol>
-            <p>Pull all three in shade 4 and one shade either side, and an adjustable cap: heads can be up to a size smaller after hair loss.</p>
-          </div>
-          <p className={s.me}>Show me Asha on someone after hair loss.</p>
-          <p className={s.tool}>show_on_demo_person</p>
-          <div className={s.bot}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/demo/anjali/wig_asha.jpg" alt="Asha on Anjali at week 4" />
-            <p>Asha on Anjali, a demo person, at week 4. Colour difference from her own hair: 1.6, hard to tell apart.</p>
-          </div>
-        </div>
+        <Desk key={brief.name} brief={brief} situation={situation} person={person} fit={fit} />
       </div>
     </section>
   );
