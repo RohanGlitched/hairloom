@@ -186,4 +186,6 @@
 @media (max-width: 760px) {
   .rail { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 30%; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; padding-bottom: 10px; scrollbar-width: thin; }
   .rail .tile { scroll-snap-align: start; }
+  .shortlist { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 40%; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 10px; }
+  .shortlist li { scroll-snap-align: start; }
 }

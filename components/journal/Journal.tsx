@@ -7,6 +7,7 @@ import { get, set } from "@/lib/store";
 import { persona } from "@/lib/demo";
 import { demoDates } from "@/lib/dates";
 import { Consent, hasConsent } from "@/components/Consent";
+import { Regrowth } from "./Regrowth";
 import s from "./journal.module.css";
 
 type Milestone = { day: number; title: string; body: string; action?: { href: string; label: string }; src?: { label: string; url: string } };
@@ -33,7 +34,7 @@ const ALOPECIA: Milestone[] = [
   { day: 60, title: "Choose with a fitter when you're ready", body: "Send your passport and shortlist ahead, with your head size and parting.", action: { href: "/studio?step=share", label: "Share a brief" } },
 ];
 const REGROWTH: Milestone[] = [
-  { day: 90, title: "Regrowth usually starts", body: "Hair usually returns within about three to six months of finishing, sometimes a different colour or curlier. Re-read it and compare with the hair you kept.", action: { href: "/studio", label: "Read new growth" }, src: { label: "CRUK, ACS", url: ACS2 } },
+  { day: 90, title: "Regrowth usually starts", body: "Hair usually returns within about three to six months of finishing, sometimes a different colour or curlier. Re-read it and compare with the hair you kept.", action: { href: "#regrowth", label: "Read new growth" }, src: { label: "CRUK, ACS", url: ACS2 } },
 ];
 
 type CheckIn = { at: number; scores: Record<string, number>; masks: Record<string, string>; photo: string };
@@ -41,15 +42,22 @@ const CONCERNS = ["moisture", "redness", "texture", "radiance"] as const;
 const LABEL: Record<string, string> = { moisture: "Moisture", redness: "Redness", texture: "Texture", radiance: "Radiance" };
 
 const day = (d: Date, n: number) => new Date(d.getTime() + n * 86400000);
-const fmt = (d: Date) => d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", ...(d.getFullYear() !== new Date().getFullYear() ? { year: "numeric" } : {}) });
+/** "Thu 29 Oct", or "Wed 16 Jun 2027" in another year: one format, no comma. */
+const fmt = (d: Date) => {
+  const p = (o: Intl.DateTimeFormatOptions) => d.toLocaleDateString("en-GB", o);
+  return `${p({ weekday: "short" })} ${d.getDate()} ${p({ month: "short" })}${d.getFullYear() !== new Date().getFullYear() ? ` ${d.getFullYear()}` : ""}`;
+};
+/** A local calendar date for a date input (toISOString would give yesterday's date east of UTC before 05:30). */
+const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
 export function Journal() {
   // Dates depend on "today", so they are set after mount to keep server and client markup identical.
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
   useEffect(() => {
-    setStart(day(new Date(), 14).toISOString().slice(0, 10));
-    setEnd(day(new Date(), 14 + 18 * 7).toISOString().slice(0, 10));
+    // The first step, keeping the passport, falls on today.
+    setStart(iso(day(new Date(), 14)));
+    setEnd(iso(day(new Date(), 14 + 18 * 7)));
   }, []);
   const [checks, setChecks] = useState<CheckIn[]>([]);
   const [busy, setBusy] = useState(false);
@@ -146,6 +154,8 @@ export function Journal() {
           </ol>
         </div>
       </section>
+
+      <Regrowth />
 
       <section className="paper sec" aria-labelledby="skin-title">
         <div className={`wrap ${s.skinWrap}`}>

@@ -83,7 +83,7 @@ export function ShareStep({ ctx }: { ctx: Ctx }) {
                 <li key={k}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={session.renders[k].src} alt="" />
-                  <b>{lookLabel(k).label}</b>
+                  <b>{k === "own" && session.mode === "demo" ? `${session.name}'s own hair` : lookLabel(k).label}</b>
                   <button className="btn btn-ghost btn-sm" onClick={() => update((x) => ({ ...x, shortlist: x.shortlist.filter((y) => y !== k) }))}>Remove</button>
                 </li>
               ))}

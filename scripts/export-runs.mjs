@@ -72,6 +72,17 @@ function classify(rel) {
     if (/^skin_wk\d$/.test(n)) return { api: API.skin, origin: o };
     return null;
   }
+  // Oct 30 additions (lab/round2.mjs): Anjali's regrowth re-read, Nia's patchy scalp, crown photos for density.
+  m = /^r2\/(.+)$/.exec(rel);
+  if (m) {
+    const n = m[1], o = "demo";
+    if (n.endsWith("_density")) return { api: API.density, origin: o };
+    if (n === "anjali_regrow_type") return { api: API.type, origin: o };
+    if (n === "anjali_regrow_length") return { api: API.length, origin: o };
+    if (n.startsWith("nia_patchy_wig_")) return { api: API.transfer, origin: o };
+    if (/^(anjali_regrow_(front|turn_[ab])|nia_patchy|nia_crown|margaret_crown)$/.test(n)) return { api: API.i2i, origin: o };
+    return null;
+  }
   if (rel.startsWith("cat/")) return { api: API.t2i, origin: "demo" }; // the boutique's stock
   // Early research and the demo people's source photos: lab/out/<task>
   if (/^persona\d$/.test(rel)) return { api: API.t2i, origin: "demo" };

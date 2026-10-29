@@ -1,12 +1,12 @@
 {
- "generated": "2026-10-21",
+ "generated": "2026-10-29",
  "source": "lab/out and lab/real/out: one saved output file per finished YouCam task. Tasks whose output was not kept (early exploration, one-unit end-to-end checks) are not counted.",
- "runs": 246,
- "ok": 235,
+ "runs": 257,
+ "ok": 244,
  "origins": {
   "demo": {
-   "runs": 177,
-   "ok": 177
+   "runs": 188,
+   "ok": 186
   },
   "real-photo": {
    "runs": 41,
@@ -17,7 +17,7 @@
    "ok": 25
   }
  },
- "unitsEstimate": 492,
+ "unitsEstimate": 504,
  "tasks": [
   {
    "name": "ang_p1_down",
@@ -1607,6 +1607,94 @@
    "ok": true,
    "error": null,
    "ms": 9697
+  },
+  {
+   "name": "r2/anjali_regrow_front",
+   "api": "AI Image Generator (image to image)",
+   "origin": "demo",
+   "ok": true,
+   "error": null,
+   "ms": 16359
+  },
+  {
+   "name": "r2/anjali_regrow_length",
+   "api": "AI Hair Length Detection",
+   "origin": "demo",
+   "ok": true,
+   "error": null,
+   "ms": 8591
+  },
+  {
+   "name": "r2/anjali_regrow_turn_a",
+   "api": "AI Image Generator (image to image)",
+   "origin": "demo",
+   "ok": true,
+   "error": null,
+   "ms": 15648
+  },
+  {
+   "name": "r2/anjali_regrow_turn_b",
+   "api": "AI Image Generator (image to image)",
+   "origin": "demo",
+   "ok": true,
+   "error": null,
+   "ms": 15563
+  },
+  {
+   "name": "r2/anjali_regrow_type",
+   "api": "AI Hair Type Detection",
+   "origin": "demo",
+   "ok": true,
+   "error": null,
+   "ms": 9336
+  },
+  {
+   "name": "r2/margaret_crown",
+   "api": "AI Image Generator (image to image)",
+   "origin": "demo",
+   "ok": true,
+   "error": null,
+   "ms": 15372
+  },
+  {
+   "name": "r2/margaret_crown_density",
+   "api": "AI Hair Density Detection",
+   "origin": "demo",
+   "ok": false,
+   "error": "error_face_angle_invalid",
+   "ms": 16539
+  },
+  {
+   "name": "r2/nia_crown",
+   "api": "AI Image Generator (image to image)",
+   "origin": "demo",
+   "ok": true,
+   "error": null,
+   "ms": 11354
+  },
+  {
+   "name": "r2/nia_crown_density",
+   "api": "AI Hair Density Detection",
+   "origin": "demo",
+   "ok": false,
+   "error": "error_face_angle_invalid",
+   "ms": 7791
+  },
+  {
+   "name": "r2/nia_patchy",
+   "api": "AI Image Generator (image to image)",
+   "origin": "demo",
+   "ok": true,
+   "error": null,
+   "ms": 15622
+  },
+  {
+   "name": "r2/nia_patchy_wig_zuri",
+   "api": "AI Hairstyle Virtual Try-On",
+   "origin": "demo",
+   "ok": true,
+   "error": null,
+   "ms": 13720
   },
   {
    "name": "skin_test",
