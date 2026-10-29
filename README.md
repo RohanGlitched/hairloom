@@ -20,11 +20,11 @@
 
 What it does that a wig catalogue can't:
 
-- **Your own hair, back on your week-4 photo**, from the photo you kept (Hairstyle Try-On worked on 8 of 8 real shaved heads).
+- **Your own hair, back on your week-4 photo**, from the photo you kept (Hairstyle Try-On worked on 8 of 8 try-ons on four real shaved heads).
 - **A sealed fitter brief** with a pull list in your shade code and cap size, encrypted in the browser.
 - **The shop's own stock, ranked against your passport**: paste a catalogue on the fitter desk, or ask through the MCP server.
 - **Beyond chemotherapy**: alopecia areata, pattern thinning and men, through Hair Volume and Hair Extension try-ons.
-- **11 YouCam APIs**, each doing one job, with every run in a public evidence ledger.
+- **11 YouCam APIs**, each doing one job, with every task we kept in a public evidence ledger, failures included.
 
 About 65% of people having chemotherapy lose hair. Hair usually starts to fall out two to three weeks after the first cycle, and cancer charities advise matching a wig *before* that happens. Most wig shops take returns only if the wig hasn't been worn, and some take none. That makes wigs the retail category where trying on before buying matters most, and where it is hardest to do. Sources are listed on the [evidence page](https://hairloom-studio.vercel.app/evidence#sources).
 
@@ -56,9 +56,11 @@ Or choose *Use my own photos*. YouCam's JS Camera Kit guides you through the thr
 
 ## What we measured
 
-[Evidence](https://hairloom-studio.vercel.app/evidence) lists every YouCam task whose output we kept (246: 177 for the demo, 41 on real photographs, 28 early research), including the image generation that made the demo, with success counts, median times, the errors we hit and what they taught us. The studio's 12 task kinds call 11 distinct YouCam APIs (the wig and own-hair kinds share hair-transfer), and each has at least one successful run in the ledger. `node scripts/export-runs.mjs` rebuilds it from the lab outputs. Highlights:
+[Evidence](https://hairloom-studio.vercel.app/evidence) lists every YouCam task whose output we kept (257: 188 for the demo, 41 on real photographs, 28 early research), including the image generation that made the demo, with success counts, median times, the errors we hit and what they taught us. The studio's 12 task kinds call 11 distinct YouCam APIs (the wig and own-hair kinds share hair-transfer), and each has at least one successful run in the ledger. `node scripts/export-runs.mjs` rebuilds it from the lab outputs. Highlights:
 
-- **Hairstyle try-on works on a bald head.** All 64 try-ons on bald demo photos succeeded, including each person's own hair restored from their kept photo, and so did 8 of 8 on real stock photos of shaved heads. The demo photos are generated edits and the real ones are smooth shaved scalps, so patchy hair loss and tests on people with hair loss are next.
+- **Hairstyle try-on works on a bald head.** On the four demo people's after-hair-loss photos, 64 of 64 wig try-ons and 4 of 4 own-hair restorations succeeded, and so did 8 of 8 wig try-ons on four real shaved heads (stock photos). On a generated photo with bare patches, a wig try-on covered them; a volume try-on didn't. The generator draws patches pink, so real patchy hair loss and tests on people with hair loss are next.
+- **Regrowth re-read.** On a generated photo of Anjali about a year after treatment, Hair Type read 3B to 3C (her kept hair: 1 to 2A) and Hair Length "short hair" (kept: "above chest"). The journal compares the two and ranks wigs for the new growth.
+- **Density detection** rejected all four angles we tried, including two generated crown photos tilted about 30° forward, so it isn't in the studio.
 - **Real photos were stricter than generated ones.** Face Attribute rejected 5 of 5 real portraits at the default angle strictness and read 5 of 5 at `flexible`; hair length read 2 of 5.
 - **Hair colour comes back from YouCam as a named category.** A wig fitter needs a shade code, so Hairloom measures colour from the hair pixels: MediaPipe's hair segmenter running in the browser, then a trimmed CIELAB median and CIEDE2000 against 20 common wig shades. YouCam's label is kept beside it. On the generated demo people it said "Blonde" every time it answered, whatever the hair, so those matches are chance. On real photos it fit the hair on 2 of the 3 it labelled (by eye, no reference swatch yet).
 - **`task/delete` really deletes.** Afterwards the result URL returns 404 and the input file can't be reused (403).
@@ -82,7 +84,7 @@ The server never sees client photos. For live try-ons, pair it with YouCam's hos
 
 On the [fitter desk](https://hairloom-studio.vercel.app/fitter#assistant), **Ask the fitter desk** walks the same tools in order (`match_wigs`, `shade_for_colour`, `fitting_plan`, `show_on_demo_person`) for the open brief and ends in a pull list. It is a fixed, rules-based plan, not a language model, so it costs no model calls and no YouCam units; each step is a real call to `/api/mcp`.
 
-**Your own stock:** paste a catalogue as CSV or JSON on the fitter desk ([template](https://hairloom-studio.vercel.app/stock.example.json): sku, name, length, texture, shade, caps, price_inr, fit, url). It is ranked in the browser with the studio's closeness score and gives a hold note per wig ("Please hold KC-ASHA-2 in shade 4, cap Average…") and a "View at retailer" link. Nothing is uploaded. The retailer widget takes `&shop=<https product page>` to show a "Reserve in shade …" handoff.
+**Your own stock:** paste a catalogue as CSV or JSON on the fitter desk ([template](https://hairloom-studio.vercel.app/stock.example.json): sku, name, length, texture, shade, caps, price_inr, fit, url). A second example, [`stock.public-listings.json`](https://hairloom-studio.vercel.app/stock.public-listings.json), holds 13 real wigs from two retailers' public product pages (metadata only, no images, no partnership). Stock is ranked in the browser with the studio's closeness score and gives a hold note per wig ("Please hold KC-ASHA-2 in shade 4, cap Average…") and a "View at retailer" link. Nothing is uploaded. The retailer widget takes `&shop=<https product page>` to show a "Reserve in shade …" handoff.
 
 ## For retailers and wig banks
 
@@ -178,7 +180,7 @@ npm run dev                                   # http://localhost:3141
 
 ## Built during the submission period
 
-Hairloom was built from Oct 21, 2026, inside the hackathon's submission period. The public history starts with a handful of commits on Oct 21 because the repository was recreated that night: an earlier history contained the nine Unsplash test portraits, and we rewrote it so those third-party photos are not redistributed. The evidence ledger (`data/lab-runs.json`, built by `scripts/export-runs.mjs` from the lab outputs) is stamped 2026-10-21, the lab scripts that made the demo are in `lab/`, and the commits since then show each round of fixes.
+Hairloom was built from Oct 21, 2026, inside the hackathon's submission period. The public history starts with a handful of commits on Oct 21 because the repository was recreated that night: an earlier history contained the nine Unsplash test portraits, and we rewrote it so those third-party photos are not redistributed. The evidence ledger (`data/lab-runs.json`, built by `scripts/export-runs.mjs` from the lab outputs) was first built on 2026-10-21 and rebuilt on 2026-10-30 to add that day's lab runs, the lab scripts that made the demo are in `lab/`, and the commits since then show each round of fixes.
 
 ## License
 

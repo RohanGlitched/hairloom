@@ -1,0 +1,201 @@
+{
+ "note": "Public listings (example), no partnership. Metadata only, read on Oct 30, 2026 from each product page linked in url: name, stated length and texture (mapped to Hairloom's five lengths and four textures), one listed shade code, the cap size the page offers, and the listed price. No images. Prices and availability change; check the retailer.",
+ "checked": "2026-10-30",
+ "stock": [
+  {
+   "sku": "heidi-wig-smartlace-collection-jon-renau",
+   "name": "Heidi wig - SmartLace Collection Jon Renau",
+   "retailer": "Joseph's Wigs (UK)",
+   "length": "shoulder",
+   "texture": "wavy",
+   "shade": "4",
+   "caps": [
+    "Average"
+   ],
+   "price": 437.03,
+   "currency": "GBP",
+   "fit": "Women",
+   "url": "https://josephs-wigs.com/products/heidi-wig-smartlace-collection-jon-renau"
+  },
+  {
+   "sku": "morgan-wig-comfort-collection-jon-renau",
+   "name": "Morgan wig - Comfort Collection Jon Renau",
+   "retailer": "Joseph's Wigs (UK)",
+   "length": "chest",
+   "texture": "wavy",
+   "shade": "4",
+   "caps": [
+    "Average"
+   ],
+   "price": 519.65,
+   "currency": "GBP",
+   "fit": "Women",
+   "url": "https://josephs-wigs.com/products/morgan-wig-comfort-collection-jon-renau"
+  },
+  {
+   "sku": "hollie-petite-wig-hd-collection-jon-renau",
+   "name": "Hollie Petite wig - HD Collection Jon Renau",
+   "retailer": "Joseph's Wigs (UK)",
+   "length": "shoulder",
+   "texture": "wavy",
+   "shade": "4",
+   "caps": [
+    "Petite"
+   ],
+   "price": 473.44,
+   "currency": "GBP",
+   "fit": "Women",
+   "url": "https://josephs-wigs.com/products/hollie-petite-wig-hd-collection-jon-renau"
+  },
+  {
+   "sku": "ivy-wig-jon-renau-comfort-collection",
+   "name": "Ivy wig - Comfort Collection Jon Renau",
+   "retailer": "Joseph's Wigs (UK)",
+   "length": "chin",
+   "texture": "straight",
+   "shade": "4",
+   "caps": [
+    "Average"
+   ],
+   "price": 399.95,
+   "currency": "GBP",
+   "fit": "Women",
+   "url": "https://josephs-wigs.com/products/ivy-wig-jon-renau-comfort-collection"
+  },
+  {
+   "sku": "aurora-wig-hd-collection-jon-renau",
+   "name": "Aurora wig - HD Collection Jon Renau",
+   "retailer": "Joseph's Wigs (UK)",
+   "length": "shoulder",
+   "texture": "curly",
+   "shade": "6",
+   "caps": [
+    "Average"
+   ],
+   "price": 473.44,
+   "currency": "GBP",
+   "fit": "Women",
+   "url": "https://josephs-wigs.com/products/aurora-wig-hd-collection-jon-renau"
+  },
+  {
+   "sku": "gossamer-wave-wig-inspired-collection",
+   "name": "Gossamer Wave wig - Inspired Collection",
+   "retailer": "Joseph's Wigs (UK)",
+   "length": "chest",
+   "texture": "wavy",
+   "shade": "FP/4",
+   "caps": [
+    "Average"
+   ],
+   "price": 245,
+   "currency": "GBP",
+   "fit": "Women",
+   "url": "https://josephs-wigs.com/products/gossamer-wave-wig-inspired-collection"
+  },
+  {
+   "sku": "instant-muse-wig-natural-image",
+   "name": "Instant Muse wig - Natural Image",
+   "retailer": "Joseph's Wigs (UK)",
+   "length": "shoulder",
+   "texture": "wavy",
+   "shade": "FP/4",
+   "caps": [
+    "Average"
+   ],
+   "price": 156,
+   "currency": "GBP",
+   "fit": "Women",
+   "url": "https://josephs-wigs.com/products/instant-muse-wig-natural-image"
+  },
+  {
+   "sku": "lacy-lite-by-jon-renau-hf-synthetic-lace-front-wig-hand-tied",
+   "name": "Lacy Lite by Jon Renau",
+   "retailer": "Wig Studio 1 (US)",
+   "length": "shoulder",
+   "texture": "wavy",
+   "shade": "4",
+   "caps": [
+    "Average"
+   ],
+   "price": 639.2,
+   "currency": "USD",
+   "fit": "Women",
+   "url": "https://www.wigstudio1.com/products/lacy-lite-by-jon-renau-hf-synthetic-lace-front-wig-hand-tied"
+  },
+  {
+   "sku": "hollie-large-by-jon-renau-hf-synthetic-lace-front-wig-hand-tied",
+   "name": "Hollie Large by Jon Renau",
+   "retailer": "Wig Studio 1 (US)",
+   "length": "shoulder",
+   "texture": "wavy",
+   "shade": "4",
+   "caps": [
+    "Large"
+   ],
+   "price": 530.4,
+   "currency": "USD",
+   "fit": "Women",
+   "url": "https://www.wigstudio1.com/products/hollie-large-by-jon-renau-hf-synthetic-lace-front-wig-hand-tied"
+  },
+  {
+   "sku": "sage-by-henry-margu-hf-synthetic-lace-front-wig-basic-cap",
+   "name": "Sage by Henry Margu",
+   "retailer": "Wig Studio 1 (US)",
+   "length": "shoulder",
+   "texture": "wavy",
+   "shade": "4H",
+   "caps": [
+    "Average"
+   ],
+   "price": 155,
+   "currency": "USD",
+   "fit": "Women",
+   "url": "https://www.wigstudio1.com/products/sage-by-henry-margu-hf-synthetic-lace-front-wig-basic-cap"
+  },
+  {
+   "sku": "alexis-wig-by-jon-renau-synthetic-hair-average-cap",
+   "name": "Alexis by Jon Renau",
+   "retailer": "Wig Studio 1 (US)",
+   "length": "chest",
+   "texture": "wavy",
+   "shade": "4",
+   "caps": [
+    "Average"
+   ],
+   "price": 503.2,
+   "currency": "USD",
+   "fit": "Women",
+   "url": "https://www.wigstudio1.com/products/alexis-wig-by-jon-renau-synthetic-hair-average-cap"
+  },
+  {
+   "sku": "ignite-large-wig-by-jon-renau",
+   "name": "Ignite Large by Jon Renau",
+   "retailer": "Wig Studio 1 (US)",
+   "length": "chin",
+   "texture": "straight",
+   "shade": "4",
+   "caps": [
+    "Large"
+   ],
+   "price": 273.6,
+   "currency": "USD",
+   "fit": "Women",
+   "url": "https://www.wigstudio1.com/products/ignite-large-wig-by-jon-renau"
+  },
+  {
+   "sku": "avery-wig-by-tony-of-beverly",
+   "name": "Avery by Tony of Beverly",
+   "retailer": "Wig Studio 1 (US)",
+   "length": "shoulder",
+   "texture": "straight",
+   "shade": "4",
+   "caps": [
+    "Average"
+   ],
+   "price": 219,
+   "currency": "USD",
+   "fit": "Women",
+   "url": "https://www.wigstudio1.com/products/avery-wig-by-tony-of-beverly"
+  }
+ ]
+}

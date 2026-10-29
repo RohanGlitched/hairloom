@@ -60,3 +60,14 @@ test("hair-transfer kinds take JPEG only", () => {
   assert.equal(KINDS.ownHair.jpegOnly, true);
   assert.equal(KINDS.skin.jpegOnly, undefined);
 });
+
+test("every task kind's units match YouCam's feature-cost list (data/feature-costs.json), so price drift fails CI", async () => {
+  const { KINDS } = await import("../lib/kinds.ts");
+  const costs = JSON.parse((await import("node:fs")).readFileSync("data/feature-costs.json", "utf8")) as { unitsSpentByCheck: number; rows: { kind: string; ours: number; youcam: number | null }[] };
+  assert.equal(costs.unitsSpentByCheck, 0, "the check itself spent nothing");
+  for (const [kind, k] of Object.entries(KINDS)) {
+    const row = costs.rows.find((r) => r.kind === kind);
+    assert.ok(row, `${kind} is in the cost check`);
+    assert.equal(row!.youcam, k.units, `${kind}: YouCam lists ${row!.youcam}, the whitelist charges ${k.units}`);
+  }
+});

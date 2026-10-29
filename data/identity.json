@@ -1,0 +1,204 @@
+{
+ "measured": "2026-10-29T20:02:34.421Z",
+ "method": "MediaPipe face detector (BlazeFace short range) keypoints: both eyes, nose tip, mouth centre. shift = mean keypoint move between source and output, in source eye-spans, with positions as a share of image size. widthRatio = face-box width share, output over source.",
+ "rows": [
+  {
+   "key": "anjali/head_turban",
+   "kind": "headwear",
+   "src": "/demo/anjali/week4.jpg",
+   "out": "/demo/anjali/head_turban.jpg",
+   "ok": true,
+   "shift": 0.026,
+   "widthRatio": 1.014
+  },
+  {
+   "key": "anjali/head_silk",
+   "kind": "headwear",
+   "src": "/demo/anjali/week4.jpg",
+   "out": "/demo/anjali/head_silk.jpg",
+   "ok": true,
+   "shift": 0.045,
+   "widthRatio": 0.976
+  },
+  {
+   "key": "anjali/head_beanie",
+   "kind": "headwear",
+   "src": "/demo/anjali/week4.jpg",
+   "out": "/demo/anjali/head_beanie.jpg",
+   "ok": true,
+   "shift": 0.051,
+   "widthRatio": 0.955
+  },
+  {
+   "key": "anjali/head_cap",
+   "kind": "headwear",
+   "src": "/demo/anjali/week4.jpg",
+   "out": "/demo/anjali/head_cap.jpg",
+   "ok": true,
+   "shift": 0.049,
+   "widthRatio": 0.976
+  },
+  {
+   "key": "anjali/week4",
+   "kind": "after hair loss (demo photo)",
+   "src": "/demo/anjali/kept.jpg",
+   "out": "/demo/anjali/week4.jpg",
+   "ok": true,
+   "shift": 0.051,
+   "widthRatio": 1.012
+  },
+  {
+   "key": "nia/head_turban",
+   "kind": "headwear",
+   "src": "/demo/nia/week4.jpg",
+   "out": "/demo/nia/head_turban.jpg",
+   "ok": true,
+   "shift": 0.018,
+   "widthRatio": 0.975
+  },
+  {
+   "key": "nia/head_silk",
+   "kind": "headwear",
+   "src": "/demo/nia/week4.jpg",
+   "out": "/demo/nia/head_silk.jpg",
+   "ok": true,
+   "shift": 0.048,
+   "widthRatio": 0.984
+  },
+  {
+   "key": "nia/head_beanie",
+   "kind": "headwear",
+   "src": "/demo/nia/week4.jpg",
+   "out": "/demo/nia/head_beanie.jpg",
+   "ok": true,
+   "shift": 0.055,
+   "widthRatio": 0.943
+  },
+  {
+   "key": "nia/head_cap",
+   "kind": "headwear",
+   "src": "/demo/nia/week4.jpg",
+   "out": "/demo/nia/head_cap.jpg",
+   "ok": true,
+   "shift": 0.08,
+   "widthRatio": 0.978
+  },
+  {
+   "key": "nia/week4",
+   "kind": "after hair loss (demo photo)",
+   "src": "/demo/nia/kept.jpg",
+   "out": "/demo/nia/week4.jpg",
+   "ok": true,
+   "shift": 0.021,
+   "widthRatio": 1.014
+  },
+  {
+   "key": "margaret/head_turban",
+   "kind": "headwear",
+   "src": "/demo/margaret/week4.jpg",
+   "out": "/demo/margaret/head_turban.jpg",
+   "ok": true,
+   "shift": 0.071,
+   "widthRatio": 1
+  },
+  {
+   "key": "margaret/head_silk",
+   "kind": "headwear",
+   "src": "/demo/margaret/week4.jpg",
+   "out": "/demo/margaret/head_silk.jpg",
+   "ok": true,
+   "shift": 0.031,
+   "widthRatio": 1.006
+  },
+  {
+   "key": "margaret/head_beanie",
+   "kind": "headwear",
+   "src": "/demo/margaret/week4.jpg",
+   "out": "/demo/margaret/head_beanie.jpg",
+   "ok": true,
+   "shift": 0.061,
+   "widthRatio": 0.957
+  },
+  {
+   "key": "margaret/head_cap",
+   "kind": "headwear",
+   "src": "/demo/margaret/week4.jpg",
+   "out": "/demo/margaret/head_cap.jpg",
+   "ok": true,
+   "shift": 0.091,
+   "widthRatio": 0.991
+  },
+  {
+   "key": "margaret/week4",
+   "kind": "after hair loss (demo photo)",
+   "src": "/demo/margaret/kept.jpg",
+   "out": "/demo/margaret/week4.jpg",
+   "ok": true,
+   "shift": 0.022,
+   "widthRatio": 0.991
+  },
+  {
+   "key": "ravi/head_turban",
+   "kind": "headwear",
+   "src": "/demo/ravi/week4.jpg",
+   "out": "/demo/ravi/head_turban.jpg",
+   "ok": true,
+   "shift": 0.042,
+   "widthRatio": 0.967
+  },
+  {
+   "key": "ravi/head_silk",
+   "kind": "headwear",
+   "src": "/demo/ravi/week4.jpg",
+   "out": "/demo/ravi/head_silk.jpg",
+   "ok": true,
+   "shift": 0.028,
+   "widthRatio": 0.957
+  },
+  {
+   "key": "ravi/head_beanie",
+   "kind": "headwear",
+   "src": "/demo/ravi/week4.jpg",
+   "out": "/demo/ravi/head_beanie.jpg",
+   "ok": true,
+   "shift": 0.061,
+   "widthRatio": 0.904
+  },
+  {
+   "key": "ravi/head_cap",
+   "kind": "headwear",
+   "src": "/demo/ravi/week4.jpg",
+   "out": "/demo/ravi/head_cap.jpg",
+   "ok": true,
+   "shift": 0.027,
+   "widthRatio": 0.957
+  },
+  {
+   "key": "ravi/head_flatcap",
+   "kind": "headwear",
+   "src": "/demo/ravi/week4.jpg",
+   "out": "/demo/ravi/head_flatcap.jpg",
+   "ok": true,
+   "shift": 0.053,
+   "widthRatio": 0.944
+  },
+  {
+   "key": "ravi/head_bandana",
+   "kind": "headwear",
+   "src": "/demo/ravi/week4.jpg",
+   "out": "/demo/ravi/head_bandana.jpg",
+   "ok": true,
+   "shift": 0.044,
+   "widthRatio": 0.954
+  },
+  {
+   "key": "ravi/week4",
+   "kind": "after hair loss (demo photo)",
+   "src": "/demo/ravi/kept.jpg",
+   "out": "/demo/ravi/week4.jpg",
+   "ok": true,
+   "shift": 0.083,
+   "widthRatio": 1.025
+  }
+ ]
+}

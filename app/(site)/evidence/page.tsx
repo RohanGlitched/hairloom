@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import { PERSONAS } from "@/lib/demo";
-import { API_COUNT, LEDGER, REJECTED, TOTALS, byApi, missingEvidence } from "@/lib/evidence";
+import { API_COUNT, LEDGER, REJECTED, TOTALS, baldCounts, byApi, missingEvidence } from "@/lib/evidence";
 import { greyOf, measured, shadeCheck } from "@/lib/colours";
 import { WIGS } from "@/lib/catalogue";
-import { greyBlend, labToHex, nearestShades } from "@/lib/color";
+import { deltaE00, greyBlend, hexToLab, labToHex, nearestShades } from "@/lib/color";
+import { SHADES } from "@/lib/catalogue";
+import identity from "@/data/identity.json";
+import regrowth from "@/data/regrowth.json";
 import { RealTests } from "@/components/RealTests";
 import real from "@/data/real.json";
 import costs from "@/data/feature-costs.json";
@@ -11,16 +14,22 @@ import s from "./evidence.module.css";
 
 export const metadata: Metadata = { title: "Evidence", description: "Every YouCam task we ran while building Hairloom, what failed, what we measured, and what we would ask Perfect Corp for." };
 
+type RealPhoto = { kind: string; runs: { name: string; ok: boolean }[] };
+const SHAVED = (real as unknown as RealPhoto[]).filter((p) => p.kind === "bald");
+const SHAVED_RUNS = SHAVED.flatMap((p) => p.runs.filter((r) => r.name.startsWith("wig_")));
+const BALD = baldCounts(SHAVED.length);
+
 /** What we learned about the YouCam API: what happened, what Hairloom does about it, and the one thing we would ask for. */
 const NOTES = [
   { t: "Hair type and frizz need three same-size photos, in one order", b: "Front, then the face turned towards the right of the picture, then towards the left. Any other order, or different sizes, returns error_face_angle_invalid or error_mismatch_image_size. The studio crops all three to the front photo's size and orders the side photos itself from face landmarks, so a swapped upload still reads.", ask: "Say which photo failed, or accept any order and size." },
   { t: "Hair colour comes back as a named category", b: "Face Attribute Analyzer and Facial Color Tones Analyzer return one of a few named swatches. That suits a beauty quiz, but a wig fitter needs a shade code, so Hairloom measures colour from the hair pixels and keeps YouCam's label beside it. Where they disagree is listed below.", ask: "Return a measured hair colour with a confidence, as eyebrow_color already is." },
-  { t: "Hairstyle try-on works on a bald head", b: "The docs list error_hair_too_short, so we expected failures after hair loss. All 64 try-ons on bald demo photos succeeded, and so did all 8 on real photos of shaved heads. Those are smooth scalps in good light, not patchy loss, so patchy and stubbled heads are still untested.", ask: "Document that bald and shaved sources work." },
+  { t: "Hairstyle try-on works on a bald head", b: `The docs list error_hair_too_short, so we expected failures after hair loss. On the ${BALD.people} demo people's after-hair-loss photos, ${BALD.wigsOk} of ${BALD.wigs} wig try-ons and ${BALD.ownOk} of ${BALD.own} own-hair restorations succeeded, and so did ${SHAVED_RUNS.filter((r) => r.ok).length} of ${SHAVED_RUNS.length} wig try-ons on ${SHAVED.length} real shaved heads. On a generated photo with bare patches at the parting, a wig try-on covered them completely (Oct 30); a volume try-on on an earlier patch photo left them showing. The generator drew both sets of patches pink rather than skin-coloured, so real patchy and stubbled scalps are still untested.`, ask: "Document that bald and shaved sources work." },
   { t: "Face reading is strict about angle by default", b: "At the default strictness, Face Attribute Analyzer rejected all five of our real, everyday portraits (error_face_not_forward_facing, error_face_angle_left_tilt, error_face_angle_downward). At face_angle_strictness_level “flexible” all five read, and face_quality still flags a turned face, which the passport passes on. Hair length has no such setting and failed on three slightly turned portraits, which is why the studio leads with YouCam's guided camera.", ask: "Name face_angle_strictness_level in the error, and give hair length the same setting." },
   { t: "Hairstyle try-on can change more than hair", b: "On one real photo of a man with a full beard, both wig try-ons removed the beard, and on a black-and-white portrait the try-ons came back in colour. Hairloom's mirror lets you drag back to the original to spot this, and a fitter should always see the real person.", ask: "A hair-only mode that leaves beard, skin tone and background alone." },
   { t: "Hat try-on restyles the whole person", b: "Hat and scarf try-on generate a new outfit and background, and on a bald head the beanie came back with long hair under it. For headwear Hairloom uses image-to-image with an instruction to keep the face, clothes and background, at 1 unit.", ask: "A keep-identity option on hat try-on, and a head-scarf style." },
   { t: "Readings can differ between runs", b: "The same front photo read the left brow tail as “Average” on one run and “Sparse” on another. The passport keeps the reading with the photo it came from rather than presenting one run as fact.", ask: "A confidence value on shape and thickness readings." },
-  { t: "Density detection is strict about angle", b: "Front-facing and generated head-down photos were rejected with error_face_angle_invalid. It needs YouCam's camera guide in hairdensity mode, so it is left out of the upload flow. For hair loss this is the reading we missed most, because the passport can say how long hair is but not how much of the scalp it covers.", ask: "A scalp-coverage readout that works on an ordinary front photo, for alopecia and thinning." },
+  { t: "Density detection is strict about angle", b: "Every photo we tried was rejected with error_face_angle_invalid, so none was charged: a front photo and two generated head-down photos on Oct 21, and on Oct 30 two generated photos (Nia, and Margaret's thinning hair) with the head tilted about 30° forward and the crown in view. The docs ask for “one front facing 45 degree lower selfie” and point to YouCam's camera guide in hairdensity mode, which we haven't been able to test on a real phone, so density is left out of the studio. For hair loss this is the reading we missed most, because the passport can say how long hair is but not how much of the scalp it covers.", ask: "Name the accepted pitch range in the error, and accept an uploaded crown photo for alopecia and thinning." },
+  { t: "Regrowth reads as different hair", b: `The passport's own detections work on new growth. On a generated photo of Anjali about a year after treatment, Hair Type read ${regrowth.anjali.readings.type.mapping} (${regrowth.anjali.readings.type.term.toLowerCase()}) where her kept hair read 1 to 2A, and Hair Length read “${regrowth.anjali.readings.length.term}” where it had read “above chest”. The journal's regrowth re-read runs both on one shared upload (4 units) and ranks wigs against the new growth.`, ask: "A regrowth or short-hair mode for hair length, which today has only coarse terms." },
   { t: "Volume and length templates are for women, and fill out rather than cover", b: "Every hair-volume and hair-extension template in YouCam's template list is in the “Female” category, so Hairloom doesn't offer them on men's photos. On a generated photo of thinning hair with a widening parting, all four volume templates filled out the sides and added length, but none covered the parting or a thin crown, which is what a topper is for. The three length templates changed length only.", ask: "Men's templates, and a crown or parting topper template." },
   { t: "Skin analysis needs a close-up", b: "The face must fill most of the frame. The journal finds the face on the device and crops to it before sending, which turns a normal selfie into an accepted one.", ask: "Accept a normal selfie and crop to the face on YouCam's side." },
   { t: "task/delete really deletes", b: "Tested on Oct 21: after task/delete the result URL returns 404, and starting a new task with the same input file fails with a 403. Hairloom deletes each task as soon as the browser has the result. If the tab closes first, the page sends the delete as it closes. Failing that, a clean-up that runs after studio requests, at most every 10 minutes, deletes any result left uncollected for 11 minutes, and a daily sweep catches the rest.", ask: "Delete on completion as an option, so no task depends on the browser to clean up." },
@@ -75,6 +84,18 @@ export default function Evidence() {
   const restMax = Math.max(...stock.filter((r) => (r.c!.grey ?? 0) < 0.15).map((r) => r.c!.grey ?? 0));
   const pct = (g: number | null | undefined) => `${Math.round((g ?? 0) * 100)}%`;
   const people = PERSONAS.map((p) => { const g = greyOf(`${p.id}/kept`); return { name: p.name, grey: g?.grey ?? null, blend: greyBlend(g?.grey, g?.base) }; });
+  // Hair Color Try-On: the hair in each recoloured render against the shade it was asked for, and the same
+  // wig before recolouring, both measured on the device from the prepared renders.
+  const recolour = PERSONAS.flatMap((p) => Object.keys(p.shades ?? {}).map((k) => {
+    const [wig, code] = k.split(":");
+    const target = SHADES.find((x) => x.code === code);
+    const after = measured(`${p.id}/shade_${wig}_${code}`), before = measured(`${p.id}/wig_${wig}`);
+    return target && after ? { person: p.name, wig, code, hex: target.hex, after: deltaE00(after, hexToLab(target.hex)), before: before ? deltaE00(before, hexToLab(target.hex)) : null } : null;
+  })).filter((r): r is NonNullable<typeof r> => !!r);
+  const med = (xs: number[]) => { const v = [...xs].sort((a, b) => a - b); return v.length ? (v.length % 2 ? v[(v.length - 1) / 2] : (v[v.length / 2 - 1] + v[v.length / 2]) / 2) : 0; };
+  const closer = recolour.filter((r) => r.before != null && r.after < r.before).length;
+  const heads = (identity.rows as { key: string; kind: string; ok: boolean; shift?: number; widthRatio?: number }[]).filter((r) => r.kind === "headwear" && r.ok);
+  const worst = [...heads].sort((a, b) => b.shift! - a.shift!).slice(0, 2);
 
   return (
     <>
@@ -125,7 +146,7 @@ export default function Evidence() {
 
           <h3 id="costs" className="h-sub" style={{ marginTop: 40 }}>Unit costs, checked against YouCam&rsquo;s own list</h3>
           <p className="lede" style={{ marginTop: 12 }}>
-            The cost table, the fitting prices and the MCP <code>fitting_cost</code> tool all use the units in the studio&rsquo;s whitelist. <code>scripts/check-costs.mjs</code> compares them with YouCam&rsquo;s feature-cost endpoint, which only reads a price list. On {new Date(costs.checked).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })} it read {costs.skus} SKUs, the unit balance was the same before and after ({costs.unitsSpentByCheck} units spent), and {costs.rows.filter((r) => r.ok).length} of {costs.rows.length} task kinds matched.
+            The cost table, the fitting prices and the MCP <code>fitting_cost</code> tool all use the units in the studio&rsquo;s whitelist. <code>scripts/check-costs.mjs</code> compares them with YouCam&rsquo;s feature-cost endpoint, which only reads a price list. On {new Date(costs.checked).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" })} (IST) it read {costs.skus} SKUs, the unit balance was the same before and after ({costs.unitsSpentByCheck} units spent), and {costs.rows.filter((r) => r.ok).length} of {costs.rows.length} task kinds matched.
           </p>
           <div className={s.tableWrap}>
             <table className={s.shadeTable}>
@@ -185,6 +206,36 @@ export default function Evidence() {
           <p className="lede" style={{ marginTop: 12 }}>
             We also tried trimming more of the darkest pixels before taking the median (on Oct 30, with the trim option in <code>lib/hairColor.ts</code>): leaving out the darkest 30% gave 7 of 16 listed codes, and 40% gave 8 of 16. That is tuned on these same 16 photos, and the 40% trim read Margaret&rsquo;s grey-blonde hair as light grey (51), so the studio keeps the 15% trim and reports the grey share beside it.
           </p>
+
+          <h3 id="recolour" className="h-sub" style={{ marginTop: 40 }}>Hair Color Try-On: how close the recolour lands</h3>
+          <p className="lede" style={{ marginTop: 12 }}>
+            Each prepared recolour asked YouCam for a shade code&rsquo;s colour. Measured the same way on the device, the hair in the {recolour.length} renders lands a median ΔE00 of {med(recolour.map((r) => r.after)).toFixed(1)} from the shade asked for (under 3 is hard to tell apart), and {closer} of {recolour.length} moved closer to it than the wig was before recolouring. The same shadow bias as the product photos applies: shadowed strands read darker.
+          </p>
+          <div className={s.tableWrap}>
+            <table className={s.shadeTable}>
+              <thead><tr><th>Person</th><th>Wig</th><th>Shade asked</th><th>ΔE00 before</th><th>ΔE00 after</th></tr></thead>
+              <tbody>
+                {recolour.map((r) => <tr key={`${r.person}-${r.wig}-${r.code}`}><td>{r.person}</td><td>{r.wig[0].toUpperCase() + r.wig.slice(1)}</td><td><i style={{ background: r.hex }} aria-hidden="true" />{r.code}</td><td className="num">{r.before?.toFixed(1) ?? "—"}</td><td className="num">{r.after.toFixed(1)}</td></tr>)}
+              </tbody>
+            </table>
+          </div>
+
+          <h3 id="identity" className="h-sub" style={{ marginTop: 40 }}>Headwear: does the face stay put?</h3>
+          <p className="lede" style={{ marginTop: 12 }}>
+            Headwear is made with the Image Generator and an instruction to keep the face, so we checked it. MediaPipe&rsquo;s face detector found the eyes, nose and mouth in each of the {heads.length} prepared headwear renders and in the photo it started from. The points moved a median {med(heads.map((r) => r.shift!)).toFixed(3)} eye-widths and at most {worst[0]?.shift?.toFixed(3)} ({worst.map((r) => { const [who, h] = r.key.split("/head_"); return `${who[0].toUpperCase() + who.slice(1)}, ${h === "cap" ? "sleep cap" : h}`; }).join("; ")}), and the face kept {Math.round(Math.min(...heads.map((r) => r.widthRatio!)) * 100)}–{Math.round(Math.max(...heads.map((r) => r.widthRatio!)) * 100)}% of its width. That shows the pose and framing hold. It is not a face-recognition match, so drag the mirror to compare.
+          </p>
+
+          <h3 id="patches" className="h-sub" style={{ marginTop: 40 }}>Bare patches</h3>
+          <div className={s.patches}>
+            {[["/demo/nia/patchy.jpg", "Generated patches (Oct 30)"], ["/demo/nia/patchy_wig_zuri.jpg", "Hairstyle Try-On: Zuri covers them"], ["/demo/nia/patchy_oct21.jpg", "Earlier patch photo (Oct 21)"], ["/demo/nia/patchy_oct21_volume.jpg", "Hair Volume: patches still show"]].map(([src, cap]) => (
+              <figure key={src}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={src} alt={cap} loading="lazy" />
+                <figcaption>{cap}</figcaption>
+              </figure>
+            ))}
+          </div>
+          <p className="small" style={{ marginTop: 12 }}>Nia is a demo person. The generator drew the patches pink, which real alopecia areata usually isn&rsquo;t, so this shows what the try-ons do over bare scalp, not how they look on a real patch.</p>
 
           <h2 className="h-sec" style={{ marginTop: 72 }}>Not proven yet</h2>
           <ul className={s.open}>

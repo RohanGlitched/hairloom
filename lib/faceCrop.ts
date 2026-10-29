@@ -53,3 +53,17 @@ export async function facing(src: string): Promise<"left" | "right" | "front" | 
   const off = (nose.x - (eyeA.x + eyeB.x) / 2) / span;
   return off > 0.12 ? "right" : off < -0.12 ? "left" : "front";
 }
+
+/** BlazeFace's keypoints (eyes, nose tip, mouth, ear points) in pixels, and the face box, or null without exactly one face. */
+export async function faceKeypoints(src: string): Promise<{ w: number; h: number; points: { x: number; y: number }[]; box: { x: number; y: number; w: number; h: number } } | null> {
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+  img.src = src;
+  await img.decode();
+  const det = await load();
+  const found = det.detect(img).detections;
+  if (found.length !== 1 || !found[0].keypoints || !found[0].boundingBox) return null;
+  const b = found[0].boundingBox;
+  const W = img.naturalWidth, H = img.naturalHeight;
+  return { w: W, h: H, points: found[0].keypoints.map((k) => ({ x: k.x * W, y: k.y * H })), box: { x: b.originX, y: b.originY, w: b.width, h: b.height } };
+}

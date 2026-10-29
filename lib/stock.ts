@@ -10,14 +10,18 @@ export type CapSize = (typeof CAPS)[number];
 
 const https = z.string().trim().max(300).refine((u) => /^https:\/\/[^\s"'<>]+$/.test(u), "must start with https://");
 export const StockItem = z.object({
-  sku: z.string().trim().min(1).max(40),
-  name: z.string().trim().min(1).max(60),
+  sku: z.string().trim().min(1).max(80),
+  name: z.string().trim().min(1).max(80),
+  retailer: z.string().trim().max(60).optional(),
   length: z.enum(["ear", "chin", "shoulder", "chest", "midback"]),
   texture: z.enum(["straight", "wavy", "curly", "coily"]),
   /** A wig shade code ("4", "1B", "1B/44") or a hex colour ("#3b2a20"). */
   shade: z.string().trim().min(1).max(12).refine((s) => /^#[0-9a-fA-F]{6}$/.test(s) || /^[0-9A-Za-z]{1,4}(\/[0-9A-Za-z]{1,4})?$/.test(s), "a shade code like 4 or 1B/44, or a hex like #3b2a20"),
   caps: z.array(z.enum(CAPS)).min(1).max(3),
   price_inr: z.number().nonnegative().max(10_000_000).optional(),
+  /** A price in another currency, as listed (price_inr wins when both are given). */
+  price: z.number().nonnegative().max(10_000_000).optional(),
+  currency: z.enum(["INR", "GBP", "USD", "EUR"]).optional(),
   url: https.optional(),
   fit: z.enum(["Women", "Men"]).optional(),
 });
@@ -37,6 +41,10 @@ function normalise(raw: Record<string, unknown>) {
   }
   if (out.caps !== undefined) out.caps = capList(out.caps);
   if (typeof out.price_inr === "string") out.price_inr = Number(out.price_inr.replace(/[₹,\s]/g, ""));
+  if (typeof out.price === "string") out.price = Number(out.price.replace(/[₹£$€,\s]/g, ""));
+  if (typeof out.currency === "string") out.currency = out.currency.trim().toUpperCase();
+  // "price" means rupees unless another currency is named.
+  if (out.price_inr !== undefined && out.currency && out.currency !== "INR" && out.price === undefined) { out.price = out.price_inr; delete out.price_inr; }
   for (const k of ["length", "texture", "fit"]) if (typeof out[k] === "string") out[k] = (out[k] as string).trim();
   if (typeof out.length === "string") out.length = out.length.toLowerCase().replace("mid-back", "midback");
   if (typeof out.texture === "string") out.texture = out.texture.toLowerCase();
@@ -139,3 +147,11 @@ export function rankStock(items: StockItem[], c: Client): Ranked[] {
 
 /** A demo wig's stock-keeping code, as in public/stock.example.json. */
 export const demoSku = (w: Pick<Wig, "id" | "code">) => `KC-${w.id.toUpperCase()}-${w.code}`;
+
+/** The listed price in its own currency: "₹14,900", "£437.03", "$273.60". */
+export function priceOf(it: Pick<StockItem, "price_inr" | "price" | "currency">) {
+  if (it.price_inr != null) return "₹" + it.price_inr.toLocaleString("en-IN");
+  if (it.price == null) return null;
+  const cur = it.currency ?? "INR";
+  return new Intl.NumberFormat(cur === "INR" ? "en-IN" : "en-GB", { style: "currency", currency: cur, minimumFractionDigits: Number.isInteger(it.price) ? 0 : 2 }).format(it.price);
+}

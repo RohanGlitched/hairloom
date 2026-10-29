@@ -69,7 +69,7 @@ export const revalidate = 3600;
 /** Real stock photos of shaved heads, and how many wig try-ons on them succeeded (data/real.json). */
 function shavedHeads() {
   const runs = (real as { kind: string; runs: { name: string; ok: boolean }[] }[]).filter((p) => p.kind === "bald").flatMap((p) => p.runs.filter((r) => r.name.startsWith("wig_")));
-  return { ok: runs.filter((r) => r.ok).length, n: runs.length };
+  return { ok: runs.filter((r) => r.ok).length, n: runs.length, heads: (real as { kind: string }[]).filter((p) => p.kind === "bald").length };
 }
 
 const BEYOND = [
@@ -82,11 +82,11 @@ export default function Home() {
   const apis = byApi().filter((a) => a.group === "studio");
   const shaved = shavedHeads();
   const ONLY = [
-    { big: "Your own hair", body: `back on your week-4 photo, from the photo you kept. Hairstyle Try-On worked on ${shaved.ok} of ${shaved.n} real shaved heads.`, href: "#fitting" },
+    { big: "Your own hair", body: `back on your week-4 photo, from the photo you kept. Hairstyle Try-On worked on ${shaved.ok} of ${shaved.n} try-ons on ${shaved.heads} real shaved heads.`, href: "#fitting" },
     { big: "A sealed brief", body: "for your fitter: a pull list in your shade code and cap size, encrypted in your browser.", href: "/fitter#demo" },
     { big: "The shop's own stock", body: "ranked against your passport, on the fitter desk or by a fitter's AI assistant over MCP.", href: "/fitter#your-stock" },
     { big: "Beyond chemo", body: "alopecia, pattern thinning and men, with Hair Volume and Hair Extension try-ons.", href: "#beyond" },
-    { big: `${API_COUNT} YouCam APIs`, body: `each doing one job, with ${TOTALS.runs} runs in a public evidence ledger, failures included.`, href: "/evidence" },
+    { big: `${API_COUNT} YouCam APIs`, body: `each doing one job, and every task we kept (${TOTALS.runs}) in a public evidence ledger, failures included.`, href: "/evidence" },
   ];
   const brief = demoBrief();
   return (
@@ -97,7 +97,7 @@ export default function Home() {
           <div className={s.heroText}>
             <h1 id="hero-title" className="h-hero">Choose your wig while you still have your hair.</h1>
             <p className="lede">
-              Your own hair, back on your photo after hair loss. Every wig in the shop on your face, ranked against the hair you kept. And one sealed brief, so your fitter has the right shade and cap ready before you arrive.
+              Your own hair, back on your photo after hair loss. Every wig in the shop ranked against the hair you kept, and any of them tried on your own face. And one sealed brief, so your fitter has the right shade and cap ready before you arrive.
             </p>
             <div className={s.ctas}>
               <Link href="/studio" className="btn btn-ivory">Open the studio</Link>
@@ -214,7 +214,7 @@ export default function Home() {
             <p className="kicker">The hair passport</p>
             <h2 id="pass-title" className="h-sec">A record a wig fitter can work from.</h2>
             <p className="lede">
-              Charities advise keeping photos and a lock of hair. Hairloom keeps the photos and reads them: curl pattern, frizz, length, face shape and brows from YouCam, and colour as a common wig shade code.
+              The passport is the reference YouCam uses to put your own hair back at week four. Charities advise keeping photos and a lock of hair; Hairloom keeps the photos and reads them: curl pattern, frizz, length, face shape and brows from YouCam, and colour as a common wig shade code.
             </p>
             <ul className={s.ticks}>
               <li>Three angles, from YouCam&rsquo;s guided camera, which shows face position, facing and light as you shoot, or from photos you upload.</li>

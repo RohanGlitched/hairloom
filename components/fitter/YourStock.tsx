@@ -1,12 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { inr } from "@/lib/catalogue";
 import { hexToLab } from "@/lib/color";
 import { appointmentLabel } from "@/lib/dates";
 import type { Readings } from "@/lib/demo";
 import type { SharePayload } from "@/lib/seal";
-import { parseStock, rankStock, type Client, type StockItem } from "@/lib/stock";
+import { parseStock, priceOf, rankStock, type Client, type StockItem } from "@/lib/stock";
 import s from "./fitter.module.css";
 
 export function clientOf(b: SharePayload, fit: Client["fit"] = null): Client {
@@ -31,6 +30,13 @@ export function CopyButton({ text, label, className }: { text: string; label: st
 const SAMPLE = `sku,name,length,texture,shade,caps,price_inr,fit,url
 AB-101,Your lob,shoulder,straight,4,Petite|Average,15900,Women,https://example.com/products/ab-101`;
 
+/** Two examples: the demo boutique, and real public product pages read for their metadata only. */
+const EXAMPLES = [
+  { id: "demo", file: "/stock.example.json", label: "Demo boutique (Kesh & Co.)" },
+  { id: "public", file: "/stock.public-listings.json", label: "Public listings (no partnership)" },
+] as const;
+const who = (name: string) => name.replace(/\s*\(demo\)$/, "");
+
 /** "Load your stock": a boutique pastes its own catalogue and ranks it for this client, all in the browser. */
 export function YourStock({ client, fit: given }: { client: SharePayload; fit?: "Women" | "Men" }) {
   const [text, setText] = useState("");
@@ -47,10 +53,11 @@ export function YourStock({ client, fit: given }: { client: SharePayload; fit?: 
     setErrors(errs);
     setItems(got);
   }
-  async function example() {
-    setBusy(true);
+  const [which, setWhich] = useState<(typeof EXAMPLES)[number]["id"] | null>(null);
+  async function example(id: (typeof EXAMPLES)[number]["id"] = "demo") {
+    setBusy(true); setWhich(id);
     try {
-      const t = await fetch("/stock.example.json").then((r) => r.text());
+      const t = await fetch(EXAMPLES.find((e) => e.id === id)!.file).then((r) => r.text());
       setText(t);
       rank(t);
     } catch {
@@ -59,6 +66,9 @@ export function YourStock({ client, fit: given }: { client: SharePayload; fit?: 
       setBusy(false);
     }
   }
+  // A demo brief opens with the demo boutique already ranked, so there's something to read at once (0 units).
+  const demo = /\(demo\)$/.test(client.name);
+  useEffect(() => { if (demo && !items) void example("demo"); }, [demo]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <section id="your-stock" className="deep sec" aria-labelledby="ys-title" data-noprint>
@@ -66,7 +76,7 @@ export function YourStock({ client, fit: given }: { client: SharePayload; fit?: 
         <div className={s.ysHead}>
           <div>
             <p className="kicker">Your own stock</p>
-            <h2 id="ys-title" className="h-sec">Rank your shop&rsquo;s wigs for {client.name}.</h2>
+            <h2 id="ys-title" className="h-sec">Rank your shop&rsquo;s wigs for {who(client.name)}.</h2>
           </div>
           <p className="lede">
             Paste your catalogue as CSV or JSON: SKU, name, length, texture, shade code, cap sizes, price and product link. Hairloom ranks it against this client&rsquo;s passport with the same score the studio uses, and writes the hold note for each wig. It runs in this browser: nothing is uploaded and no YouCam units are used.
@@ -77,9 +87,13 @@ export function YourStock({ client, fit: given }: { client: SharePayload; fit?: 
             <label htmlFor="ys-text" className="small">Stock (CSV with a header row, or JSON)</label>
             <textarea id="ys-text" rows={9} spellCheck={false} value={text} placeholder={SAMPLE} onChange={(e) => setText(e.target.value)} />
             <div className={s.actions}>
-              <button className="btn btn-ivory btn-sm" disabled={!text.trim()} onClick={() => rank()}>Rank for {client.name}</button>
-              <button className="btn btn-ghost btn-sm" disabled={busy} onClick={example}>{busy ? "Loading…" : "Load the example stock"}</button>
+              <button className="btn btn-ivory btn-sm" disabled={!text.trim()} onClick={() => { setWhich(null); rank(); }}>Rank for {who(client.name)}</button>
               <a className="btn btn-ghost btn-sm" href="/stock.example.json" download>Download the template</a>
+            </div>
+            <div className={s.chipsRow} role="radiogroup" aria-label="Example stock">
+              {EXAMPLES.map((e) => (
+                <button key={e.id} role="radio" aria-checked={which === e.id} disabled={busy} onClick={() => example(e.id)}>{e.label}</button>
+              ))}
             </div>
             <div className={s.chipsRow} role="radiogroup" aria-label="Which wigs to rank">
               {(["All", "Women", "Men"] as const).map((f) => (
@@ -97,14 +111,15 @@ export function YourStock({ client, fit: given }: { client: SharePayload; fit?: 
             )}
           </div>
           <div aria-live="polite">
+            {ranked && which === "public" && <p className={s.ysNote}>Real product pages from two retailers, read on Oct 30 for their listed length, texture, one shade code, cap size and price. No images, and no partnership: prices change, so check the retailer.</p>}
             {ranked ? (
               <ol className={s.ysList}>
                 {ranked.slice(0, 12).map((r, i) => (
                   <li key={r.item.sku + i}>
                     <span className={s.ysN}>{i + 1}</span>
                     <div className={s.ysMain}>
-                      <p className={s.ysName}><b>{r.item.name}</b> <span>{r.item.sku}</span> <em>{r.band}</em></p>
-                      <p className="small">{r.length} · {r.texture} · pull in shade {r.pullShade}{r.item.shade !== c.code ? ` (stocked ${r.item.shade})` : ""} · cap {r.cap.note}{r.item.price_inr != null ? ` · ${inr(r.item.price_inr)}` : ""}</p>
+                      <p className={s.ysName}><b>{r.item.name}</b> <span>{r.item.retailer ?? r.item.sku}</span> <em>{r.band}</em></p>
+                      <p className="small">{r.length} · {r.texture} · pull in shade {r.pullShade}{r.item.shade !== c.code ? ` (stocked ${r.item.shade})` : ""} · cap {r.cap.note}{priceOf(r.item) ? ` · ${priceOf(r.item)}` : ""}</p>
                       <div className={s.ysAct}>
                         <CopyButton text={r.hold} label="Copy hold note" />
                         {r.item.url && <a className="btn btn-ghost btn-sm" href={r.item.url} target="_blank" rel="noopener noreferrer">View at retailer</a>}
@@ -114,7 +129,7 @@ export function YourStock({ client, fit: given }: { client: SharePayload; fit?: 
                 ))}
               </ol>
             ) : (
-              <div className={s.ysEmpty}>Your ranked stock appears here, closest to {client.name}&rsquo;s own hair first.</div>
+              <div className={s.ysEmpty}>Your ranked stock appears here, closest to {who(client.name)}&rsquo;s own hair first{demo ? " (demo)" : ""}.</div>
             )}
           </div>
         </div>

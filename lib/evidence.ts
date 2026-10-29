@@ -18,7 +18,7 @@ export const API_COUNT_WORD = WORDS[API_COUNT] ?? String(API_COUNT);
 export const REJECTED: Record<string, string> = {
   "AI Hat Virtual Try-On": "Restyles the whole person and, on a bald head, added hair under a beanie. Headwear uses image-to-image instead.",
   "AI Scarf Virtual Try-On": "Draws a neck scarf, not a head scarf.",
-  "AI Hair Density Detection": "Rejected a front photo and two head-down photos with error_face_angle_invalid. It needs the guided camera in hairdensity mode.",
+  "AI Hair Density Detection": "Rejected every photo we tried with error_face_angle_invalid: a front photo and two head-down photos (Oct 21), and two generated photos tilted about 30° forward with the crown in view (Oct 30). It needs the guided camera in hairdensity mode.",
   "AI Facial Color Tones Analyzer": "Returned the same hair-colour label as Face Attribute, at 20 units a run against 10.",
 };
 const DEMO_ONLY = "AI Image Generator (text to image)";
@@ -63,3 +63,12 @@ export const TOTALS = {
 
 /** Studio APIs with no successful run in the ledger. Empty when every shipped API has evidence. */
 export const missingEvidence = () => STUDIO_APIS.filter((a) => !RUNS.some((r) => r.api === a && r.ok));
+
+/** Hairstyle try-ons on bald photos, counted from the ledger: wigs and own-hair restorations on the demo people's
+ * after-hair-loss photos, and wig try-ons on the real shaved heads (with how many heads). */
+export function baldCounts(shavedHeads: number) {
+  const demoWig = RUNS.filter((r) => /^demo\/[^/]+\/wig_/.test(r.name));
+  const demoOwn = RUNS.filter((r) => /^demo\/[^/]+\/own$/.test(r.name));
+  const people = new Set(demoWig.map((r) => r.name.split("/")[1])).size;
+  return { wigs: demoWig.length, wigsOk: demoWig.filter((r) => r.ok).length, own: demoOwn.length, ownOk: demoOwn.filter((r) => r.ok).length, people, shavedHeads };
+}

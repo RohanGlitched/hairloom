@@ -37,3 +37,13 @@ test("stock is ranked against the passport, with a hold note in the client's sha
   assert.match(r[0].hold, /hold A \(Close\) in shade 4, cap Average, for Anjali, fitting Sat 31 Oct/);
   assert.equal(r[1].cap.ok, false, "a petite-only wig is flagged for an average head");
 });
+
+test("the public-listings example parses: real product pages, metadata only, priced in their own currency", async () => {
+  const { priceOf } = await import("../lib/stock.ts");
+  const { items, errors } = parseStock(fs.readFileSync("public/stock.public-listings.json", "utf8"));
+  assert.deepEqual(errors, []);
+  assert.ok(items.length >= 12);
+  assert.ok(items.every((i) => i.url?.startsWith("https://") && i.retailer && i.currency && i.price != null && i.price_inr == null));
+  assert.equal(priceOf({ price: 437.03, currency: "GBP" }), "£437.03");
+  assert.equal(priceOf({ price_inr: 14900 }), "₹14,900");
+});
