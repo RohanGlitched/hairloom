@@ -251,10 +251,12 @@ function AutoTag() {
 
 function Assistant({ brief, situation, person, fit }: { brief: SharePayload; situation: "chemo" | "alopecia"; person?: string; fit?: "Women" | "Men" }) {
   const [copied, setCopied] = useState(false);
-  const url = typeof window === "undefined" ? "https://hairloom-studio.vercel.app/api/mcp" : `${window.location.origin}/api/mcp`;
+  // The server renders the public address; the browser swaps in its own origin after hydrating.
+  const [url, setUrl] = useState("https://hairloom-studio.vercel.app/api/mcp");
+  useEffect(() => setUrl(`${window.location.origin}/api/mcp`), []);
   return (
     <section id="assistant" className="paper sec" data-noprint>
-      <div className={`wrap ${s.tagWrap}`}>
+      <div className={`wrap ${s.tagWrap} ${s.deskWrap}`}>
         <div>
           <p className="kicker">For your AI assistant</p>
           <h2 className="h-sec">Ask your AI assistant what to pull before the client arrives.</h2>
