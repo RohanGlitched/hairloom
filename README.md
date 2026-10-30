@@ -13,7 +13,8 @@
   <b><a href="https://hairloom-studio.vercel.app/studio?p=anjali">Studio with a demo person</a></b> ·
   <b><a href="https://hairloom-studio.vercel.app/fitter#demo">Fitter desk</a></b> ·
   <b><a href="https://hairloom-studio.vercel.app/business">For retailers</a></b> ·
-  <b><a href="https://hairloom-studio.vercel.app/evidence">Evidence</a></b>
+  <b><a href="https://hairloom-studio.vercel.app/evidence">Evidence</a></b> ·
+  <b><a href="https://youtu.be/e2XXus-IaVw">Demo video</a></b>
 </p>
 
 **Hairloom** helps people facing hair loss choose a wig while they still have their hair, and keep choosing after. It keeps a *kept-hair record* before treatment: curl pattern, frizz, length, face shape and brows from the YouCam API, plus a wig shade code measured on the device. Later it puts that hair, any wig, a headscarf or rebuilt brows back on the person's own photo, even after hair loss. The shortlist goes to their wig fitter in an end-to-end sealed link.
